@@ -5,7 +5,6 @@ const NAV = [
   { to: '/liturgie',        icon: 'menu_book',    label: 'Liturgie du jour' },
   { to: '/annonces',        icon: 'campaign',     label: 'Annonces & Agenda' },
   { to: '/evenements',      icon: 'live_tv',      label: 'Médias & Lives' },
-  { to: '/bible',           icon: 'auto_stories', label: 'Sainte Bible' },
   { to: '/catechese',       icon: 'school',       label: 'Catéchèse' },
   { to: '/vie-spirituelle', icon: 'self_improvement', label: 'Formation' },
   { to: '/horaires',        icon: 'location_on',  label: 'Horaires & Contact' },
