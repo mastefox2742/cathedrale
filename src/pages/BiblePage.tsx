@@ -1,15 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 
-// Bibles disponibles via API.Bible (gratuit)
-// https://scripture.api.bible
-const API_KEY = 'f2c885e4b06f7c5abf9f3d5e7a8b9c1d' // à remplacer par vraie clé
-
-const BIBLES = [
-  { id: 'de4e12af7f28f599-02', label: 'Louis Segond 1910', lang: 'Français', flag: '🇫🇷' },
-  { id: '9879dbb7cfe39e4d-04', label: 'Darby French',      lang: 'Français', flag: '🇫🇷' },
-  { id: '55212e3cf5d04d49-01', label: 'King James Version', lang: 'English',  flag: '🇬🇧' },
-]
-
 // Langues congolaises — à intégrer via fichier téléchargé par l'admin
 const LANG_LOCALES = [
   { id: 'fr-seg',   label: 'Français (Segond)', flag: '🇫🇷',  available: true  },
