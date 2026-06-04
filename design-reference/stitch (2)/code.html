@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Académie de Formation des Laïcs - Archidiocèse de Brazzaville</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .liturgical-stripe-ordinary { border-left: 4px solid #2E7D32; }
+        .liturgical-stripe-lent { border-left: 4px solid #7B1FA2; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(30, 58, 138, 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #D4AF37;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#c5c5d3",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#3e4142",
+                        "background": "#fcf9f8",
+                        "tertiary": "#282b2c",
+                        "on-secondary-container": "#745c00",
+                        "on-tertiary-fixed": "#191c1d",
+                        "on-primary-fixed": "#00164e",
+                        "surface-variant": "#e5e2e1",
+                        "inverse-surface": "#313030",
+                        "secondary-fixed": "#ffe088",
+                        "primary-fixed": "#dce1ff",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#00236f",
+                        "secondary-container": "#fed65b",
+                        "on-tertiary-container": "#abadae",
+                        "surface-tint": "#4059aa",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#757682",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#ebe7e7",
+                        "primary-container": "#1e3a8a",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-fixed-variant": "#454748",
+                        "secondary": "#735c00",
+                        "on-primary-container": "#90a8ff",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#1c1b1b",
+                        "tertiary-fixed": "#e1e3e4",
+                        "secondary-fixed-dim": "#e9c349",
+                        "tertiary-fixed-dim": "#c5c7c8",
+                        "surface-container-highest": "#e5e2e1",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "on-secondary-fixed-variant": "#574500",
+                        "inverse-primary": "#b6c4ff",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#264191",
+                        "on-background": "#1c1b1b",
+                        "surface-bright": "#fcf9f8",
+                        "on-surface-variant": "#444651",
+                        "surface-container": "#f0edec",
+                        "on-error-container": "#93000a",
+                        "surface": "#fcf9f8",
+                        "surface-dim": "#dcd9d9",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-secondary-fixed": "#241a00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "auto",
+                        "base": "8px",
+                        "md": "24px",
+                        "lg": "40px",
+                        "sm": "12px",
+                        "xs": "4px",
+                        "margin-mobile": "20px",
+                        "gutter": "16px",
+                        "xl": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["EB Garamond"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["EB Garamond"],
+                        "body-md": ["Inter"],
+                        "title-md": ["EB Garamond"],
+                        "headline-lg": ["EB Garamond"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "title-md": ["22px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md text-body-md overflow-x-hidden">
+<!-- Top Navigation -->
+<header class="w-full top-0 sticky z-50 bg-surface border-b border-primary/10">
+<div class="flex justify-between items-center w-full px-margin-mobile py-xs max-w-[720px] mx-auto">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary" data-icon="church">church</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Archidiocèse de Brazzaville</h1>
+</div>
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded-full cursor-pointer" data-icon="notifications">notifications</span>
+</div>
+</div>
+</header>
+<main class="max-w-[720px] mx-auto px-margin-mobile pb-xl pt-md space-y-lg">
+<!-- Hero Section & Forum Access -->
+<section class="space-y-sm">
+<div class="flex justify-between items-end">
+<div>
+<span class="font-label-md text-label-md text-secondary uppercase tracking-widest">Académie de Formation</span>
+<h2 class="font-display-lg text-headline-lg-mobile text-primary mt-xs">Former le Peuple de Dieu</h2>
+</div>
+<a class="flex items-center gap-xs text-primary bg-primary-fixed/20 px-4 py-2 rounded-lg hover:bg-primary-fixed/40 transition-all active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-label-md text-label-md">Forum</span>
+</a>
+</div>
+<p class="text-on-surface-variant font-body-lg text-body-lg italic">
+                "Allez, enseignez toutes les nations..." (Mt 28,19)
+            </p>
+</section>
+<!-- Video Lessons Gallery (Bento Layout Style) -->
+<section class="space-y-sm">
+<div class="flex items-center justify-between">
+<h3 class="font-title-md text-title-md text-primary">Leçons Vidéo Récentes</h3>
+<span class="font-label-md text-label-md text-secondary cursor-pointer">Voir tout</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-sm">
+<div class="relative group overflow-hidden rounded-xl h-48 border border-primary/10">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A serene cinematic shot of a modern African cathedral interior with soft sunlight streaming through stained glass windows. The atmosphere is academic and spiritual, featuring high-contrast clarity and a palette of Marian Blue and soft whites. This image captures the dignity and transcendence of the Archidiocèse de Brazzaville." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDO70O2uMPCJKwKsrv8Y6qBSvcCMESD46t7fZmnmL6LPV9bZVCzJMORHtTm2Izo21CYe1D2YGbyJ_g5FfCbWE8yDRtPLGH4MzfpsXbupdsuevsT-fL0rMKFJQNzgX_M1ND1p-HRfWpR2L3ogfwXJ0Dj9RIhvb3wFB9kyhZns-_2ASFICkXFoD1PV3YqxDCsiybxStun3MiAz75tzJdH4vNYJS-v_QbHrnsiraz3i9qhocyeACfdhek_ETr3tdlo4Tm6CBKXVT5hqt3b"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-4">
+<div class="flex items-center gap-xs text-secondary-fixed mb-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="play_circle">play_circle</span>
+<span class="font-label-md text-[12px]">12:45</span>
+</div>
+<h4 class="text-white font-title-md text-[18px]">Introduction à l'Ecclésiologie</h4>
+</div>
+</div>
+<div class="grid grid-rows-2 gap-sm">
+<div class="glass-card p-3 rounded-xl flex gap-sm items-center border-t border-secondary">
+<div class="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Close up of an old leather bound Bible resting on a wooden lectern in a dimly lit, quiet study. The lighting is warm and directional, emphasizing the texture of the paper and the spiritual weight of theology. The style is Corporate Modern with Liturgical Accents, focusing on order and illumination." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC02xAjJ5Va0VyAvQ26ADyFGSXqeIYEo-87iFJbg-G_O_6WLPwxCbHuoyR3-y7AubqiYouozu6ISIcoNjBsVJeAAj05wiNECWkRLF8I9aCBkKDg2PZGCLekuhhx6Z_OeTmzJqXpfi_ggBmTPaZCnNmLFvjV4n_0BJbSB7EjAqAhL_B6z3YA9YG-WlK0XUG6EJTi-zXOY4aCz8_OuTEFUKzwBixYuX0FZDkbx3RVjWFYMJJePym-3poNgI0fVqS8c_Hu9Gaz5zR2wu3x"/>
+</div>
+<div>
+<h4 class="font-title-md text-label-md leading-tight">Les Sacrements : Signes de Grace</h4>
+<span class="text-on-surface-variant text-[12px]">Père Antoine M.</span>
+</div>
+</div>
+<div class="glass-card p-3 rounded-xl flex gap-sm items-center border-t border-secondary">
+<div class="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A detailed view of a priest's hands holding a silver chalice during a liturgical ceremony. The lighting is high-key and pristine, creating a bright and modern light-mode aesthetic that feels like a digital sanctuary. The overall mood is respectful, transcendent, and profoundly welcoming." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjAawT_haC0kvc2WSwGPeTPb4pNVlKB3zlmenL2v_NvsX3bHUiarh-nCkXZ9_xtkrm13OPE5VEey62Nmct90E8F7kOa_KW19LvOnFFPa3FDo6AAGuhMiuTYoBVRZZxGGGo9B927yY6Is59mRgmi7QzxAO4loOGhvnfEdPuIkaVOIGWEy8gCTXazr8uC1MZ0JZevPMmLCwjz6r_axrwSFncXXYxHon6aRKPB6sk5Tti_bRfnT-yQCUlYtmX2he5d8jK7821CoA1xp12"/>
+</div>
+<div>
+<h4 class="font-title-md text-label-md leading-tight">Liturgie et Vie Chrétienne</h4>
+<span class="text-on-surface-variant text-[12px]">Sœur Marie-Cécile</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Theological Modules (High Contrast List) -->
+<section class="space-y-sm">
+<h3 class="font-title-md text-title-md text-primary">Modules Théologiques</h3>
+<div class="space-y-xs">
+<div class="flex items-center justify-between p-4 bg-white border border-outline-variant/30 rounded-lg liturgical-stripe-ordinary hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-md">
+<div class="bg-primary-container text-white w-10 h-10 rounded-full flex items-center justify-center font-bold">1</div>
+<div>
+<h4 class="font-label-md text-label-md">Fondements de la Foi</h4>
+<p class="text-on-surface-variant text-[12px]">15 leçons • 80% complété</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-white border border-outline-variant/30 rounded-lg liturgical-stripe-ordinary hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-md">
+<div class="bg-surface-container-highest text-on-surface w-10 h-10 rounded-full flex items-center justify-center font-bold">2</div>
+<div>
+<h4 class="font-label-md text-label-md">Histoire de l'Église au Congo</h4>
+<p class="text-on-surface-variant text-[12px]">8 leçons • Nouveau</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="lock">lock</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-white border border-outline-variant/30 rounded-lg liturgical-stripe-ordinary opacity-70">
+<div class="flex items-center gap-md">
+<div class="bg-surface-container-highest text-on-surface w-10 h-10 rounded-full flex items-center justify-center font-bold">3</div>
+<div>
+<h4 class="font-label-md text-label-md">Doctrine Sociale de l'Église</h4>
+<p class="text-on-surface-variant text-[12px]">12 leçons • À venir</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="lock">lock</span>
+</div>
+</div>
+</section>
+<!-- Instructor Profiles (Horizontal Scroll) -->
+<section class="space-y-sm">
+<h3 class="font-title-md text-title-md text-primary">Nos Formateurs</h3>
+<div class="flex gap-md overflow-x-auto pb-4 custom-scrollbar snap-x">
+<div class="flex-shrink-0 w-32 flex flex-col items-center gap-xs snap-center">
+<div class="w-24 h-24 rounded-full border-2 border-secondary p-1">
+<img class="w-full h-full object-cover rounded-full" data-alt="A professional headshot of a smiling Congolese priest in traditional clerical clothing, standing against a soft, bright architectural background. The lighting is clean and professional, using a corporate modern aesthetic that emphasizes approachability and wisdom within the digital sanctuary." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCr2mYfjrR05jd5Zl6UkGS2XUVEiyWugq98f-JCt-qspbWuRhUajppPOxM-GIw4exc1GY-t5JrWTeLXiSUE9o42h03CFlm9zT5B985jeaMlgGXCG0euRVEOYiwfNJ1--Xp03ScHcrxw6Rz2SqvN-fZbx7jkiXAzbqKDKs_5QK_IXdGmAXhvtqXHuI7UUqxZ4shsd573czYROeFFQQ3q0jdbJtf9i_lqwF1dEmSlLyIVQ82LsoZ8LVBU2n6no-5T90p3hKrNAYwBxXkL"/>
+</div>
+<div class="text-center">
+<p class="font-label-md text-[13px] leading-tight">Mgr. Fulgence</p>
+<p class="text-[11px] text-secondary">Écriture Sainte</p>
+</div>
+</div>
+<div class="flex-shrink-0 w-32 flex flex-col items-center gap-xs snap-center">
+<div class="w-24 h-24 rounded-full border-2 border-primary-fixed p-1">
+<img class="w-full h-full object-cover rounded-full" data-alt="A portrait of a serene female catechist with a gentle expression, wearing modern modest clothing. The background is a minimalist, brightly lit room that creates a sense of peace and orderly learning. The visual style is transcendent and welcoming, reflecting the brand's personality of illuminating spiritual growth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCx-SPaiOmi3qYiBQz8VkS5XYm2n9S1htvHB9qEGMAvHMuxiSTH6N0ZbheN4CUi7kfG7G395TpBFBKY5ov7HEnXQDuov_wNKJw-bHxB32NZIlOfMZ07OoXvZAl7B3pj-0bCA5dKrUY83aG49Ci-2p0kc3yXfgUJKAo5DdB3HWkIH2qZW5Cz8DTSgfZEQkjitxP1UHEXybCXFxqmIfljMxY5G7Dwul_GY5j_nKktpUlxChiPIohO6xDXmtuTmbb6SZyYzRHLcr4u__EU"/>
+</div>
+<div class="text-center">
+<p class="font-label-md text-[13px] leading-tight">Mme. Therèse</p>
+<p class="text-[11px] text-secondary">Catéchèse</p>
+</div>
+</div>
+<div class="flex-shrink-0 w-32 flex flex-col items-center gap-xs snap-center">
+<div class="w-24 h-24 rounded-full border-2 border-primary-fixed p-1">
+<img class="w-full h-full object-cover rounded-full" data-alt="A portrait of a dignified elder priest with grey hair, wearing a clerical collar. The lighting is high-contrast for clarity, emphasizing a look of deep experience and pastoral care. The color palette includes soft gold accents and marian blue, maintaining a liturgical accent within a modern UI context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0cVR_zb2D_eUJpjs578oHes8PSX5RJdHB7fPBZaQ7HB6xOElsn3HnlGfIjkwPb5b6YcisMr8Xp8uykccze9T5UV2ZDwRRBzRnKeA33RruTwXEJmNaBvudptcgdCLsxnbshBVxhY0Rs1GUzKeXnksQQn1zW3spqZLRfx48WLCzFiL9E2exj2Y0znHijU-D4xyJGezB11GB0d7cX0YoRWDqErdYHKJ0kUWWQBSpX7SYWda3sTsCbyDQLQ33yxI1Dhre-6dZBNbUjcv1"/>
+</div>
+<div class="text-center">
+<p class="font-label-md text-[13px] leading-tight">Père Bernard</p>
+<p class="text-[11px] text-secondary">Théologie Morale</p>
+</div>
+</div>
+<div class="flex-shrink-0 w-32 flex flex-col items-center gap-xs snap-center">
+<div class="w-24 h-24 rounded-full border-2 border-primary-fixed p-1">
+<img class="w-full h-full object-cover rounded-full" data-alt="A warm portrait of a young deacon in a bright outdoor setting near a church in Brazzaville. The bright sun creates high-contrast shadows that are handled with professional clarity. The mood is welcoming and energetic, balancing traditional weight with modern utility for the formation academy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaIk7kSoydj1LVBtdMJabR91i1kUcuIHPNpMpk6SXeVqPbY1Nb1LL1839PqctH4ALryYXSH7mCkytnNK2uojijDbrO4HXmtcPCT6gF_tBAExImurZjD_3dpTQB9_6epACfyuJlRcFoy-izRxsJiXW9kF6Q52JlXvd8NhC6Wdzn8ac7EZzLWGGvFu1bCL6-usqIwSDWLZ9lZNkhrbTwp0FnqfQDsnKP87RwiZiPBji6BZ6Bemas2gZXmkm8aDgZgPRDz1mmMRGimBOL"/>
+</div>
+<div class="text-center">
+<p class="font-label-md text-[13px] leading-tight">Diacre Jean</p>
+<p class="text-[11px] text-secondary">Service de Charité</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Upcoming Dates (Calendar/Webinar) -->
+<section class="space-y-sm">
+<h3 class="font-title-md text-title-md text-primary">Prochains Webinaires</h3>
+<div class="bg-surface-container-low rounded-xl p-sm space-y-sm">
+<div class="flex gap-md bg-white p-3 rounded-lg shadow-sm">
+<div class="flex flex-col items-center justify-center bg-primary-fixed/30 w-14 rounded-lg py-2">
+<span class="text-[12px] font-bold text-primary uppercase">Mar</span>
+<span class="text-headline-lg-mobile text-primary leading-none">15</span>
+</div>
+<div class="flex-1">
+<h4 class="font-label-md text-label-md">Le Rôle des Laïcs aujourd'hui</h4>
+<div class="flex items-center gap-xs text-on-surface-variant text-[12px] mt-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span>
+<span>18:30 - Zoom</span>
+</div>
+</div>
+<button class="self-center bg-primary text-white text-[12px] px-3 py-1 rounded-full font-bold active:scale-95 transition-transform">Inscrire</button>
+</div>
+<div class="flex gap-md bg-white p-3 rounded-lg shadow-sm border-l-2 border-secondary">
+<div class="flex flex-col items-center justify-center bg-secondary-container/30 w-14 rounded-lg py-2">
+<span class="text-[12px] font-bold text-secondary uppercase">Avr</span>
+<span class="text-headline-lg-mobile text-secondary leading-none">02</span>
+</div>
+<div class="flex-1">
+<h4 class="font-label-md text-label-md">Webinaire : Carême et Conversion</h4>
+<div class="flex items-center gap-xs text-on-surface-variant text-[12px] mt-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span>
+<span>19:00 - Live FB</span>
+</div>
+</div>
+<button class="self-center bg-primary text-white text-[12px] px-3 py-1 rounded-full font-bold active:scale-95 transition-transform">Inscrire</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-safe bg-surface dark:bg-surface-dim shadow-lg rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant pt-2 hover:bg-primary-container/10 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Accueil</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant pt-2 hover:bg-primary-container/10 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-label-md text-label-md">Liturgie</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant pt-2 hover:bg-primary-container/10 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+<span class="font-label-md text-label-md">Catéchisme</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-secondary-fixed-dim font-bold border-t-2 border-secondary pt-2 hover:bg-primary-container/10 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="auto_stories" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+<span class="font-label-md text-label-md">Formation</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant pt-2 hover:bg-primary-container/10 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profil</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for cards
+        document.querySelectorAll('.glass-card, .liturgical-stripe-ordinary').forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.style.transform = 'scale(0.98)';
+                card.style.transition = 'transform 0.15s ease';
+            });
+            card.addEventListener('touchend', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+
+        // Search functionality placeholder
+        const searchIcon = document.querySelector('[data-icon="notifications"]');
+        searchIcon.addEventListener('click', () => {
+            alert('Les notifications de l\'Académie seront bientôt disponibles.');
+        });
+    </script>
+</body></html>

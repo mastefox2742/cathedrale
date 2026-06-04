@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    function isStaff() {
+      return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'redacteur'];
+    }
+    function isActive() {
+      return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.actif == true;
+    }
+
+    // ── Profils utilisateurs ─────────────────────────────────────────────────
+    match /users/{uid} {
+      allow read:  if isAuth() && (request.auth.uid == uid || isAdmin());
+      allow write: if isAdmin() && isActive();
+      // Permet à l'utilisateur de lire son propre profil sans être admin
+      allow get:   if isAuth() && request.auth.uid == uid;
+    }
+
+    // ── Annonces ─────────────────────────────────────────────────────────────
+    match /annonces/{id} {
+      // Lecture publique des annonces publiées
+      allow read: if resource.data.publie == true || isStaff();
+      // Création / modification / suppression réservée au staff actif
+      allow create, update, delete: if isStaff() && isActive();
+    }
+
+    // ── Homélies ─────────────────────────────────────────────────────────────
+    match /homelies/{id} {
+      allow read: if resource.data.publie == true || isStaff();
+      allow create, update, delete: if isStaff() && isActive();
+    }
+
+    // ── Formations / Parcours ─────────────────────────────────────────────────
+    match /formations/{id} {
+      allow read: if true; // Publiques (filtrées par actif côté client)
+      allow create, update, delete: if isStaff() && isActive();
+    }
+
+    // ── Intentions de prière (Phase 3) ────────────────────────────────────────
+    match /intentions/{id} {
+      allow create: if true; // Tout le monde peut soumettre une intention
+      allow read, update, delete: if isAdmin() && isActive();
+    }
+  }
+}

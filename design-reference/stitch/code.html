@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Archidiocèse de Brazzaville</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .liturgical-stripe {
+            width: 4px;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .tap-highlight-transparent {
+            -webkit-tap-highlight-color: transparent;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.4s ease-out forwards;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#c5c5d3",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#3e4142",
+                        "background": "#fcf9f8",
+                        "tertiary": "#282b2c",
+                        "on-secondary-container": "#745c00",
+                        "on-tertiary-fixed": "#191c1d",
+                        "on-primary-fixed": "#00164e",
+                        "surface-variant": "#e5e2e1",
+                        "inverse-surface": "#313030",
+                        "secondary-fixed": "#ffe088",
+                        "primary-fixed": "#dce1ff",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#00236f",
+                        "secondary-container": "#fed65b",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#ebe7e7",
+                        "primary-container": "#1e3a8a",
+                        "surface-container-low": "#f6f3f2",
+                        "secondary": "#735c00",
+                        "on-surface": "#1c1b1b",
+                        "tertiary-fixed": "#e1e3e4",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-primary": "#ffffff",
+                        "on-background": "#1c1b1b",
+                        "surface-bright": "#fcf9f8",
+                        "on-surface-variant": "#444651",
+                        "surface-container": "#f0edec",
+                        "surface": "#fcf9f8",
+                        "surface-dim": "#dcd9d9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "auto",
+                        "base": "8px",
+                        "md": "24px",
+                        "lg": "40px",
+                        "sm": "12px",
+                        "xs": "4px",
+                        "margin-mobile": "20px",
+                        "gutter": "16px",
+                        "xl": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["EB Garamond"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["EB Garamond"],
+                        "body-md": ["Inter"],
+                        "title-md": ["EB Garamond"],
+                        "headline-lg": ["EB Garamond"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "title-md": ["22px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md selection:bg-secondary-container">
+<!-- Top AppBar -->
+<header class="w-full top-0 sticky bg-surface z-50 border-b border-primary/10">
+<div class="flex justify-between items-center w-full px-margin-mobile py-xs max-w-[720px] mx-auto">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="church">church</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">Archidiocèse de Brazzaville</h1>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-[720px] mx-auto pb-32">
+<!-- PWA Install Prompt (Sticky at top of content) -->
+<div class="m-margin-mobile p-sm bg-primary-container text-white rounded-lg flex items-center justify-between shadow-md" id="install-prompt">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-secondary-container" data-icon="install_mobile">install_mobile</span>
+<span class="font-label-md text-label-md">Installer l'application sur votre écran</span>
+</div>
+<button class="text-white opacity-80 hover:opacity-100" onclick="document.getElementById('install-prompt').remove()">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<!-- Featured News Banner (Asymmetric Layout) -->
+<section class="px-margin-mobile mt-sm">
+<div class="relative h-64 w-full rounded-xl overflow-hidden shadow-sm group">
+<img alt="Cathedral Sacré-Cœur" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A majestic low-angle shot of the Cathedral Sacré-Cœur in Brazzaville, showcasing its unique architectural details against a clear blue sky. The lighting is bright and warm, emphasizing the textures of the stone. The image feels sacred and peaceful, with deep blue and gold accents subtly integrated into the composition to reflect the diocese's colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD26vy5dOvscaXPVdI33Dnt0zNafdYhGPZpY3xjhyGQU5yu6gKiyX0Qdq69tY8tOkTxp8W4kJI63DL67qCvkMWxjVLPuH1QY4D9_BZhQruy_cThgzAniF4URCbSwH36ZjM0BL0x5XWGxGtOZ1M9bFutx8P_LcmvZ-9QqVyfJfcf8xcQA2gUrqPKfUzMasIzTlOj8AUwls-Mr648pq1eF5lbMOHZu7x93JOwzwpKlZcuRT59PMwA8yeQXZzSMZ4iP9B3SqWQyHMbiAjP"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 to-transparent"></div>
+<div class="absolute bottom-0 p-md">
+<span class="bg-secondary text-on-secondary px-xs py-1 rounded text-xs font-bold uppercase tracking-widest mb-xs inline-block">Actualité</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-white mb-xs">Messe Solennelle à la Cathédrale</h2>
+<p class="text-white/80 font-body-md">Célébration présidée par Monseigneur l'Archevêque ce dimanche à 10h.</p>
+</div>
+</div>
+</section>
+<!-- Quick Access Buttons -->
+<section class="grid grid-cols-3 gap-xs px-margin-mobile mt-md">
+<button class="flex flex-col items-center justify-center p-sm bg-white border border-primary/10 rounded-lg hover:bg-surface-container transition-all active:scale-95">
+<span class="material-symbols-outlined text-primary mb-xs" data-icon="live_tv">live_tv</span>
+<span class="font-label-md text-label-md text-primary">Messe Live</span>
+</button>
+<button class="flex flex-col items-center justify-center p-sm bg-white border border-primary/10 rounded-lg hover:bg-surface-container transition-all active:scale-95">
+<span class="material-symbols-outlined text-primary mb-xs" data-icon="self_improvement">self_improvement</span>
+<span class="font-label-md text-label-md text-primary">Confession</span>
+</button>
+<button class="flex flex-col items-center justify-center p-sm bg-white border border-primary/10 rounded-lg hover:bg-surface-container transition-all active:scale-95">
+<span class="material-symbols-outlined text-primary mb-xs" data-icon="location_on">location_on</span>
+<span class="font-label-md text-label-md text-primary">Paroisses</span>
+</button>
+</section>
+<!-- Daily Liturgy Section (AELF API Mockup) -->
+<section class="mt-lg px-margin-mobile">
+<div class="flex items-center justify-between mb-sm">
+<h3 class="font-title-md text-title-md text-primary">Lectures du Jour</h3>
+<span class="text-xs text-secondary font-bold uppercase tracking-wider">Temps Ordinaire</span>
+</div>
+<div class="space-y-sm">
+<!-- Liturgy Card -->
+<div class="bg-white rounded-lg p-md border border-primary/10 relative overflow-hidden shadow-sm">
+<div class="liturgical-stripe bg-green-600"></div>
+<div class="flex justify-between items-start mb-sm">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase">Première Lecture</p>
+<h4 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Livre des Rois (1 R 19)</h4>
+</div>
+<button class="text-primary opacity-60">
+<span class="material-symbols-outlined" data-icon="volume_up">volume_up</span>
+</button>
+</div>
+<p class="font-body-md text-on-surface line-clamp-3 leading-relaxed italic">
+                        "L’ange du Seigneur revint une deuxième fois, le toucha et dit : « Lève-toi, et mange ! Autrement le chemin serait trop long pour toi »..."
+                    </p>
+<button class="mt-md flex items-center gap-xs text-primary font-bold text-sm">
+                        Lire la suite <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<div class="bg-white rounded-lg p-md border border-primary/10 relative overflow-hidden shadow-sm opacity-80">
+<div class="liturgical-stripe bg-green-600"></div>
+<div class="flex justify-between items-center">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase">Psaume</p>
+<h4 class="font-title-md text-title-md text-primary">Psaume 33</h4>
+</div>
+<span class="material-symbols-outlined text-primary/40" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<div class="bg-white rounded-lg p-md border border-primary/10 relative overflow-hidden shadow-sm opacity-80">
+<div class="liturgical-stripe bg-green-600"></div>
+<div class="flex justify-between items-center">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase">Évangile</p>
+<h4 class="font-title-md text-title-md text-primary">Selon St Jean (Jn 6)</h4>
+</div>
+<span class="material-symbols-outlined text-primary/40" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Spiritual Reflection of the Day -->
+<section class="mt-lg px-margin-mobile">
+<div class="bg-primary text-white rounded-xl p-lg relative overflow-hidden">
+<!-- Golden Accent Border -->
+<div class="absolute top-0 left-0 w-full h-1 bg-[#D4AF37]"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-xs mb-sm">
+<span class="material-symbols-outlined text-secondary-container" data-icon="format_quote">format_quote</span>
+<h3 class="font-title-md text-title-md">Réflexion du Jour</h3>
+</div>
+<p class="font-headline-lg-mobile text-headline-lg-mobile mb-md leading-tight text-secondary-container">
+                        "La prière est le souffle de l'âme, elle nous permet d'écouter le silence de Dieu."
+                    </p>
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full border border-secondary-container overflow-hidden">
+<img alt="Abbé Pierre" class="w-full h-full object-cover" data-alt="A portrait of a serene African priest with a gentle smile, illuminated by soft natural light. The background is a blurred ecclesiastical interior. The priest is wearing a simple clerical collar. The image conveys wisdom, compassion, and a welcoming spirit in a modern digital style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdS3ccKw84VeN5kzxf6p_xYxoz3O1lT7gr5oYZSFWH0b8-E6XaljzhwzzLADyJPjEGvwP-UEL4--banKUEg1VQmTkvBDyx4wiUk1RN6u0UWVl50YjbpWa97V7hXxjbB8FOLXMUHHiEhsXWEqp97YYl-phbRJrHrfB7FI7E6mFHqj9cqZupQse90V345yIZAieazadi-pmb6sWXaU_d6BAv8OJEzFoe8inGQLHzbaOqmtx8g7wODU6FpJyu0hUKnboJ_RKhS7HMS3vN"/>
+</div>
+<div>
+<p class="font-label-md text-label-md">Abbé Pierre N.</p>
+<p class="text-xs opacity-70">Aumônier diocésain</p>
+</div>
+</div>
+</div>
+<!-- Background Pattern -->
+<div class="absolute -right-10 -bottom-10 opacity-10">
+<span class="material-symbols-outlined text-[120px]" data-icon="auto_awesome">auto_awesome</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-safe bg-surface border-t border-secondary/20 shadow-lg h-16 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-primary font-bold border-t-2 border-secondary pt-2 h-full w-full tap-highlight-transparent" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-md text-[10px]">Accueil</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 h-full w-full tap-highlight-transparent hover:bg-primary-container/10" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-label-md text-[10px]">Liturgie</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 h-full w-full tap-highlight-transparent hover:bg-primary-container/10" href="#">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+<span class="font-label-md text-[10px]">Catéchisme</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 h-full w-full tap-highlight-transparent hover:bg-primary-container/10" href="#">
+<span class="material-symbols-outlined" data-icon="auto_stories">auto_stories</span>
+<span class="font-label-md text-[10px]">Formation</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 h-full w-full tap-highlight-transparent hover:bg-primary-container/10" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-[10px]">Profil</span>
+</a>
+</nav>
+<!-- Floating Action Button (FAB) for Donating/Alms -->
+<button class="fixed bottom-20 right-margin-mobile w-14 h-14 bg-secondary-container text-on-secondary-fixed rounded-full shadow-xl flex items-center justify-center active:scale-95 transition-transform z-40 border-2 border-white">
+<span class="material-symbols-outlined" data-icon="volunteer_activism">volunteer_activism</span>
+</button>
+<script>
+        // Micro-interaction for scrolling
+        let lastScroll = 0;
+        const header = document.querySelector('header');
+        
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            if (currentScroll > lastScroll && currentScroll > 100) {
+                header.style.transform = 'translateY(-100%)';
+                header.style.transition = 'transform 0.3s ease';
+            } else {
+                header.style.transform = 'translateY(0)';
+            }
+            lastScroll = currentScroll;
+        });
+
+        // Basic PWA install prompt logic (UI only)
+        setTimeout(() => {
+            const prompt = document.getElementById('install-prompt');
+            if (prompt) {
+                prompt.classList.add('animate-slide-up');
+            }
+        }, 1500);
+    </script>
+</body></html>

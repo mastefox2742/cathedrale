@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
+
+/* ══════════════════════════════════════════════
+   SACRED LIGHT — Design System
+   Archidiocèse de Brazzaville
+══════════════════════════════════════════════ */
+:root {
+  /* ── Surface ── */
+  --surface:              #fcf9f8;
+  --surface-dim:          #dcd9d9;
+  --surface-bright:       #fcf9f8;
+  --surface-low:          #f6f3f2;
+  --surface-container:    #f0edec;
+  --surface-high:         #ebe7e7;
+  --surface-highest:      #e5e2e1;
+  --surface-lowest:       #ffffff;
+
+  /* ── On-surface ── */
+  --on-surface:           #1c1b1b;
+  --on-surface-variant:   #444651;
+  --outline:              #757682;
+  --outline-variant:      #c5c5d3;
+
+  /* ── Primary (Bleu Marial) ── */
+  --primary:              #00236f;
+  --primary-container:    #1e3a8a;
+  --on-primary:           #ffffff;
+  --on-primary-container: #90a8ff;
+  --primary-fixed:        #dce1ff;
+  --primary-fixed-dim:    #b6c4ff;
+  --inverse-primary:      #b6c4ff;
+  --surface-tint:         #4059aa;
+
+  /* ── Secondary (Or liturgique) ── */
+  --secondary:            #735c00;
+  --secondary-container:  #fed65b;
+  --on-secondary:         #ffffff;
+  --on-secondary-container: #745c00;
+  --secondary-fixed:      #ffe088;
+  --secondary-fixed-dim:  #e9c343;
+
+  /* ── Tertiary (Neutre sombre) ── */
+  --tertiary:             #282b2c;
+  --tertiary-container:   #3e4142;
+  --on-tertiary:          #ffffff;
+
+  /* ── Error ── */
+  --error:                #ba1a1a;
+  --on-error:             #ffffff;
+  --error-container:      #ffdad6;
+
+  /* ── Gold accent (décoratif) ── */
+  --gold-accent:          #D4AF37;
+
+  /* ── Couleurs liturgiques ── */
+  --liturgy-green:  #2e7d32;
+  --liturgy-purple: #6a1b9a;
+  --liturgy-red:    #c62828;
+  --liturgy-white:  #90a4ae;
+  --liturgy-gold:   #f9a825;
+  --liturgy-rose:   #e91e8c;
+
+  /* ── Typographie ── */
+  --font-serif: 'EB Garamond', 'Georgia', serif;
+  --font-sans:  'Inter', system-ui, sans-serif;
+
+  /* ── Shadows (légères — lisibilité soleil) ── */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:  0 4px 12px rgba(0,35,111,.08);
+  --shadow-lg:  0 8px 24px rgba(0,35,111,.12);
+  --shadow-xl:  0 16px 40px rgba(0,35,111,.14);
+
+  /* ── Spacing (grille 8px) ── */
+  --space-xs:  4px;
+  --space-sm:  12px;
+  --space-md:  24px;
+  --space-lg:  40px;
+  --space-xl:  64px;
+  --gutter:    16px;
+  --margin:    20px;
+
+  /* ── Radii ── */
+  --r-sm: 0.25rem;
+  --r:    0.5rem;
+  --r-md: 0.75rem;
+  --r-lg: 1rem;
+  --r-xl: 1.5rem;
+  --r-full: 9999px;
+
+  /* ── Transitions ── */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.0, 0, 0.2, 1);
+}

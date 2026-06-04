@@ -1,0 +1,225 @@
+@import './styles/tokens.css';
+@import 'tailwindcss';
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--surface);
+  color: var(--on-surface);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+}
+
+#root { min-height: 100dvh; }
+
+/* ── Typography tokens ── */
+.font-serif  { font-family: var(--font-serif); }
+.font-sans   { font-family: var(--font-sans); }
+
+.text-display-lg {
+  font-family: var(--font-serif);
+  font-size: 48px; line-height: 56px;
+  font-weight: 600; letter-spacing: -0.01em;
+}
+.text-headline-lg {
+  font-family: var(--font-serif);
+  font-size: 32px; line-height: 40px; font-weight: 600;
+}
+.text-headline-mobile {
+  font-family: var(--font-serif);
+  font-size: 28px; line-height: 34px; font-weight: 600;
+}
+.text-title-md {
+  font-family: var(--font-serif);
+  font-size: 22px; line-height: 28px; font-weight: 500;
+}
+.text-body-lg {
+  font-family: var(--font-sans);
+  font-size: 18px; line-height: 28px; font-weight: 400;
+}
+.text-body-md {
+  font-family: var(--font-sans);
+  font-size: 16px; line-height: 24px; font-weight: 400;
+}
+.text-label-md {
+  font-family: var(--font-sans);
+  font-size: 14px; line-height: 20px;
+  font-weight: 600; letter-spacing: 0.05em;
+}
+.text-label-sm {
+  font-family: var(--font-sans);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Bande liturgique sur les cartes ── */
+.liturgical-stripe {
+  position: absolute; left: 0; top: 0;
+  width: 4px; height: 100%;
+  border-radius: 2px 0 0 2px;
+}
+.stripe-green  { background: var(--liturgy-green); }
+.stripe-purple { background: var(--liturgy-purple); }
+.stripe-red    { background: var(--liturgy-red); }
+.stripe-white  { background: var(--liturgy-white); }
+.stripe-gold   { background: var(--liturgy-gold); }
+
+/* ── Bande d'or en haut d'une card (actif/featured) ── */
+.gold-top-border::before {
+  content: ''; display: block;
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold-accent), #f0d060, var(--gold-accent));
+}
+
+/* ── Glass card ── */
+.glass-card {
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,35,111,0.08);
+}
+
+/* ── Animations ── */
+@keyframes progress-bar {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-slide-up { animation: slideUp 0.4s var(--ease-out) both; }
+.animate-fade-in  { animation: fadeIn  0.3s ease both; }
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.10s; }
+.delay-3 { animation-delay: 0.15s; }
+.delay-4 { animation-delay: 0.20s; }
+.delay-5 { animation-delay: 0.25s; }
+
+/* ── Tap highlight ── */
+.tap-none { -webkit-tap-highlight-color: transparent; }
+
+/* ════════════════════════════════════════
+   DESKTOP RESPONSIVE (≥ 1024px)
+════════════════════════════════════════ */
+@media (min-width: 1024px) {
+  /* Scale up base font */
+  html { font-size: 17px; }
+
+  /* Contenu principal desktop — plus large, respire */
+  .page-content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 48px 80px;
+  }
+
+  /* Titres plus grands */
+  .text-display-lg  { font-size: 56px; line-height: 64px; }
+  .text-headline-lg { font-size: 40px; line-height: 48px; }
+  .text-headline-mobile { font-size: 34px; line-height: 42px; }
+  .text-title-md    { font-size: 26px; line-height: 34px; }
+  .text-body-lg     { font-size: 20px; line-height: 32px; }
+  .text-body-md     { font-size: 17px; line-height: 28px; }
+
+  /* Grilles 2 colonnes par défaut sur desktop */
+  .desktop-grid-2 { display: grid !important; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .desktop-grid-3 { display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .desktop-grid-4 { display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+  /* Cards plus grandes */
+  .card { border-radius: 16px; }
+
+  /* Padding pages */
+  .page-margin { padding: 0 48px; }
+  .page-section { margin-bottom: 56px; }
+
+  /* Hero image desktop */
+  .hero-banner { height: 420px !important; border-radius: 20px !important; }
+
+  /* Boutons plus grands */
+  .btn-primary { padding: 14px 28px; font-size: 16px; border-radius: 10px; }
+  .btn-outline  { padding: 13px 28px; font-size: 16px; border-radius: 10px; }
+
+  /* Chips */
+  .chip { padding: 8px 20px; font-size: 15px; }
+}
+
+@media (min-width: 1280px) {
+  .page-content { max-width: 1100px; padding: 48px 56px 80px; }
+  .desktop-grid-3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── No scrollbar ── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Scrollbar globale (subtile) ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--surface-container); }
+::-webkit-scrollbar-thumb { background: var(--outline-variant); border-radius: 99px; }
+
+/* ── Selection ── */
+::selection { background: var(--secondary-container); color: var(--on-secondary-container); }
+
+/* ── Boutons Material ── */
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 24px; border-radius: var(--r);
+  background: var(--primary); color: var(--on-primary);
+  font-family: var(--font-sans); font-size: 14px; font-weight: 600;
+  letter-spacing: 0.02em; border: none; cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary:hover { background: var(--primary-container); }
+.btn-primary:active { transform: scale(0.97); }
+
+.btn-outline {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 24px; border-radius: var(--r);
+  background: transparent; color: var(--primary);
+  border: 1.5px solid rgba(0,35,111,0.3);
+  font-family: var(--font-sans); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s, transform 0.1s;
+}
+.btn-outline:hover { background: rgba(0,35,111,0.05); }
+.btn-outline:active { transform: scale(0.97); }
+
+/* ── Cards ── */
+.card {
+  background: white;
+  border: 1px solid rgba(0,35,111,0.08);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  position: relative;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.card:hover { box-shadow: var(--shadow-md); }
+.card-interactive:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+/* ── Chips (filtres) ── */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 16px; border-radius: var(--r-full);
+  font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  border: 1px solid var(--outline-variant);
+  background: white; color: var(--on-surface-variant);
+}
+.chip:hover { background: var(--surface-container); }
+.chip.active {
+  background: var(--primary); color: white;
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
