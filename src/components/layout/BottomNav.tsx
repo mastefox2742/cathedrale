@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 const TABS = [
   { to: '/',           icon: 'home',        label: 'Accueil'  },
@@ -10,6 +10,7 @@ const TABS = [
 
 export function BottomNav() {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
 
   return (
     <>
@@ -67,7 +68,7 @@ export function BottomNav() {
       </nav>
 
       {/* FAB — Don */}
-      <button style={{
+      <button onClick={() => navigate('/dons')} style={{
         position: 'fixed', bottom: 90, right: 20,
         width: 52, height: 52,
         borderRadius: 'var(--r-full)',

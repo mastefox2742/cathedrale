@@ -7,7 +7,9 @@ const NAV = [
   { to: '/evenements',      icon: 'live_tv',      label: 'Médias & Lives' },
   { to: '/catechese',       icon: 'school',       label: 'Catéchèse' },
   { to: '/vie-spirituelle', icon: 'self_improvement', label: 'Formation' },
-  { to: '/horaires',        icon: 'location_on',  label: 'Horaires & Contact' },
+  { to: '/horaires',        icon: 'location_on',      label: 'Horaires & Contact' },
+  { to: '/abonnements',    icon: 'notifications',    label: 'S\'abonner' },
+  { to: '/dons',           icon: 'volunteer_activism', label: 'Don & Offrande' },
 ]
 
 export function SideNav() {

@@ -14,6 +14,8 @@ const CatechesePage     = lazy(() => import('./pages/CatechesePage').then(m => (
 const CoursPage         = lazy(() => import('./pages/CoursPage').then(m => ({ default: m.CoursPage })))
 const VieSpirituellePage = lazy(() => import('./pages/VieSpiritellePage').then(m => ({ default: m.VieSpirituellePage })))
 const HorairesPage      = lazy(() => import('./pages/HorairesPage').then(m => ({ default: m.HorairesPage })))
+const AbonnementsPage   = lazy(() => import('./pages/AbonnementsPage').then(m => ({ default: m.AbonnementsPage })))
+const DonsPage          = lazy(() => import('./pages/DonsPage').then(m => ({ default: m.DonsPage })))
 
 // Pages admin (chunk séparé)
 const LoginPage               = lazy(() => import('./pages/admin/LoginPage').then(m => ({ default: m.LoginPage })))
@@ -62,7 +64,9 @@ export default function App() {
         <Route path="/catechese"          element={<Layout><Wrap><CatechesePage /></Wrap></Layout>} />
         <Route path="/catechese/:coursId" element={<Layout><Wrap><CoursPage /></Wrap></Layout>} />
         <Route path="/vie-spirituelle"    element={<Layout><Wrap><VieSpirituellePage /></Wrap></Layout>} />
-        <Route path="/horaires"           element={<Layout><Wrap><HorairesPage /></Wrap></Layout>} />
+        <Route path="/horaires"            element={<Layout><Wrap><HorairesPage /></Wrap></Layout>} />
+        <Route path="/abonnements"         element={<Layout><Wrap><AbonnementsPage /></Wrap></Layout>} />
+        <Route path="/dons"                element={<Layout><Wrap><DonsPage /></Wrap></Layout>} />
 
         {/* ── Admin ── */}
         <Route path="/admin/login" element={<Wrap><LoginPage /></Wrap>} />
