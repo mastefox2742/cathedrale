@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 
 const MESSES = [
   { jour: 'Lundi – Vendredi', horaires: ['07h00', '18h30'], stripe: 'var(--liturgy-green)' },
