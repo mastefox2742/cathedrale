@@ -21,6 +21,7 @@ import { AdminHomeliesPage } from './pages/admin/AdminHomeliesPage'
 import { AdminFormationsPage } from './pages/admin/AdminFormationsPage'
 import { AdminMediasPage } from './pages/admin/AdminMediasPage'
 import { AdminEvenementsPage } from './pages/admin/AdminEvenementsPage'
+import { AdminCatechismePage } from './pages/admin/AdminCatechismePage'
 
 export default function App() {
   return (
@@ -67,6 +68,11 @@ export default function App() {
         <Route path="/admin/evenements" element={
           <AdminGuard>
             <AdminLayout><AdminEvenementsPage /></AdminLayout>
+          </AdminGuard>
+        } />
+        <Route path="/admin/catechisme" element={
+          <AdminGuard>
+            <AdminLayout><AdminCatechismePage /></AdminLayout>
           </AdminGuard>
         } />
 

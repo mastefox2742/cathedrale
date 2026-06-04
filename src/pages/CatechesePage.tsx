@@ -1,48 +1,25 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-
-const PARCOURS = [
-  {
-    num: '01', titre: 'Éveil à la Foi', tranche: '6 – 8 ans',
-    desc: 'Découverte de Dieu, de Jésus et de l\'Église via histoires bibliques et prières adaptées.',
-    modules: 8, accent: 'var(--liturgy-green)',
-    icon: 'emoji_nature',
-    coursId: 'eveil-a-la-foi',
-    disponible: true,
-  },
-  {
-    num: '02', titre: 'Première Communion', tranche: '8 – 10 ans',
-    desc: 'Préparation aux sacrements de la Réconciliation et de l\'Eucharistie.',
-    modules: 18, accent: 'var(--primary)',
-    icon: 'local_dining',
-    coursId: null,
-    disponible: false,
-  },
-  {
-    num: '03', titre: 'Confirmation', tranche: '12 – 15 ans',
-    desc: 'Approfondissement des dons du Saint-Esprit et de la vie chrétienne.',
-    modules: 24, accent: 'var(--liturgy-red)',
-    icon: 'whatshot',
-    coursId: null,
-    disponible: false,
-  },
-  {
-    num: '04', titre: 'RICA — Adultes', tranche: 'Tout âge',
-    desc: 'Catéchuménat pour adultes non baptisés, parcours progressif jusqu\'aux sacrements.',
-    modules: 36, accent: 'var(--secondary)',
-    icon: 'water_drop',
-    coursId: null,
-    disponible: false,
-  },
-]
+import { getCours, type Cours } from '../services/catechisme'
 
 const STATS = [
-  { label: 'Catéchistes', value: '48+', icon: 'groups' },
+  { label: 'Catéchistes',      value: '48+',  icon: 'groups' },
   { label: 'Enfants inscrits', value: '320+', icon: 'child_care' },
-  { label: 'Modules', value: '90+', icon: 'book' },
-  { label: 'Certifiés 2025-26', value: '85', icon: 'workspace_premium' },
+  { label: 'Modules',          value: '90+',  icon: 'book' },
+  { label: 'Certifiés 2025-26',value: '85',   icon: 'workspace_premium' },
 ]
 
 export function CatechesePage() {
+  const [cours, setCours] = useState<Cours[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getCours()
+      .then(setCours)
+      .catch(() => setCours([]))
+      .finally(() => setLoading(false))
+  }, [])
+
   return (
     <div style={{ padding: '0 var(--margin) var(--space-lg)' }}>
 
@@ -72,70 +49,73 @@ export function CatechesePage() {
         ))}
       </div>
 
-      {/* ── Parcours ── */}
+      {/* ── Parcours depuis Firestore ── */}
       <h2 className="text-title-md" style={{ color: 'var(--primary)', marginBottom: 'var(--space-sm)' }}>Nos parcours</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 'var(--space-lg)' }}>
-        {PARCOURS.map((p, i) => (
-          <div
-            key={p.num}
-            className={`card card-interactive animate-slide-up`}
-            style={{
-              padding: 'var(--space-md)',
-              borderLeft: `4px solid ${p.accent}`,
-              animationDelay: `${i * 60}ms`,
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{ display: 'flex', gap: 'var(--space-md)', alignItems: 'flex-start' }}>
-              <div style={{
-                width: 48, height: 48, borderRadius: 'var(--r-lg)',
-                background: `${p.accent}18`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-              }}>
-                <span className="material-symbols-outlined" style={{ color: p.accent, fontSize: 24, fontVariationSettings: "'FILL' 1" }}>{p.icon}</span>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-                  <h3 className="text-title-md" style={{ color: 'var(--primary)', fontSize: 18 }}>{p.titre}</h3>
-                  <span style={{
-                    fontSize: 11, fontWeight: 600, color: p.accent,
-                    background: `${p.accent}14`, padding: '3px 8px',
-                    borderRadius: 'var(--r-full)', whiteSpace: 'nowrap', marginLeft: 8,
-                  }}>{p.tranche}</span>
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: 40 }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 36, color: 'var(--primary)' }}>hourglass_top</span>
+        </div>
+      ) : cours.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: 40, color: 'var(--on-surface-variant)' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--outline)' }}>school</span>
+          <p style={{ marginTop: 8 }}>Les parcours seront disponibles prochainement.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 'var(--space-lg)' }}>
+          {cours.map((p, i) => (
+            <div
+              key={p.id}
+              className="card card-interactive animate-slide-up"
+              style={{
+                padding: 'var(--space-md)',
+                borderLeft: `4px solid ${p.couleur}`,
+                animationDelay: `${i * 60}ms`,
+              }}
+            >
+              <div style={{ display: 'flex', gap: 'var(--space-md)', alignItems: 'flex-start' }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 'var(--r-lg)',
+                  background: `${p.couleur}18`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0, fontSize: 26,
+                }}>
+                  {p.emoji}
                 </div>
-                <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', fontSize: 14, lineHeight: 1.55, marginBottom: 12 }}>{p.desc}</p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>
-                    <span style={{ fontWeight: 600, color: 'var(--on-surface)' }}>{p.modules}</span> modules
-                  </span>
-                  {p.disponible && p.coursId ? (
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                    <h3 className="text-title-md" style={{ color: 'var(--primary)', fontSize: 18 }}>{p.titre}</h3>
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, color: p.couleur,
+                      background: `${p.couleur}14`, padding: '3px 8px',
+                      borderRadius: 'var(--r-full)', whiteSpace: 'nowrap', marginLeft: 8,
+                    }}>{p.tranche}</span>
+                  </div>
+                  <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', fontSize: 14, lineHeight: 1.55, marginBottom: 12 }}>
+                    {p.description}
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--on-surface)' }}>{p.totalModules}</span> modules
+                    </span>
                     <Link
-                      to={`/catechese/${p.coursId}`}
+                      to={`/catechese/${p.id}`}
                       style={{
                         padding: '6px 16px', fontSize: 13, borderRadius: 'var(--r-md)',
-                        background: p.accent, color: 'white', textDecoration: 'none',
+                        background: p.couleur, color: 'white', textDecoration: 'none',
                         fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6,
                       }}
                     >
                       <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
                       Commencer
                     </Link>
-                  ) : (
-                    <span style={{
-                      padding: '6px 14px', fontSize: 12, borderRadius: 'var(--r-full)',
-                      background: 'var(--surface-container)', color: 'var(--on-surface-variant)',
-                      fontWeight: 600,
-                    }}>
-                      Bientôt disponible
-                    </span>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* ── CTA contact ── */}
       <div style={{

@@ -7,6 +7,7 @@ const NAV = [
   { to: '/admin/annonces',    icon: 'campaign',           label: 'Annonces' },
   { to: '/admin/homelies',    icon: 'record_voice_over',  label: 'Homélies' },
   { to: '/admin/formations',  icon: 'school',             label: 'Formations' },
+  { to: '/admin/catechisme',  icon: 'school',             label: 'Catéchisme' },
   { to: '/admin/evenements',  icon: 'live_tv',            label: 'Médias & Lives' },
   { to: '/admin/medias',      icon: 'perm_media',         label: 'Médiathèque' },
 ]
