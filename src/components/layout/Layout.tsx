@@ -4,6 +4,7 @@ import { BottomNav } from './BottomNav'
 import { SideNav } from './SideNav'
 import { InstallPrompt } from '../pwa/InstallPrompt'
 import { OfflineBanner } from '../pwa/OfflineBanner'
+import { NotificationPrompt } from '../pwa/NotificationPrompt'
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
@@ -29,6 +30,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
       <OfflineBanner />
       <InstallPrompt />
+      <NotificationPrompt />
 
       <style>{`
         @media (min-width: 1024px) {
