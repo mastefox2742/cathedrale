@@ -9,6 +9,7 @@ import { LiturgiePage } from './pages/LiturgiePage'
 import { AnnoncesPage } from './pages/AnnoncesPage'
 import { EvenementsPage } from './pages/EvenementsPage'
 import { CatechesePage } from './pages/CatechesePage'
+import { CoursPage } from './pages/CoursPage'
 import { VieSpirituellePage } from './pages/VieSpiritellePage'
 import { HorairesPage } from './pages/HorairesPage'
 
@@ -31,7 +32,8 @@ export default function App() {
         <Route path="/liturgie"        element={<Layout><LiturgiePage /></Layout>} />
         <Route path="/annonces"        element={<Layout><AnnoncesPage /></Layout>} />
         <Route path="/evenements"      element={<Layout><EvenementsPage /></Layout>} />
-        <Route path="/catechese"       element={<Layout><CatechesePage /></Layout>} />
+        <Route path="/catechese"           element={<Layout><CatechesePage /></Layout>} />
+        <Route path="/catechese/:coursId"  element={<Layout><CoursPage /></Layout>} />
         <Route path="/vie-spirituelle" element={<Layout><VieSpirituellePage /></Layout>} />
         <Route path="/horaires"        element={<Layout><HorairesPage /></Layout>} />
 

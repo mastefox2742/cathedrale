@@ -4,26 +4,34 @@ const PARCOURS = [
   {
     num: '01', titre: 'Éveil à la Foi', tranche: '6 – 8 ans',
     desc: 'Découverte de Dieu, de Jésus et de l\'Église via histoires bibliques et prières adaptées.',
-    modules: 12, accent: 'var(--liturgy-green)',
+    modules: 8, accent: 'var(--liturgy-green)',
     icon: 'emoji_nature',
+    coursId: 'eveil-a-la-foi',
+    disponible: true,
   },
   {
     num: '02', titre: 'Première Communion', tranche: '8 – 10 ans',
     desc: 'Préparation aux sacrements de la Réconciliation et de l\'Eucharistie.',
     modules: 18, accent: 'var(--primary)',
     icon: 'local_dining',
+    coursId: null,
+    disponible: false,
   },
   {
     num: '03', titre: 'Confirmation', tranche: '12 – 15 ans',
     desc: 'Approfondissement des dons du Saint-Esprit et de la vie chrétienne.',
     modules: 24, accent: 'var(--liturgy-red)',
     icon: 'whatshot',
+    coursId: null,
+    disponible: false,
   },
   {
     num: '04', titre: 'RICA — Adultes', tranche: 'Tout âge',
     desc: 'Catéchuménat pour adultes non baptisés, parcours progressif jusqu\'aux sacrements.',
     modules: 36, accent: 'var(--secondary)',
     icon: 'water_drop',
+    coursId: null,
+    disponible: false,
   },
 ]
 
@@ -101,9 +109,27 @@ export function CatechesePage() {
                   <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>
                     <span style={{ fontWeight: 600, color: 'var(--on-surface)' }}>{p.modules}</span> modules
                   </span>
-                  <button className="btn-primary" style={{ padding: '6px 16px', fontSize: 13 }}>
-                    S'inscrire
-                  </button>
+                  {p.disponible && p.coursId ? (
+                    <Link
+                      to={`/catechese/${p.coursId}`}
+                      style={{
+                        padding: '6px 16px', fontSize: 13, borderRadius: 'var(--r-md)',
+                        background: p.accent, color: 'white', textDecoration: 'none',
+                        fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6,
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
+                      Commencer
+                    </Link>
+                  ) : (
+                    <span style={{
+                      padding: '6px 14px', fontSize: 12, borderRadius: 'var(--r-full)',
+                      background: 'var(--surface-container)', color: 'var(--on-surface-variant)',
+                      fontWeight: 600,
+                    }}>
+                      Bientôt disponible
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
