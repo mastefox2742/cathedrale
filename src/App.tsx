@@ -11,7 +11,6 @@ import { EvenementsPage } from './pages/EvenementsPage'
 import { CatechesePage } from './pages/CatechesePage'
 import { VieSpirituellePage } from './pages/VieSpiritellePage'
 import { HorairesPage } from './pages/HorairesPage'
-import { ProfilPage } from './pages/ProfilPage'
 
 // Pages admin
 import { LoginPage } from './pages/admin/LoginPage'
@@ -35,7 +34,6 @@ export default function App() {
         <Route path="/catechese"       element={<Layout><CatechesePage /></Layout>} />
         <Route path="/vie-spirituelle" element={<Layout><VieSpirituellePage /></Layout>} />
         <Route path="/horaires"        element={<Layout><HorairesPage /></Layout>} />
-        <Route path="/profil"          element={<Layout><ProfilPage /></Layout>} />
 
         {/* ── Admin ── */}
         <Route path="/admin/login" element={<LoginPage />} />

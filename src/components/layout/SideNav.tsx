@@ -8,7 +8,6 @@ const NAV = [
   { to: '/catechese',       icon: 'school',       label: 'Catéchèse' },
   { to: '/vie-spirituelle', icon: 'self_improvement', label: 'Formation' },
   { to: '/horaires',        icon: 'location_on',  label: 'Horaires & Contact' },
-  { to: '/profil',          icon: 'person',       label: 'Mon profil' },
 ]
 
 export function SideNav() {

@@ -3,9 +3,9 @@ import { NavLink, useLocation } from 'react-router-dom'
 const TABS = [
   { to: '/',           icon: 'home',        label: 'Accueil'  },
   { to: '/liturgie',   icon: 'menu_book',   label: 'Liturgie' },
-  { to: '/evenements', icon: 'live_tv',  label: 'Médias'  },
-  { to: '/catechese',  icon: 'school',   label: 'Catéchèse' },
-  { to: '/profil',     icon: 'person',   label: 'Profil'  },
+  { to: '/evenements', icon: 'live_tv',      label: 'Médias'   },
+  { to: '/catechese',  icon: 'school',       label: 'Catéchèse'},
+  { to: '/horaires',   icon: 'location_on',  label: 'Contact'  },
 ]
 
 export function BottomNav() {
