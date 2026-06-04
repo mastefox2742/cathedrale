@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 
 /**
  * Wrapper commun pour toutes les pages.

@@ -242,7 +242,7 @@ function Carousel({ items }: { items: Annonce[] }) {
 }
 
 // ── Carte annonce simple ──────────────────────────────────────────────────────
-function AnnonceCard({ d, m, titre, desc, tag, icon, delay }: Annonce & { delay: number }) {
+function AnnonceCard({ d, m, titre, desc, tag, delay }: Omit<Annonce, 'icon'> & { icon?: string; delay: number }) {
   const color = TAG_COLORS[tag] || 'var(--primary)'
   return (
     <div

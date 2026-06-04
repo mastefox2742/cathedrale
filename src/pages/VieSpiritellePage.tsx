@@ -68,7 +68,7 @@ const WEBINAIRES = [
 
 /* ── composant principal ── */
 export function VieSpirituellePage() {
-  const [tab, setTab] = useState<'modules' | 'videos'>('modules')
+  const [_tab, _setTab] = useState<'modules' | 'videos'>('modules')
 
   return (
     <div style={{ paddingBottom: 8 }}>

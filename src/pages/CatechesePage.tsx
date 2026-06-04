@@ -1,8 +1,5 @@
-import { PageWrapper } from '../components/layout/PageWrapper'
-import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-const TABS = ['Inscription', 'Niveaux', 'Catéchistes']
 const PARCOURS = [
   {
     num: '01', titre: 'Éveil à la Foi', tranche: '6 – 8 ans',

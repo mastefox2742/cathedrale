@@ -1,4 +1,3 @@
-import { PageWrapper } from '../components/layout/PageWrapper'
 import { Link } from 'react-router-dom'
 
 const MESSES = [

@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { TopBar } from './TopBar'
 import { BottomNav } from './BottomNav'
 import { SideNav } from './SideNav'

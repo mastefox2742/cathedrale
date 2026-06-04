@@ -1,4 +1,3 @@
-import { PageWrapper } from '../components/layout/PageWrapper'
 export function ProfilPage() {
   return (
     <div style={{ padding: '0 var(--margin) var(--space-lg)' }}>
