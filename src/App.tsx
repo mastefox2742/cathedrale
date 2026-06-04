@@ -7,6 +7,8 @@ import { AdminGuard } from './components/admin/AdminGuard'
 import { HomePage } from './pages/HomePage'
 import { LiturgiePage } from './pages/LiturgiePage'
 import { AnnoncesPage } from './pages/AnnoncesPage'
+import { EvenementsPage } from './pages/EvenementsPage'
+import { BiblePage } from './pages/BiblePage'
 import { CatechesePage } from './pages/CatechesePage'
 import { VieSpirituellePage } from './pages/VieSpiritellePage'
 import { HorairesPage } from './pages/HorairesPage'
@@ -19,6 +21,7 @@ import { AdminAnnoncesPage } from './pages/admin/AdminAnnoncesPage'
 import { AdminHomeliesPage } from './pages/admin/AdminHomeliesPage'
 import { AdminFormationsPage } from './pages/admin/AdminFormationsPage'
 import { AdminMediasPage } from './pages/admin/AdminMediasPage'
+import { AdminEvenementsPage } from './pages/admin/AdminEvenementsPage'
 
 export default function App() {
   return (
@@ -29,6 +32,8 @@ export default function App() {
         <Route path="/" element={<Layout><HomePage /></Layout>} />
         <Route path="/liturgie"        element={<Layout><LiturgiePage /></Layout>} />
         <Route path="/annonces"        element={<Layout><AnnoncesPage /></Layout>} />
+        <Route path="/evenements"      element={<Layout><EvenementsPage /></Layout>} />
+        <Route path="/bible"           element={<Layout><BiblePage /></Layout>} />
         <Route path="/catechese"       element={<Layout><CatechesePage /></Layout>} />
         <Route path="/vie-spirituelle" element={<Layout><VieSpirituellePage /></Layout>} />
         <Route path="/horaires"        element={<Layout><HorairesPage /></Layout>} />
@@ -59,6 +64,11 @@ export default function App() {
         <Route path="/admin/medias" element={
           <AdminGuard>
             <AdminLayout><AdminMediasPage /></AdminLayout>
+          </AdminGuard>
+        } />
+        <Route path="/admin/evenements" element={
+          <AdminGuard>
+            <AdminLayout><AdminEvenementsPage /></AdminLayout>
           </AdminGuard>
         } />
 

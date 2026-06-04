@@ -1,11 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom'
 
 const TABS = [
-  { to: '/',                icon: 'home',        label: 'Accueil' },
-  { to: '/liturgie',        icon: 'menu_book',   label: 'Liturgie' },
-  { to: '/catechese',       icon: 'school',      label: 'Catéchisme' },
-  { to: '/vie-spirituelle', icon: 'auto_stories', label: 'Formation' },
-  { to: '/profil',          icon: 'person',      label: 'Profil' },
+  { to: '/',           icon: 'home',        label: 'Accueil'  },
+  { to: '/liturgie',   icon: 'menu_book',   label: 'Liturgie' },
+  { to: '/evenements', icon: 'live_tv',     label: 'Médias'   },
+  { to: '/bible',      icon: 'auto_stories', label: 'Bible'   },
+  { to: '/profil',     icon: 'person',      label: 'Profil'   },
 ]
 
 export function BottomNav() {

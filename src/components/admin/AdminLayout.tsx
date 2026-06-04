@@ -3,11 +3,12 @@ import { logout } from '../../services/auth'
 import { useAuth } from '../../contexts/AuthContext'
 
 const NAV = [
-  { to: '/admin',           icon: 'dashboard',          label: 'Dashboard',   exact: true },
-  { to: '/admin/annonces',  icon: 'campaign',           label: 'Annonces' },
-  { to: '/admin/homelies',  icon: 'record_voice_over',  label: 'Homélies' },
-  { to: '/admin/formations',icon: 'school',             label: 'Formations' },
-  { to: '/admin/medias',    icon: 'perm_media',         label: 'Médiathèque' },
+  { to: '/admin',             icon: 'dashboard',          label: 'Dashboard',   exact: true },
+  { to: '/admin/annonces',    icon: 'campaign',           label: 'Annonces' },
+  { to: '/admin/homelies',    icon: 'record_voice_over',  label: 'Homélies' },
+  { to: '/admin/formations',  icon: 'school',             label: 'Formations' },
+  { to: '/admin/evenements',  icon: 'live_tv',            label: 'Médias & Lives' },
+  { to: '/admin/medias',      icon: 'perm_media',         label: 'Médiathèque' },
 ]
 
 const ROLE_LABELS: Record<string, string> = {

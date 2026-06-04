@@ -1,11 +1,13 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, Link, useLocation } from 'react-router-dom'
 
 const NAV = [
   { to: '/',                icon: 'home',         label: 'Accueil' },
   { to: '/liturgie',        icon: 'menu_book',    label: 'Liturgie du jour' },
   { to: '/annonces',        icon: 'campaign',     label: 'Annonces & Agenda' },
+  { to: '/evenements',      icon: 'live_tv',      label: 'Médias & Lives' },
+  { to: '/bible',           icon: 'auto_stories', label: 'Sainte Bible' },
   { to: '/catechese',       icon: 'school',       label: 'Catéchèse' },
-  { to: '/vie-spirituelle', icon: 'auto_stories', label: 'Formation' },
+  { to: '/vie-spirituelle', icon: 'self_improvement', label: 'Formation' },
   { to: '/horaires',        icon: 'location_on',  label: 'Horaires & Contact' },
   { to: '/profil',          icon: 'person',       label: 'Mon profil' },
 ]
@@ -121,7 +123,21 @@ export function SideNav() {
           <span className="material-symbols-outlined" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1" }}>volunteer_activism</span>
           Don & Offrande
         </button>
-        <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--outline)', marginTop: 14 }}>
+        <Link
+          to="/admin"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            marginTop: 12, padding: '8px 12px', borderRadius: 8,
+            fontSize: 12, color: 'var(--outline)', textDecoration: 'none',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--primary)'; (e.currentTarget as HTMLAnchorElement).style.background = 'var(--surface-container)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--outline)'; (e.currentTarget as HTMLAnchorElement).style.background = 'transparent' }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>admin_panel_settings</span>
+          Administration
+        </Link>
+        <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--outline)', marginTop: 8 }}>
           © {new Date().getFullYear()} Archidiocèse de Brazzaville
         </p>
       </div>
