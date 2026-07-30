@@ -1,7 +1,7 @@
 import { getMessaging, getToken, onMessage, type MessagePayload } from 'firebase/messaging'
 import { doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from './firebase'
-import { initializeApp, getApps } from 'firebase/app'
+import { getApps } from 'firebase/app'
 
 // Firebase app (déjà initialisée dans firebase.ts)
 function getApp() {

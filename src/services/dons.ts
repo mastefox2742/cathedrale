@@ -37,7 +37,7 @@ export const MOBILE_MONEY_CONFIG = {
   mtn: {
     label: 'MTN Mobile Money',
     numero: '+242 06 XXX XXXX',   // À remplacer par le vrai numéro
-    nom: 'Cathédrale Sacré-Cœur',
+    nom: 'Paroisse Saint Michel de la Base',
     color: '#FFCC00',
     textColor: '#333',
     logo: '🟡',
@@ -70,7 +70,7 @@ function generateReference(): string {
 
 export async function enregistrerDon(data: Omit<Don, 'id' | 'createdAt' | 'reference' | 'statut'>): Promise<string> {
   const reference = generateReference()
-  const ref = await addDoc(collection(db, 'dons'), {
+  await addDoc(collection(db, 'dons'), {
     ...data,
     reference,
     statut: 'en_attente',

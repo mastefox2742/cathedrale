@@ -46,7 +46,7 @@ export function Footer() {
                 </div>
                 <div>
                   <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'white', fontSize: '0.975rem', lineHeight: 1.2 }}>
-                    Cathédrale Sacré-Cœur
+                    Paroisse Saint Michel de la Base
                   </p>
                   <p style={{ fontFamily: 'var(--font-ui)', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--gold-400)', marginTop: 2 }}>
                     Brazzaville · Congo
@@ -145,7 +145,7 @@ export function Footer() {
             alignItems: 'center', justifyContent: 'space-between',
           }}>
             <p style={{ fontFamily: 'var(--font-ui)', fontSize: '0.8125rem', color: 'rgba(255,255,255,0.25)' }}>
-              © {new Date().getFullYear()} Cathédrale Sacré-Cœur de Brazzaville — Tous droits réservés
+              © {new Date().getFullYear()} Paroisse Saint Michel de la Base — Tous droits réservés
             </p>
             <p style={{ fontFamily: 'var(--font-ui)', fontSize: '0.75rem', color: 'rgba(255,255,255,0.18)' }}>
               Développé avec ✟ par Alpha-tech

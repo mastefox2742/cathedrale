@@ -73,7 +73,7 @@ export function HomePage() {
         >
           <img
             src="/cathedrale.jpg"
-            alt="Cathédrale Sacré-Cœur de Brazzaville"
+            alt="Paroisse Saint Michel de la Base"
             style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', transition: 'transform 0.7s' }}
             onMouseEnter={e => ((e.currentTarget as HTMLImageElement).style.transform = 'scale(1.04)')}
             onMouseLeave={e => ((e.currentTarget as HTMLImageElement).style.transform = 'scale(1)')}
@@ -306,7 +306,7 @@ export function HomePage() {
 
               {/* Texte court */}
               <p style={{ fontFamily: 'var(--font-serif)', fontSize: 17, lineHeight: 1.85, color: 'var(--on-surface)', marginBottom: 14 }}>
-                Fondée en <strong>1892</strong> par les Pères du Saint-Esprit, la Cathédrale Sacré-Cœur de Brazzaville
+                Fondée en <strong>1892</strong> par les Pères du Saint-Esprit, la Paroisse Saint Michel de la Base
                 est l'une des plus anciennes églises d'Afrique centrale. Consacrée en <strong>1930</strong>, elle
                 est devenue cathédrale lors de la création du diocèse de Brazzaville en <strong>1961</strong>,
                 puis siège de l'Archidiocèse en <strong>1995</strong>.

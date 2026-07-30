@@ -51,7 +51,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               }}
             />
             <div>
-              <p style={{ fontFamily: 'var(--font-serif)', fontSize: 14, fontWeight: 600, color: 'white', lineHeight: 1.2 }}>Sacré-Cœur</p>
+              <p style={{ fontFamily: 'var(--font-serif)', fontSize: 14, fontWeight: 600, color: 'white', lineHeight: 1.2 }}>Saint Michel</p>
               <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>Administration</p>
             </div>
           </div>

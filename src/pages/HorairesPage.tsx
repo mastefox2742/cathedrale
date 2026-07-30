@@ -27,7 +27,7 @@ export function HorairesPage() {
       <div style={{ paddingTop: 'var(--space-lg)', marginBottom: 'var(--space-lg)' }}>
         <h1 className="text-headline-lg" style={{ color: 'var(--primary)' }}>Horaires & Contact</h1>
         <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', marginTop: 4 }}>
-          Cathédrale Sacré-Cœur de Brazzaville
+          Paroisse Saint Michel de la Base
         </p>
       </div>
 

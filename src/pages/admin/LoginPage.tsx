@@ -73,7 +73,7 @@ export function LoginPage() {
             <span className="material-symbols-outlined" style={{ fontSize: 36, color: 'var(--secondary-container)', fontVariationSettings: "'FILL' 1" }}>church</span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 24, color: 'white', marginBottom: 4 }}>
-            Cathédrale Sacré-Cœur
+            Paroisse Saint Michel de la Base
           </h1>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>Portail d'Administration</p>
         </div>

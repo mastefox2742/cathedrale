@@ -22,8 +22,8 @@ export default defineConfig({
       devOptions: { enabled: true },
 
       manifest: {
-        name: 'Cathédrale Sacré-Cœur de Brazzaville',
-        short_name: 'Sacré-Cœur',
+        name: 'Paroisse Saint Michel de la Base',
+        short_name: 'St Michel',
         description: 'Plateforme diocésaine — liturgie quotidienne, catéchèse et vie spirituelle de l\'Archidiocèse de Brazzaville',
         theme_color: '#1565C0',
         background_color: '#F5F6FA',
@@ -58,9 +58,8 @@ export default defineConfig({
             src: '/cathedrale.jpg',
             sizes: '1030x773',
             type: 'image/jpeg',
-            // @ts-expect-error - form_factor is valid PWA manifest field
             form_factor: 'narrow',
-            label: 'Cathédrale Sacré-Cœur de Brazzaville',
+            label: 'Paroisse Saint Michel de la Base',
           },
         ],
       },

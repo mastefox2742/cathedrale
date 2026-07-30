@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   enregistrerDon, formatXAF,
-  MOBILE_MONEY_CONFIG, MONTANTS_SUGGERES, TYPE_DON_LABELS,
+  MONTANTS_SUGGERES, TYPE_DON_LABELS,
   type MethodePaiement, type TypeDon,
 } from '../services/dons'
 
@@ -33,10 +33,8 @@ export function DonsPage() {
   const [step, setStep] = useState<'form' | 'instructions' | 'confirmation'>('form')
   const [reference, setReference] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showVirement, setShowVirement] = useState(false)
 
   const montantNum = typeof montant === 'number' ? montant : 0
-  const mmConfig = MOBILE_MONEY_CONFIG[methode as 'mtn' | 'airtel']
 
   async function handleDon() {
     if (!montantNum || montantNum < 100) return
@@ -305,7 +303,7 @@ export function DonsPage() {
               { l: 'Titulaire', v: 'Archidiocèse de Brazzaville' },
               { l: 'IBAN', v: 'CG00 BGFI XXXX XXXX XXXX XXXX XXX' },
               { l: 'BIC/SWIFT', v: 'BGFICGCG' },
-              { l: 'Motif', v: 'Don Cathédrale Sacré-Cœur' },
+              { l: 'Motif', v: 'Don Paroisse Saint Michel de la Base' },
             ].map(r => (
               <div key={r.l} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(0,35,111,0.06)' }}>
                 <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>{r.l}</span>

@@ -51,7 +51,7 @@ export function Navbar() {
           </div>
           <div>
             <p className="display" style={{ fontSize: '0.95rem', color: scrolled ? 'var(--crimson-800)' : 'white', lineHeight: 1.1, transition: 'color 0.4s' }}>
-              Cathédrale Sacré-Cœur
+              Paroisse Saint Michel de la Base
             </p>
             <p className="label" style={{ color: scrolled ? 'var(--gold-500)' : 'rgba(232,192,122,0.85)', fontSize: '0.58rem', marginTop: 2 }}>
               Archidiocèse de Brazzaville

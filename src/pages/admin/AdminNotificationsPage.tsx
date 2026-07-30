@@ -205,7 +205,7 @@ export function AdminNotificationsPage() {
                   {corps || 'Corps du message…'}
                 </p>
                 <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10, marginTop: 6 }}>
-                  Sacré-Cœur Brazzaville · maintenant
+                  Saint Michel de la Base · maintenant
                 </p>
               </div>
             </div>

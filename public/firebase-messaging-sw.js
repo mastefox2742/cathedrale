@@ -31,7 +31,7 @@ self.addEventListener('push', event => {
       ],
     }
     event.waitUntil(
-      self.registration.showNotification(data.notification?.title ?? 'Sacré-Cœur Brazzaville', options)
+      self.registration.showNotification(data.notification?.title ?? 'Saint Michel de la Base', options)
     )
   } catch (_) {}
 })
@@ -58,7 +58,7 @@ try {
   const messaging = firebase.messaging()
 
   messaging.onBackgroundMessage(payload => {
-    const { title = 'Sacré-Cœur Brazzaville', body = '', image } = payload.notification ?? {}
+    const { title = 'Saint Michel de la Base', body = '', image } = payload.notification ?? {}
     const options = {
       body,
       icon: image ?? '/icons/icon-192.png',

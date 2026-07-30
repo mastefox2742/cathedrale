@@ -37,7 +37,7 @@ export function SideNav() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
           <img
             src="/logo.png"
-            alt="Logo Cathédrale Sacré-Cœur"
+            alt="Logo Paroisse Saint Michel de la Base"
             style={{
               width: 48, height: 48, borderRadius: '50%',
               objectFit: 'cover', flexShrink: 0,
@@ -47,7 +47,7 @@ export function SideNav() {
           />
           <div>
             <p style={{ fontFamily: 'var(--font-serif)', fontWeight: 700, fontSize: 16, color: 'var(--primary)', lineHeight: 1.2 }}>
-              Cathédrale<br />Sacré-Cœur
+              Paroisse Saint Michel<br />de la Base
             </p>
           </div>
         </div>
