@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   enregistrerDon, formatXAF,
-  MONTANTS_SUGGERES, TYPE_DON_LABELS,
+  MOBILE_MONEY_CONFIG, MONTANTS_SUGGERES, TYPE_DON_LABELS,
   type MethodePaiement, type TypeDon,
 } from '../services/dons'
 
