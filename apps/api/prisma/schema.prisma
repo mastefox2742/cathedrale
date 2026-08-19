@@ -1,0 +1,164 @@
+// Schema Prisma - Plateforme pastorale Cathédrale Sacré-Cœur de Brazzaville
+//
+// Convention : les valeurs des enums Prisma reprennent EXACTEMENT les valeurs
+// des enums/roles definis dans packages/shared (snake_case) pour eviter toute
+// couche de mapping source d'erreurs entre l'API et le frontend.
+//
+// Securite (voir SECURITY.md) :
+// - Aucune donnee bancaire/secret de paiement n'est stockee ici (cf. module Dons).
+// - Les tokens de rafraichissement sont stockes hashes, jamais en clair.
+// - Toute table exposant des donnees sensibles (PrayerRequest, SafeguardingReport)
+//   doit rester accessible uniquement via des guards RBAC verifies cote serveur.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Identite & acces -------------------------------------------------
+
+enum Role {
+  visitor
+  member
+  parent
+  young_member
+  catechist
+  youth_animator
+  group_manager
+  priest
+  pastoral_manager
+  moderator
+  safeguarding_officer
+  admin
+  super_admin
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  displayName  String
+  roles        Role[]    @default([member])
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  refreshTokens  RefreshToken[]
+  auditLogs      AuditLog[]     @relation("audit_actor")
+  childProfiles  ChildProfile[] @relation("parent")
+
+  @@index([email])
+}
+
+/// Modele parent-enfant (cahier des charges 5.5) : un profil enfant est TOUJOURS
+/// rattache a un compte parent/tuteur, jamais autonome. Pas de champ email/mot de
+/// passe ici : un enfant n'a pas de compte de connexion direct.
+model ChildProfile {
+  id                 String    @id @default(uuid())
+  parentId           String
+  parent             User      @relation("parent", fields: [parentId], references: [id], onDelete: Cascade)
+  firstName          String
+  lastName           String
+  birthDate          DateTime
+  catechismLevelId   String?
+  catechismGroupId   String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([parentId])
+}
+
+/// Refresh tokens stockes HASHES (jamais la valeur brute). Permet la revocation
+/// individuelle (logout) ou globale (changement de mot de passe, compromission).
+model RefreshToken {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash   String    @unique
+  sessionId   String    @unique
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdByIp String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Journal d'audit (cahier des charges 6 et 11) : toute action sensible
+/// (publication, changement de role, acces a un signalement...) doit ecrire ici.
+/// Ecriture uniquement via AuditLogService - jamais de suppression manuelle.
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  actor      User?    @relation("audit_actor", fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  resource   String
+  resourceId String?
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([resource, resourceId])
+  @@index([createdAt])
+}
+
+// --- Contenu editorial (exemple de pattern a repliquer pour homilies, formations...) ---
+
+enum ContentStatus {
+  draft
+  in_review
+  pending_validation
+  published
+  suspended
+  archived
+  rejected
+}
+
+enum AnnouncementPriority {
+  normal
+  important
+  urgent
+}
+
+enum Visibility {
+  public
+  members
+  group
+  staff_only
+  private
+}
+
+/// Module Annonces (cahier des charges 5.2) : sert de modele de reference pour
+/// implementer les autres modules editoriaux (homilies, formations, evenements)
+/// avec le meme workflow brouillon -> revision -> validation -> publication -> archivage.
+model Announcement {
+  id          String               @id @default(uuid())
+  title       String
+  body        String
+  priority    AnnouncementPriority @default(normal)
+  visibility  Visibility           @default(public)
+  status      ContentStatus        @default(draft)
+  audience    String               @default("all")
+  groupId     String?
+  imageUrl    String?
+  linkUrl     String?
+  publishAt   DateTime?
+  expiresAt   DateTime?
+
+  createdBy   String
+  updatedBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+  archivedAt  DateTime?
+
+  @@index([status, publishAt])
+  @@index([audience])
+}

@@ -1,0 +1,63 @@
+import type { INestApplication } from "@nestjs/common";
+import { Test } from "@nestjs/testing";
+import request from "supertest";
+import type { Server } from "node:net";
+import { AppModule } from "../src/app.module";
+
+/**
+ * Gabarit de tests d'acces par role, demande par le brief produit
+ * (cahier des charges section "Avant de coder" : "produis des tests pour les
+ * acces public, membre, parent, catechiste et administrateur").
+ *
+ * Prerequis pour executer ces tests : `docker compose up -d` (Postgres + Redis)
+ * et un fichier `.env.local` valide dans apps/api (voir .env.example).
+ * A completer au fur et a mesure de l'implementation de chaque module :
+ * ajouter un utilisateur de test par role (fixtures/seed dedie aux tests,
+ * jamais de donnees de production) et verifier les codes HTTP attendus.
+ */
+describe("Controle d'acces par role (e2e)", () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleRef.createNestApplication();
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  describe("Visiteur (non authentifie)", () => {
+    it("peut consulter les annonces publiques sans token", async () => {
+      await request(app.getHttpServer() as Server).get("/api/v1/announcements/public").expect(200);
+    });
+
+    it("ne peut PAS creer une annonce (401)", async () => {
+      await request(app.getHttpServer() as Server)
+        .post("/api/v1/announcements")
+        .send({ title: "Test", body: "Test" })
+        .expect(401);
+    });
+  });
+
+  describe("Membre authentifie sans role staff", () => {
+    // TODO: creer un utilisateur de test avec le role "member" via un helper
+    // de seed dedie aux tests, se connecter via /auth/login, recuperer le
+    // access token, puis verifier que /announcements (POST) renvoie 403.
+    it.todo("ne peut pas publier une annonce (403 - permission insuffisante)");
+  });
+
+  describe("Responsable pastoral / administrateur", () => {
+    it.todo("peut creer puis publier une annonce (201 puis 200)");
+    it.todo("peut consulter les journaux d'audit (/audit-log)");
+  });
+
+  describe("Donnees sensibles (intentions de priere, signalements)", () => {
+    it.todo("un membre ne peut pas lister les intentions de priere des autres utilisateurs");
+    it.todo("seul un safeguarding_officer ou super_admin peut voir un safeguarding_report");
+  });
+});

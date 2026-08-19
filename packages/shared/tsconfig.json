@@ -1,0 +1,10 @@
+{
+  "extends": "@csc/config/tsconfig/base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "rootDir": "./src",
+    "declaration": true
+  },
+  "include": ["src"]
+}

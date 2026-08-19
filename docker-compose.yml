@@ -1,0 +1,39 @@
+# Environnement de developpement local uniquement.
+# En production : services manages (RDS/Cloud SQL, Redis manage), jamais ce fichier tel quel.
+name: cathedrale-sacre-coeur
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-csc_dev}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_dev_only}
+      POSTGRES_DB: ${POSTGRES_DB:-csc_dev}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - csc_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-csc_dev}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-change_me_dev_only}"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - csc_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-change_me_dev_only}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  csc_postgres_data:
+  csc_redis_data:

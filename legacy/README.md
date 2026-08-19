@@ -1,0 +1,47 @@
+# Cathédrale Sacré-Cœur de Brazzaville (ancienne app — archivée)
+
+> ⚠️ Ce dossier n'est plus maintenu. Le projet a migré vers un monorepo
+> Next.js/NestJS/PostgreSQL à la racine du dépôt (voir [`../README.md`](../README.md)
+> et [`../CLAUDE.md`](../CLAUDE.md)). Ce code reste ici comme **référence
+> fonctionnelle** — logique métier, textes, structure Firestore, design déjà
+> validés — à porter progressivement vers la nouvelle stack.
+
+Application web diocésaine pour la Cathédrale Sacré-Cœur de Brazzaville (Congo).
+
+## Stack technique
+
+- **Frontend** : React 18 + TypeScript + Vite + Tailwind CSS v4
+- **Backend** : Firebase (Firestore, Auth, Storage)
+- **Déploiement** : Vercel
+
+## Fonctionnalités
+
+### Site public
+- Accueil avec actualités, histoire de la paroisse et devise liturgique
+- Liturgie du jour (lectures AELF en temps réel)
+- Annonces avec carousel auto-défilant
+- Catéchèse, Vie spirituelle, Horaires des messes
+
+### Portail d'administration (`/admin`)
+- Gestion des annonces (images, publication, épinglage)
+- Gestion des homélies (texte + audio)
+- Gestion des formations
+- Médiathèque (photos, documents, audio, vidéos)
+
+## Lancer le projet en local
+
+```bash
+npm install
+npm run dev
+```
+
+Créer un fichier `.env.local` avec les variables Firebase :
+
+```
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+```
