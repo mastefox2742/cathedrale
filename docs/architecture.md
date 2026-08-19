@@ -1,4 +1,4 @@
-# Architecture — Paroisse Saint Michel de la Base
+# Architecture — Cathédrale Sacré-Cœur de Brazzaville
 > Document BMAD · Phase 3 · Plateforme Catéchisme
 
 ## Vision

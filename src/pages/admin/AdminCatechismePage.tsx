@@ -326,6 +326,7 @@ export function AdminCatechismePage() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {cours.map(c => {
+                const cfg = NIVEAU_CONFIG[c.niveau] ?? NIVEAU_CONFIG[1]
                 const isSelected = selectedCours?.id === c.id
                 return (
                   <div
@@ -411,7 +412,7 @@ export function AdminCatechismePage() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {modules.map((m) => (
+                {modules.map((m, i) => (
                   <div
                     key={m.id}
                     style={{

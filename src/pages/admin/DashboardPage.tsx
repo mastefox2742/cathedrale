@@ -107,7 +107,7 @@ export function DashboardPage() {
             {greeting}, {profile?.nom?.split(' ')[0] || 'Admin'}
           </h1>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>
-            Paroisse Saint Michel de la Base · Archidiocèse de Brazzaville
+            Cathédrale Sacré-Cœur · Archidiocèse de Brazzaville
           </p>
         </div>
       </div>

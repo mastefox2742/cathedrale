@@ -1,6 +1,6 @@
-# Paroisse Saint Michel de la Base
+# Cathédrale Sacré-Cœur de Brazzaville
 
-Application web diocésaine pour la Paroisse Saint Michel de la Base (Congo).
+Application web diocésaine pour la Cathédrale Sacré-Cœur de Brazzaville (Congo).
 
 ## Stack technique
 
