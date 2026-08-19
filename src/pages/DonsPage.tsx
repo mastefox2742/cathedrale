@@ -33,10 +33,8 @@ export function DonsPage() {
   const [step, setStep] = useState<'form' | 'instructions' | 'confirmation'>('form')
   const [reference, setReference] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showVirement, setShowVirement] = useState(false)
 
   const montantNum = typeof montant === 'number' ? montant : 0
-  const mmConfig = MOBILE_MONEY_CONFIG[methode as 'mtn' | 'airtel']
 
   async function handleDon() {
     if (!montantNum || montantNum < 100) return

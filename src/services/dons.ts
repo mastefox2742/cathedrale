@@ -70,7 +70,7 @@ function generateReference(): string {
 
 export async function enregistrerDon(data: Omit<Don, 'id' | 'createdAt' | 'reference' | 'statut'>): Promise<string> {
   const reference = generateReference()
-  const ref = await addDoc(collection(db, 'dons'), {
+  await addDoc(collection(db, 'dons'), {
     ...data,
     reference,
     statut: 'en_attente',

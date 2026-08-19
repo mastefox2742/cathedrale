@@ -58,7 +58,6 @@ export default defineConfig({
             src: '/cathedrale.jpg',
             sizes: '1030x773',
             type: 'image/jpeg',
-            // @ts-expect-error - form_factor is valid PWA manifest field
             form_factor: 'narrow',
             label: 'Cathédrale Sacré-Cœur de Brazzaville',
           },
