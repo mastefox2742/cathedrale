@@ -162,3 +162,37 @@ model Announcement {
   @@index([status, publishAt])
   @@index([audience])
 }
+
+enum CelebrationType {
+  mass
+  confession
+  adoration
+  office
+  other
+}
+
+/// Module Horaires (cahier des charges 5.1) : messes, confessions, offices.
+/// `date` reste optionnel - un horaire recurrent (ex: "chaque dimanche 9h")
+/// n'a pas de date unique, voir `recurrence`.
+model MassSchedule {
+  id              String          @id @default(uuid())
+  title           String
+  celebrationType CelebrationType @default(mass)
+  date            DateTime?
+  startTime       String
+  endTime         String?
+  location        String?
+  language        String          @default("fr")
+  recurrence      String?
+  note            String?
+  status          ContentStatus   @default(draft)
+
+  createdBy   String
+  updatedBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+  archivedAt  DateTime?
+
+  @@index([status, date])
+}

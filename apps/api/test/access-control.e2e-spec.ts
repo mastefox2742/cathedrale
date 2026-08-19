@@ -1,4 +1,4 @@
-import type { INestApplication } from "@nestjs/common";
+import { VersioningType, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
 import type { Server } from "node:net";
@@ -24,6 +24,12 @@ describe("Controle d'acces par role (e2e)", () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    // Reproduit le prefixe/versioning de main.ts (bootstrap()) : sans ca, les
+    // routes reelles sont /announcements/public et non /api/v1/announcements/public,
+    // et toutes les requetes ci-dessous echouent en 404 plutot que de tester
+    // le vrai comportement d'acces.
+    app.enableVersioning({ type: VersioningType.URI, defaultVersion: "1" });
+    app.setGlobalPrefix("api", { exclude: ["health", "health/ready"] });
     await app.init();
   });
 
@@ -40,6 +46,17 @@ describe("Controle d'acces par role (e2e)", () => {
       await request(app.getHttpServer() as Server)
         .post("/api/v1/announcements")
         .send({ title: "Test", body: "Test" })
+        .expect(401);
+    });
+
+    it("peut consulter les horaires publies sans token", async () => {
+      await request(app.getHttpServer() as Server).get("/api/v1/mass-schedules/public").expect(200);
+    });
+
+    it("ne peut PAS creer un horaire (401)", async () => {
+      await request(app.getHttpServer() as Server)
+        .post("/api/v1/mass-schedules")
+        .send({ title: "Messe dominicale", startTime: "09:00" })
         .expect(401);
     });
   });

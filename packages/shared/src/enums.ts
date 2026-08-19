@@ -48,6 +48,15 @@ export enum PrayerRequestStatus {
   ARCHIVED = "archived",
 }
 
+/** Type de celebration d'un horaire (cahier des charges 5.1). */
+export enum CelebrationType {
+  MASS = "mass",
+  CONFESSION = "confession",
+  ADORATION = "adoration",
+  OFFICE = "office",
+  OTHER = "other",
+}
+
 export enum EventType {
   LITURGY = "liturgy",
   FORMATION = "formation",
