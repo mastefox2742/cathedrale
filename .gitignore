@@ -1,25 +1,3 @@
-# Dependencies
-node_modules/
-.pnpm-store/
-
-# Build outputs
-dist/
-dist-ssr/
-.next/
-out/
-build/
-.turbo/
-
-# Env - JAMAIS commiter de vrais secrets
-.env
-.env.local
-.env.*.local
-!.env.example
-
-# Prisma
-apps/api/prisma/*.db
-apps/api/prisma/migrations/dev/
-
 # Logs
 logs
 *.log
@@ -29,23 +7,18 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Tests / coverage
-coverage/
-.nyc_output/
+node_modules
+dist
+dist-ssr
+*.local
 
-# IDE / OS
+# Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea/
+.idea
 .DS_Store
-Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-
-# Misc
-*.tsbuildinfo
-.eslintcache
-*.local
