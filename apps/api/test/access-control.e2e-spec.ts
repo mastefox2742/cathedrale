@@ -2,7 +2,35 @@ import { VersioningType, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
 import type { Server } from "node:net";
+import type { Role } from "@csc/shared";
 import { AppModule } from "../src/app.module";
+import { PrismaService } from "../src/prisma/prisma.service";
+
+let userCounter = 0;
+
+/**
+ * Cree un utilisateur via /auth/register (mot de passe/hachage reels), lui
+ * attribue des roles directement en base (aucun endpoint de gestion des
+ * roles n'existe encore - voir cahier des charges 6, reserve super_admin),
+ * puis se reconnecte pour obtenir un access token a jour (le JWT du
+ * register initial porte encore le role "member" par defaut).
+ */
+async function createUserWithRoles(app: INestApplication, roles: Role[]): Promise<string> {
+  userCounter += 1;
+  const email = `e2e-test-${Date.now()}-${userCounter}@example.com`;
+  const password = "TestPassword123!";
+  const server = app.getHttpServer() as Server;
+
+  await request(server)
+    .post("/api/v1/auth/register")
+    .send({ email, password, displayName: "E2E Test" })
+    .expect(201);
+
+  await app.get(PrismaService).user.update({ where: { email }, data: { roles } });
+
+  const loginRes = await request(server).post("/api/v1/auth/login").send({ email, password }).expect(200);
+  return (loginRes.body as { accessToken: string }).accessToken;
+}
 
 /**
  * Gabarit de tests d'acces par role, demande par le brief produit
@@ -95,15 +123,53 @@ describe("Controle d'acces par role (e2e)", () => {
   });
 
   describe("Membre authentifie sans role staff", () => {
-    // TODO: creer un utilisateur de test avec le role "member" via un helper
-    // de seed dedie aux tests, se connecter via /auth/login, recuperer le
-    // access token, puis verifier que /announcements (POST) renvoie 403.
-    it.todo("ne peut pas publier une annonce (403 - permission insuffisante)");
+    it("ne peut pas creer une annonce (403 - permission insuffisante)", async () => {
+      const token = await createUserWithRoles(app, ["member"]);
+      await request(app.getHttpServer() as Server)
+        .post("/api/v1/announcements")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title: "Test", body: "Test" })
+        .expect(403);
+    });
   });
 
   describe("Responsable pastoral / administrateur", () => {
-    it.todo("peut creer puis publier une annonce (201 puis 200)");
-    it.todo("peut consulter les journaux d'audit (/audit-log)");
+    it("peut creer puis publier une annonce (201 puis 200)", async () => {
+      const token = await createUserWithRoles(app, ["pastoral_manager"]);
+      const server = app.getHttpServer() as Server;
+
+      const createRes = await request(server)
+        .post("/api/v1/announcements")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title: "Test e2e", body: "Corps de l'annonce" })
+        .expect(201);
+
+      const id = (createRes.body as { id: string }).id;
+      await request(server)
+        .patch(`/api/v1/announcements/${id}/publish`)
+        .set("Authorization", `Bearer ${token}`)
+        .expect(200);
+    });
+
+    it("peut consulter les journaux d'audit (/audit-log)", async () => {
+      const token = await createUserWithRoles(app, ["admin"]);
+      const res = await request(app.getHttpServer() as Server)
+        .get("/api/v1/audit-log")
+        .set("Authorization", `Bearer ${token}`)
+        .expect(200);
+
+      const body = res.body as { items: unknown[]; total: number; page: number; pageSize: number };
+      expect(Array.isArray(body.items)).toBe(true);
+      expect(typeof body.total).toBe("number");
+    });
+
+    it("un membre ne peut PAS consulter les journaux d'audit (403)", async () => {
+      const token = await createUserWithRoles(app, ["member"]);
+      await request(app.getHttpServer() as Server)
+        .get("/api/v1/audit-log")
+        .set("Authorization", `Bearer ${token}`)
+        .expect(403);
+    });
   });
 
   describe("Donnees sensibles (intentions de priere, signalements)", () => {

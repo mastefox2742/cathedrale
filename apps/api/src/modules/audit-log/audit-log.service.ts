@@ -1,4 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
+import type { AuditLog } from "@prisma/client";
+import type { ListAuditLogQuery, Paginated } from "@csc/shared";
 import { PrismaService } from "../../prisma/prisma.service";
 
 export interface AuditLogEntry {
@@ -42,5 +44,31 @@ export class AuditLogService {
       // une erreur d'ecriture d'audit doit etre visible en monitoring (alerte).
       this.logger.error(`Echec ecriture audit log: ${entry.action}/${entry.resource}`, error as Error);
     }
+  }
+
+  /**
+   * Lecture reservee aux administrateurs (permission "audit_log:view" - voir
+   * packages/shared/src/roles.ts). Filtrage optionnel par ressource/action/
+   * auteur, tri du plus recent au plus ancien.
+   */
+  async list(query: ListAuditLogQuery): Promise<Paginated<AuditLog>> {
+    const { page, pageSize, resource, action, actorId } = query;
+    const where = {
+      ...(resource ? { resource } : {}),
+      ...(action ? { action } : {}),
+      ...(actorId ? { actorId } : {}),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.auditLog.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.auditLog.count({ where }),
+    ]);
+
+    return { items, total, page, pageSize };
   }
 }

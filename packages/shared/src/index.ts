@@ -7,3 +7,4 @@ export * from "./schemas/mass-schedule.schema";
 export * from "./schemas/homily.schema";
 export * from "./schemas/formation.schema";
 export * from "./schemas/event.schema";
+export * from "./schemas/audit-log.schema";
