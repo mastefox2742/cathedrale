@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import type { AuthenticatedUser, LoginInput } from "@csc/shared";
+import type { AuthenticatedUser, LoginInput, RegisterInput } from "@csc/shared";
 import { apiFetch, bindTokenAccessors, refreshAccessToken } from "./api-client";
 
 interface AuthContextValue {
@@ -9,6 +9,7 @@ interface AuthContextValue {
   /** true tant que le silent refresh initial n'a pas resolu - evite un flash "non connecte". */
   isLoading: boolean;
   login: (input: LoginInput) => Promise<void>;
+  register: (input: RegisterInput) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -63,13 +64,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [loadCurrentUser],
   );
 
+  const register = useCallback(
+    async (input: RegisterInput) => {
+      await apiFetch<{ accessToken: string }>("/auth/register", {
+        method: "POST",
+        body: input,
+        skipAuth: true,
+      }).then((data) => {
+        accessTokenRef.current = data.accessToken;
+      });
+      await loadCurrentUser();
+    },
+    [loadCurrentUser],
+  );
+
   const logout = useCallback(async () => {
     await apiFetch("/auth/logout", { method: "POST" }).catch(() => undefined);
     accessTokenRef.current = null;
     setUser(null);
   }, []);
 
-  const value = useMemo(() => ({ user, isLoading, login, logout }), [user, isLoading, login, logout]);
+  const value = useMemo(
+    () => ({ user, isLoading, login, register, logout }),
+    [user, isLoading, login, register, logout],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { loginSchema } from "@csc/shared";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api-client";
@@ -85,6 +86,9 @@ export default function ConnexionPage() {
           {submitting ? "Connexion en cours..." : "Se connecter"}
         </button>
       </form>
+      <p>
+        Pas encore de compte ? <Link href="/inscription">Créer un compte</Link>
+      </p>
     </section>
   );
 }
