@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import {
   IconX, IconShieldCheck, IconEnvelope, IconLockKey, IconEye, IconEyeSlash, IconPhone, IconLock, IconGoogle,
 } from '../components/ui/icons'
+import { supabase } from '../services/supabase'
 
 type Mode = 'login' | 'register'
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /**
  * Écran d'authentification "Espace Membre" (design fourni par l'utilisateur,
@@ -12,11 +15,10 @@ type Mode = 'login' | 'register'
  * fonctionnel — bascule Connexion/Inscription, affichage du mot de passe,
  * état de formulaire.
  *
- * Pas encore relié à un backend : en attente de la migration vers Supabase
- * (compte à créer côté utilisateur). Le formulaire est prêt à être branché
- * (handleSubmit isolé) dès que les identifiants Supabase seront disponibles -
- * pour l'instant il affiche un état de chargement puis une erreur explicite
- * plutôt que de prétendre réussir silencieusement.
+ * Relié à Supabase Auth (email/mot de passe). La connexion par téléphone
+ * n'est pas encore possible : Supabase exige un fournisseur SMS configuré
+ * (Twilio/MessageBird/...) côté projet, ce qui n'a pas été mis en place -
+ * on le signale explicitement plutôt que de faire semblant que ça marche.
  */
 export function ConnexionPage() {
   const navigate = useNavigate()
@@ -26,19 +28,45 @@ export function ConnexionPage() {
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+    setNotice(null)
+
+    if (!EMAIL_RE.test(identifier)) {
+      setError(
+        'La connexion par téléphone n\'est pas encore disponible — merci d\'utiliser une adresse email pour le moment.',
+      )
+      return
+    }
+
     setSubmitting(true)
     try {
-      // TODO Supabase : brancher supabase.auth.signInWithPassword / signUp ici
-      // une fois le projet Supabase créé et les variables d'environnement
-      // configurées (voir .env.local).
-      await new Promise((resolve) => setTimeout(resolve, 400))
-      throw new Error(
-        "L'authentification n'est pas encore connectée (migration Supabase en cours). Réessayez bientôt.",
-      )
+      if (mode === 'login') {
+        const { error: authError } = await supabase.auth.signInWithPassword({
+          email: identifier,
+          password,
+        })
+        if (authError) throw authError
+        navigate('/')
+      } else {
+        const { data, error: authError } = await supabase.auth.signUp({
+          email: identifier,
+          password,
+        })
+        if (authError) throw authError
+        if (!data.session) {
+          // Confirmation email activée côté projet Supabase (comportement par
+          // défaut) : le compte existe mais aucune session tant que le lien
+          // reçu par email n'est pas cliqué.
+          setNotice('Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse avant de vous connecter.')
+          setMode('login')
+        } else {
+          navigate('/')
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue.')
     } finally {
@@ -153,6 +181,9 @@ export function ConnexionPage() {
 
             {error ? (
               <p className="text-xs text-destructive bg-destructive/10 rounded-lg px-3 py-2">{error}</p>
+            ) : null}
+            {notice ? (
+              <p className="text-xs text-secondary-foreground bg-secondary rounded-lg px-3 py-2">{notice}</p>
             ) : null}
 
             <button
