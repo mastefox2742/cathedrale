@@ -70,6 +70,17 @@ describe("Controle d'acces par role (e2e)", () => {
         .send({ title: "Test", celebrant: "Pere Test", date: "2026-01-01", text: "Test" })
         .expect(401);
     });
+
+    it("peut consulter les formations publiees sans token", async () => {
+      await request(app.getHttpServer() as Server).get("/api/v1/formations/public").expect(200);
+    });
+
+    it("ne peut PAS creer une formation (401)", async () => {
+      await request(app.getHttpServer() as Server)
+        .post("/api/v1/formations")
+        .send({ title: "Test", description: "Test" })
+        .expect(401);
+    });
   });
 
   describe("Membre authentifie sans role staff", () => {

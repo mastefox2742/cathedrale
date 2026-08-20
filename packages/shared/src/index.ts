@@ -5,3 +5,4 @@ export * from "./schemas/user.schema";
 export * from "./schemas/announcement.schema";
 export * from "./schemas/mass-schedule.schema";
 export * from "./schemas/homily.schema";
+export * from "./schemas/formation.schema";

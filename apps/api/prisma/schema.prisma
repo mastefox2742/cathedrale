@@ -235,3 +235,40 @@ model Homily {
   @@index([status, date])
   @@index([status, publishedAt])
 }
+
+enum FormationAudience {
+  children
+  teenagers
+  young_adults
+  adults_parents
+  all
+}
+
+/// Module Academie de formation (cahier des charges 5.4) - niveau "Formation"
+/// uniquement pour l'instant (fiche presentee au public/aux membres). La
+/// structure imbriquee Parcours -> Modules -> Lecons -> Quiz, le suivi de
+/// progression et les inscriptions sont hors scope (priorite 2 du cahier
+/// des charges, "Construire la formation" - a faire apres stabilisation).
+model Formation {
+  id            String            @id @default(uuid())
+  title         String
+  description   String
+  audience      FormationAudience @default(all)
+  ageRange      String?
+  moduleCount   Int?
+  color         String?
+  icon          String?
+  prerequisites String?
+  openAccess    Boolean           @default(false)
+  visibility    Visibility        @default(public)
+  status        ContentStatus     @default(draft)
+
+  createdBy   String
+  updatedBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+  archivedAt  DateTime?
+
+  @@index([status, audience])
+}

@@ -55,6 +55,15 @@ export enum HomilyContentType {
   VIDEO = "video",
 }
 
+/** Public cible d'une formation (cahier des charges 5.4 "Parcours prioritaires"). */
+export enum FormationAudience {
+  CHILDREN = "children",
+  TEENAGERS = "teenagers",
+  YOUNG_ADULTS = "young_adults",
+  ADULTS_PARENTS = "adults_parents",
+  ALL = "all",
+}
+
 /** Type de celebration d'un horaire (cahier des charges 5.1). */
 export enum CelebrationType {
   MASS = "mass",

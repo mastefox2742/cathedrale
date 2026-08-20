@@ -95,6 +95,10 @@ export const PERMISSIONS: PermissionRule[] = [
   { resource: "homily", action: "create", allowedRoles: ["priest", "pastoral_manager", "admin", "super_admin"] },
   { resource: "homily", action: "publish", allowedRoles: ["priest", "pastoral_manager", "admin", "super_admin"] },
 
+  // "view_public" = fiche formation (titre, description, public cible...) visible sans compte
+  // (cahier des charges 2.1 "informations generales sur ... les formations"). "view" reste le
+  // detail complet reserve aux membres (cahier des charges 2.2 "suivre un parcours de formation").
+  { resource: "formation", action: "view_public", allowedRoles: [...ROLES] },
   { resource: "formation", action: "view", allowedRoles: ["member", "parent", "young_member", "catechist", "youth_animator", "group_manager", "priest", "pastoral_manager", "moderator", "safeguarding_officer", "admin", "super_admin"] },
   { resource: "formation", action: "create", allowedRoles: ["pastoral_manager", "priest", "admin", "super_admin"] },
   { resource: "formation", action: "publish", allowedRoles: ["pastoral_manager", "priest", "admin", "super_admin"] },
