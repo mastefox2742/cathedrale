@@ -1,14 +1,7 @@
 import Link from "next/link";
 import { NavAuthStatus } from "@/components/nav-auth-status";
-
-const NAV_LINKS = [
-  { href: "/", label: "Accueil" },
-  { href: "/horaires", label: "Horaires et liturgie" },
-  { href: "/annonces", label: "Annonces" },
-  { href: "/homelies", label: "Homélies" },
-  { href: "/evenements", label: "Événements" },
-  { href: "/formations", label: "Formations" },
-];
+import { SiteFooter } from "@/components/site-footer";
+import { PUBLIC_NAV_LINKS } from "@/lib/public-nav-links";
 
 /**
  * Layout des pages publiques (accessibles sans compte - cahier des charges 2.1).
@@ -27,7 +20,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <nav aria-label="Navigation principale">
           <Link href="/">Cathédrale Sacré-Cœur de Brazzaville</Link>
           <ul>
-            {NAV_LINKS.map((link) => (
+            {PUBLIC_NAV_LINKS.map((link) => (
               <li key={link.href}>
                 <Link href={link.href}>{link.label}</Link>
               </li>
@@ -39,7 +32,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         </div>
       </header>
       <main>{children}</main>
-      <footer>{/* TODO: contact, adresse, liens legaux */}</footer>
+      <SiteFooter />
     </div>
   );
 }
