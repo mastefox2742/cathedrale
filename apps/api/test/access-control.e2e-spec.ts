@@ -81,6 +81,17 @@ describe("Controle d'acces par role (e2e)", () => {
         .send({ title: "Test", description: "Test" })
         .expect(401);
     });
+
+    it("peut consulter les evenements publies sans token", async () => {
+      await request(app.getHttpServer() as Server).get("/api/v1/events/public").expect(200);
+    });
+
+    it("ne peut PAS creer un evenement (401)", async () => {
+      await request(app.getHttpServer() as Server)
+        .post("/api/v1/events")
+        .send({ title: "Test", description: "Test", date: "2026-01-01" })
+        .expect(401);
+    });
   });
 
   describe("Membre authentifie sans role staff", () => {

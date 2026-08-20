@@ -12,6 +12,7 @@ import { AnnouncementsModule } from "./modules/announcements/announcements.modul
 import { MassSchedulesModule } from "./modules/mass-schedules/mass-schedules.module";
 import { HomiliesModule } from "./modules/homilies/homilies.module";
 import { FormationsModule } from "./modules/formations/formations.module";
+import { EventsModule } from "./modules/events/events.module";
 import { HealthModule } from "./modules/health/health.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
@@ -53,6 +54,7 @@ import { PermissionsGuard } from "./common/guards/permissions.guard";
     MassSchedulesModule,
     HomiliesModule,
     FormationsModule,
+    EventsModule,
     HealthModule,
   ],
   providers: [

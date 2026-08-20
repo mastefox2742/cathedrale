@@ -111,6 +111,7 @@ export const PERMISSIONS: PermissionRule[] = [
 
   { resource: "event", action: "view_public", allowedRoles: [...ROLES] },
   { resource: "event", action: "create", allowedRoles: ["group_manager", "youth_animator", "catechist", "pastoral_manager", "priest", "admin", "super_admin"] },
+  { resource: "event", action: "publish", allowedRoles: ["pastoral_manager", "priest", "admin", "super_admin"] },
 
   { resource: "prayer_request", action: "create", allowedRoles: ["member", "parent", "young_member", "catechist", "youth_animator", "group_manager", "priest", "pastoral_manager", "admin", "super_admin"] },
   { resource: "prayer_request", action: "view", allowedRoles: ["pastoral_manager", "priest", "admin", "super_admin"], description: "Donnees sensibles - acces restreint aux responsables habilites uniquement" },
