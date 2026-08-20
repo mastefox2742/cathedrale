@@ -93,7 +93,28 @@ export class AuthController {
       }
     }
 
-    res.clearCookie(cookieName, { path: "/auth" });
+    res.clearCookie(cookieName, { path: this.cookiePath, domain: this.cookieDomain() });
+  }
+
+  /**
+   * Le cookie n'est envoye par le navigateur que sur les requetes dont le
+   * chemin commence par cette valeur. Doit correspondre au chemin REEL des
+   * routes (prefixe global "api" + versioning URI "v1", voir main.ts) et non
+   * au path declare sur le controller ("auth") : un cookie scope sur "/auth"
+   * n'est jamais envoye a "/api/v1/auth/refresh" et le refresh echoue toujours
+   * silencieusement (bug trouve en testant la page de connexion).
+   */
+  private readonly cookiePath = "/api/v1/auth";
+
+  /**
+   * "localhost" comme Domain explicite de cookie est rejete/ignore
+   * silencieusement par Chrome (bug connu, cookie jamais stocke) - omettre
+   * l'attribut en dev local donne un cookie host-only qui fonctionne. En
+   * production, COOKIE_DOMAIN doit rester un vrai domaine (ex: "monsite.org").
+   */
+  private cookieDomain(): string | undefined {
+    const domain = this.config.get("COOKIE_DOMAIN", { infer: true });
+    return domain === "localhost" ? undefined : domain;
   }
 
   private respondWithTokens(tokens: IssuedTokens, res: Response) {
@@ -106,8 +127,8 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: "strict",
-      domain: this.config.get("COOKIE_DOMAIN", { infer: true }),
-      path: "/auth",
+      domain: this.cookieDomain(),
+      path: this.cookiePath,
       expires: tokens.refreshTokenExpiresAt,
     });
 
