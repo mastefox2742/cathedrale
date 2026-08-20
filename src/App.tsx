@@ -16,6 +16,7 @@ const VieSpirituellePage = lazy(() => import('./pages/VieSpiritellePage').then(m
 const HorairesPage      = lazy(() => import('./pages/HorairesPage').then(m => ({ default: m.HorairesPage })))
 const AbonnementsPage   = lazy(() => import('./pages/AbonnementsPage').then(m => ({ default: m.AbonnementsPage })))
 const DonsPage          = lazy(() => import('./pages/DonsPage').then(m => ({ default: m.DonsPage })))
+const ConnexionPage     = lazy(() => import('./pages/ConnexionPage').then(m => ({ default: m.ConnexionPage })))
 
 // Pages admin (chunk séparé)
 const LoginPage               = lazy(() => import('./pages/admin/LoginPage').then(m => ({ default: m.LoginPage })))
@@ -67,6 +68,9 @@ export default function App() {
         <Route path="/horaires"            element={<Layout><Wrap><HorairesPage /></Wrap></Layout>} />
         <Route path="/abonnements"         element={<Layout><Wrap><AbonnementsPage /></Wrap></Layout>} />
         <Route path="/dons"                element={<Layout><Wrap><DonsPage /></Wrap></Layout>} />
+
+        {/* Ecran plein-ecran, pas de chrome Layout (comme /admin/login) */}
+        <Route path="/connexion" element={<Wrap><ConnexionPage /></Wrap>} />
 
         {/* ── Admin ── */}
         <Route path="/admin/login" element={<Wrap><LoginPage /></Wrap>} />

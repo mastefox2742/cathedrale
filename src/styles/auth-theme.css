@@ -1,0 +1,56 @@
+/* ══════════════════════════════════════════════
+   Thème de l'écran d'authentification (design fourni,
+   authentication-screen.html) — mappe les utilitaires Tailwind
+   (bg-primary, text-foreground, rounded-xl…) sur des variables CSS.
+
+   IMPORTANT : les valeurs des variables sont scopées sous .auth-theme,
+   PAS sur :root. Le système de design existant (src/styles/tokens.css,
+   "Sacred Light") définit déjà --primary/--secondary/--font-serif avec
+   d'autres valeurs, utilisées directement par .btn-primary/.card/etc.
+   ailleurs dans l'app — les redéfinir globalement casserait ces pages.
+   Scoper ici évite toute collision : hors de .auth-theme, ces noms de
+   variable continuent de résoudre vers les valeurs de tokens.css.
+   ══════════════════════════════════════════════ */
+@theme inline {
+  --color-background: var(--auth-background);
+  --color-foreground: var(--auth-foreground);
+  --color-primary: var(--auth-primary);
+  --color-primary-foreground: var(--auth-primary-foreground);
+  --color-secondary: var(--auth-secondary);
+  --color-secondary-foreground: var(--auth-secondary-foreground);
+  --color-muted: var(--auth-muted);
+  --color-muted-foreground: var(--auth-muted-foreground);
+  --color-accent: var(--auth-accent);
+  --color-accent-foreground: var(--auth-accent-foreground);
+  --color-destructive: var(--auth-destructive);
+  --color-card: var(--auth-card);
+  --color-card-foreground: var(--auth-card-foreground);
+  --color-border: var(--auth-border);
+  --color-ring: var(--auth-ring);
+
+  --font-heading: var(--auth-font-heading);
+}
+
+.auth-theme {
+  --auth-background: #faf8f2;
+  --auth-foreground: #1f2933;
+  --auth-primary: #123b5d;
+  --auth-primary-foreground: #ffffff;
+  --auth-secondary: #eef5f8;
+  --auth-secondary-foreground: #0b2942;
+  --auth-muted: #e7e9ec;
+  --auth-muted-foreground: #667085;
+  --auth-accent: #c89b3c;
+  --auth-accent-foreground: #ffffff;
+  --auth-destructive: #b54747;
+  --auth-card: #ffffff;
+  --auth-card-foreground: #1f2933;
+  --auth-border: #d9e0e5;
+  --auth-ring: #c89b3c;
+
+  --auth-font-heading: 'Playfair Display', var(--font-serif);
+
+  background: var(--auth-background);
+  color: var(--auth-foreground);
+  min-height: 100dvh;
+}
