@@ -48,6 +48,13 @@ export enum PrayerRequestStatus {
   ARCHIVED = "archived",
 }
 
+/** Type de contenu d'une homelie (cahier des charges 5.3). */
+export enum HomilyContentType {
+  TEXT = "text",
+  AUDIO = "audio",
+  VIDEO = "video",
+}
+
 /** Type de celebration d'un horaire (cahier des charges 5.1). */
 export enum CelebrationType {
   MASS = "mass",

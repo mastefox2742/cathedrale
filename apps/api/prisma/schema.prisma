@@ -196,3 +196,42 @@ model MassSchedule {
 
   @@index([status, date])
 }
+
+enum HomilyContentType {
+  text
+  audio
+  video
+}
+
+/// Module Homelies (cahier des charges 5.3). `text` porte le contenu quand
+/// contentType = text, `mediaUrl` quand contentType = audio|video (valide
+/// cote schema Zod partage, voir packages/shared/src/schemas/homily.schema.ts).
+model Homily {
+  id              String            @id @default(uuid())
+  title           String
+  contentType     HomilyContentType @default(text)
+  text            String?
+  mediaUrl        String?
+  thumbnailUrl    String?
+  celebrant       String
+  celebration     String?
+  date            DateTime
+  durationSeconds Int?
+  summary         String?
+  keywords        String[]          @default([])
+  transcript      String?
+  downloadable    Boolean           @default(false)
+  visibility      Visibility        @default(public)
+  usageRights     String?
+  status          ContentStatus     @default(draft)
+
+  createdBy   String
+  updatedBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+  archivedAt  DateTime?
+
+  @@index([status, date])
+  @@index([status, publishedAt])
+}

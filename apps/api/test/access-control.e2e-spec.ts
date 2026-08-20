@@ -59,6 +59,17 @@ describe("Controle d'acces par role (e2e)", () => {
         .send({ title: "Messe dominicale", startTime: "09:00" })
         .expect(401);
     });
+
+    it("peut consulter les homelies publiees sans token", async () => {
+      await request(app.getHttpServer() as Server).get("/api/v1/homilies/public").expect(200);
+    });
+
+    it("ne peut PAS creer une homelie (401)", async () => {
+      await request(app.getHttpServer() as Server)
+        .post("/api/v1/homilies")
+        .send({ title: "Test", celebrant: "Pere Test", date: "2026-01-01", text: "Test" })
+        .expect(401);
+    });
   });
 
   describe("Membre authentifie sans role staff", () => {

@@ -92,6 +92,7 @@ export const PERMISSIONS: PermissionRule[] = [
   { resource: "announcement", action: "publish", allowedRoles: ["pastoral_manager", "priest", "admin", "super_admin"] },
 
   { resource: "homily", action: "view_public", allowedRoles: [...ROLES] },
+  { resource: "homily", action: "create", allowedRoles: ["priest", "pastoral_manager", "admin", "super_admin"] },
   { resource: "homily", action: "publish", allowedRoles: ["priest", "pastoral_manager", "admin", "super_admin"] },
 
   { resource: "formation", action: "view", allowedRoles: ["member", "parent", "young_member", "catechist", "youth_animator", "group_manager", "priest", "pastoral_manager", "moderator", "safeguarding_officer", "admin", "super_admin"] },
