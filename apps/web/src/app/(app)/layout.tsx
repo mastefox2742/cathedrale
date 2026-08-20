@@ -1,13 +1,17 @@
 "use client";
 
 import { RouteGuard } from "@/components/route-guard";
+import { LogoutButton } from "@/components/logout-button";
 
 /** Espace membre connecte (cahier des charges "Menu connecte"). */
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <RouteGuard>
       <div>
-        <header>{/* TODO: nav "Mon espace / Ma progression / Mes groupes / ..." */}</header>
+        <header>
+          {/* TODO: nav "Mon espace / Ma progression / Mes groupes / ..." */}
+          <LogoutButton />
+        </header>
         <main>{children}</main>
       </div>
     </RouteGuard>

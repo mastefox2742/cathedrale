@@ -1,6 +1,7 @@
 "use client";
 
 import { RouteGuard } from "@/components/route-guard";
+import { LogoutButton } from "@/components/logout-button";
 
 /**
  * Espace administration (cahier des charges "Menu administration").
@@ -12,7 +13,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <RouteGuard requireStaff>
       <div>
-        <header>{/* TODO: nav admin (Annonces, Liturgie, Formations, Utilisateurs, Audit...) */}</header>
+        <header>
+          {/* TODO: nav admin (Annonces, Liturgie, Formations, Utilisateurs, Audit...) */}
+          <LogoutButton />
+        </header>
         <main>{children}</main>
       </div>
     </RouteGuard>
