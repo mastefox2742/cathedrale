@@ -37,33 +37,31 @@ export function AdminNotificationsPage() {
       const { count } = await supabase.from('notification_tokens').select('*', { count: 'exact', head: true })
       setTotalAbonnes(count ?? 0)
     } catch (_) { setTotalAbonnes(0) }
-    // Note : l'historique d'envoi nécessite un endpoint serveur d'envoi FCM (non implémenté) ;
-    // pas de collection à lire tant que cette fonctionnalité n'existe pas réellement.
-    setHistorique([])
+    try {
+      const { data } = await supabase.from('notifications_log').select('*').order('created_at', { ascending: false }).limit(20)
+      setHistorique((data ?? []).map(d => ({
+        id: d.id, titre: d.titre, type: d.type,
+        date: new Date(d.created_at).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }),
+        envoye: d.envoye,
+      })))
+    } catch (_) { setHistorique([]) }
   }
 
   async function handleSend() {
     if (!titre.trim() || !corps.trim()) return
     setSending(true)
     try {
-      // Appel à la Vercel Edge Function qui enverra via FCM Admin SDK
-      const res = await fetch('/api/send-notification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titre, corps, url, type }),
+      const { data, error } = await supabase.functions.invoke('send-notification', {
+        body: { titre, corps, url, type },
       })
-      if (!res.ok) throw new Error('Erreur serveur')
-      const data = await res.json() as { sent: number }
-      showToast(`✓ Notification envoyée à ${data.sent ?? '?'} abonnés`)
+      if (error) throw error
+      showToast(`✓ Notification envoyée à ${data?.sent ?? 0} abonnés`)
       setTitre('')
       setCorps('')
       setUrl('/')
       await loadStats()
     } catch (_) {
-      // En développement, simuler l'envoi
-      showToast('Notification enregistrée (envoi serveur en production)')
-      setTitre('')
-      setCorps('')
+      showToast('Erreur lors de l\'envoi — vérifiez la configuration FCM_SERVICE_ACCOUNT de la fonction Edge.', false)
     } finally { setSending(false) }
   }
 
@@ -246,16 +244,17 @@ export function AdminNotificationsPage() {
             ))
           )}
 
-          {/* Info VAPID */}
+          {/* Info configuration FCM */}
           <div style={{
             marginTop: 20, padding: '12px', borderRadius: 10,
             background: 'rgba(115,92,0,0.06)', border: '1px solid rgba(115,92,0,0.15)',
           }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--secondary)', marginBottom: 4 }}>
-              ⚙️ Configuration requise
+              ⚙️ Configuration requise (une fois)
             </p>
             <p style={{ fontSize: 11, color: 'var(--on-surface-variant)', lineHeight: 1.5 }}>
-              Ajoutez <code>VITE_FIREBASE_VAPID_KEY</code> dans les variables Vercel pour activer l'envoi réel.
+              1. Secret <code>FCM_SERVICE_ACCOUNT</code> sur la fonction Edge <code>send-notification</code> (Dashboard Supabase → Edge Functions → Secrets) — le JSON d'un compte de service Firebase.<br/>
+              2. Variable <code>VITE_FIREBASE_VAPID_KEY</code> côté site (clé publique Cloud Messaging) pour que les visiteurs puissent s'abonner.
             </p>
           </div>
         </div>

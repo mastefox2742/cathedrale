@@ -688,3 +688,20 @@ create index if not exists module_progress_user_id_idx on public.module_progress
 alter table public.module_progress enable row level security;
 drop policy if exists "Gestion de sa propre progression module" on public.module_progress;
 create policy "Gestion de sa propre progression module" on public.module_progress for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ── Historique des notifications push envoyées (Edge Function send-notification) ──
+create table if not exists public.notifications_log (
+  id uuid primary key default gen_random_uuid(),
+  titre text not null,
+  corps text not null,
+  url text not null default '/',
+  type text not null,
+  envoye int not null default 0,
+  created_by uuid references public.profiles(id),
+  created_at timestamptz not null default now()
+);
+alter table public.notifications_log enable row level security;
+drop policy if exists "Lecture staff notifications_log" on public.notifications_log;
+create policy "Lecture staff notifications_log" on public.notifications_log for select using (public.is_staff());
+drop policy if exists "Ecriture staff notifications_log" on public.notifications_log;
+create policy "Ecriture staff notifications_log" on public.notifications_log for insert with check (public.is_staff());
