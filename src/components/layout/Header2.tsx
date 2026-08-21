@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 
 const NAV_LINKS = [
   { to: '/',                label: 'Accueil',            section: 'Spirituel' },
@@ -20,6 +20,13 @@ const NAV_LINKS = [
 ]
 
 const SECTIONS = ['Spirituel', 'Paroisse', 'Soutien']
+
+const DESKTOP_LINKS = [
+  { to: '/liturgie',  label: 'Liturgie & Messes' },
+  { to: '/catechese', label: 'Catéchèse' },
+  { to: '/annonces',  label: 'Actualités' },
+  { to: '/horaires',  label: 'Horaires & Contact' },
+]
 
 interface Header2Props { transparent?: boolean }
 
@@ -91,19 +98,53 @@ export function Header2({ transparent = false }: Header2Props) {
           </div>
         </NavLink>
 
-        <button onClick={() => setMenuOpen(true)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0, padding: '4px 0 4px 12px' }}
-          aria-label="Menu">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, padding: 4 }}>
-            <span className="v2-menu-bar" style={{ display: 'block', height: 1.5, width: 26, background: barColor, transition: 'all .3s' }} />
-            <span className="v2-menu-bar v2-menu-bar-accent" style={{ display: 'block', height: 1.5, width: 18, background: barAccent, transition: 'all .3s' }} />
-            <span className="v2-menu-bar" style={{ display: 'block', height: 1.5, width: 26, background: barColor, transition: 'all .3s' }} />
-          </div>
-          <span className="v2-menu-label-txt" style={{ fontSize: 8, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: subColor, transition: 'color .35s' }}>Menu</span>
-        </button>
+        <ul className="v2-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 28, listStyle: 'none', margin: 0, padding: 0 }}>
+          {DESKTOP_LINKS.map(link => (
+            <li key={link.to}>
+              <NavLink to={link.to} style={({ isActive }) => ({
+                display: 'block', padding: '4px 0', textDecoration: 'none',
+                fontFamily: 'var(--v2-font-sans)', fontSize: 11, fontWeight: 700,
+                letterSpacing: '.1em', textTransform: 'uppercase',
+                color: isActive ? (isScrolled ? 'var(--primary)' : '#fff') : (isScrolled ? 'var(--text-mid)' : 'rgba(255,255,255,.85)'),
+                borderBottom: isActive ? `2px solid ${isScrolled ? 'var(--primary)' : '#fff'}` : '2px solid transparent',
+                transition: 'color .2s',
+              })}>
+                {link.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          <NavLink to="/connexion" className="v2-desktop-nav" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 16px',
+            borderRadius: 'var(--r-md)', border: `1.5px solid ${isScrolled ? 'var(--border-accent)' : 'rgba(255,255,255,.4)'}`,
+            fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase',
+            textDecoration: 'none', color: isScrolled ? 'var(--primary)' : '#fff', transition: 'all .2s',
+          }}>
+            Espace Membre
+          </NavLink>
+          <Link to="/dons" className="btn-gold v2-desktop-nav" style={{ padding: '9px 20px', fontSize: 10 }}>
+            Faire un don
+          </Link>
+
+          <button onClick={() => setMenuOpen(true)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0, padding: '4px 0 4px 12px' }}
+            aria-label="Menu">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5, padding: 4 }}>
+              <span className="v2-menu-bar" style={{ display: 'block', height: 1.5, width: 26, background: barColor, transition: 'all .3s' }} />
+              <span className="v2-menu-bar v2-menu-bar-accent" style={{ display: 'block', height: 1.5, width: 18, background: barAccent, transition: 'all .3s' }} />
+              <span className="v2-menu-bar" style={{ display: 'block', height: 1.5, width: 26, background: barColor, transition: 'all .3s' }} />
+            </div>
+            <span className="v2-menu-label-txt" style={{ fontSize: 8, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: subColor, transition: 'color .35s' }}>Menu</span>
+          </button>
+        </div>
       </header>
 
       <style>{`
+        @media (max-width: 1024px) {
+          .v2-desktop-nav { display: none !important; }
+        }
         @media (max-width: 768px) {
           .v2-site-header.transparent:not(.scrolled) {
             background: rgba(250,247,242,.95) !important;
