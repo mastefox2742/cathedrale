@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { Clock, HeartHandshake, Radio, ArrowRight } from 'lucide-react'
+import { Clock, HeartHandshake, Radio, ArrowRight, HandHeart } from 'lucide-react'
 import { getAnnonces, type Annonce } from '../services/annonces'
+import { getProjetsDons, formatXAF, type ProjetDon } from '../services/dons'
 
 const QUICK_ACCESS = [
   { icon: Clock, titre: 'Horaires & Messes', desc: "Consultez les horaires des offices et l'agenda liturgique de la semaine.", to: '/horaires', bg: 'var(--primary)', fg: '#fff' },
@@ -10,10 +11,10 @@ const QUICK_ACCESS = [
 ]
 
 const HISTOIRE = [
-  { annee: '1887', texte: "Le père Hippolyte Carrié fonde la Mission du Saint-Esprit à Brazzaville." },
-  { annee: '1894', texte: 'Consécration de la cathédrale, plus ancienne encore conservée en Afrique centrale.' },
-  { annee: '1977', texte: 'Sépulture du cardinal Émile Biayenda, premier cardinal congolais.' },
-  { annee: '1980', texte: 'Visite du pape Jean-Paul II à la cathédrale.' },
+  { annee: '1887', titre: 'Fondation de la mission', texte: "Le père Hippolyte Carrié fonde la Mission du Saint-Esprit à Brazzaville." },
+  { annee: '1892', titre: 'Première pierre', texte: "Le père Prosper Augouard pose la première pierre de l'édifice." },
+  { annee: '1894', titre: 'Consécration', texte: "La cathédrale est consacrée, plus ancienne encore conservée en Afrique centrale." },
+  { annee: '1977', titre: 'Sépulture du Cardinal Biayenda', texte: 'Sépulture du cardinal Émile Biayenda, premier cardinal congolais.' },
 ]
 
 function getLiturgicalColor() {
@@ -27,12 +28,14 @@ function getLiturgicalColor() {
 
 export function HomePage() {
   const [annonces, setAnnonces] = useState<Annonce[]>([])
+  const [projets, setProjets] = useState<ProjetDon[]>([])
   const heroBg = useRef<HTMLDivElement>(null)
   const coul = getLiturgicalColor()
   const now = new Date()
 
   useEffect(() => {
     getAnnonces().then(d => setAnnonces(d.slice(0, 3))).catch(() => {})
+    getProjetsDons().then(d => setProjets(d.slice(0, 3))).catch(() => setProjets([]))
   }, [])
 
   useEffect(() => {
@@ -235,6 +238,40 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* ══ PROJETS & SOLIDARITÉ ══ */}
+      {projets.length > 0 && (
+        <section style={{ padding: 'var(--space-xl) 0', background: 'var(--bg-alt)' }}>
+          <div className="inner">
+            <div className="reveal" style={{ maxWidth: 640, margin: '0 auto 48px', textAlign: 'center' }}>
+              <span className="section-label" style={{ justifyContent: 'center' }}>Projets Paroissiaux</span>
+              <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 700, color: 'var(--text)' }}>Préservation du sanctuaire &amp; solidarité</h2>
+            </div>
+            <div className="grid-3">
+              {projets.map(p => {
+                const pct = p.objectif > 0 ? Math.min(100, Math.round((p.collecte / p.objectif) * 100)) : 0
+                return (
+                  <div key={p.id} className="dark-card reveal" style={{ padding: 26, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <div className="icon-tile" style={{ background: 'var(--bg-alt)', color: 'var(--primary)', fontSize: 22 }}>{p.emoji}</div>
+                    <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>{p.titre}</h3>
+                    <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, flex: 1 }}>{p.description}</p>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>
+                        <span style={{ color: 'var(--primary)' }}>{pct}% Financé</span>
+                        <span style={{ color: 'var(--text-light)', fontFamily: 'monospace' }}>{formatXAF(p.collecte)} / {formatXAF(p.objectif)}</span>
+                      </div>
+                      <div style={{ width: '100%', height: 8, background: 'var(--bg-alt)', borderRadius: 'var(--r-full)', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', borderRadius: 'var(--r-full)', background: 'linear-gradient(90deg, var(--accent), var(--primary-mid))', width: `${pct}%`, transition: 'width 1s ease' }} />
+                      </div>
+                    </div>
+                    <Link to="/dons" className="btn-gold" style={{ justifyContent: 'center', fontSize: 10 }}>Soutenir ce projet</Link>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ══ HISTOIRE ══ */}
       <section style={{ padding: 'var(--space-xl) 0', background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 100%)' }}>
         <div className="inner grid-2" style={{ alignItems: 'center', gap: 'clamp(28px,5vw,72px)' }}>
@@ -294,6 +331,57 @@ export function HomePage() {
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ TRACES DU PASSÉ ══ */}
+      <section style={{ padding: 'var(--space-xl) 0', background: 'var(--surface)' }}>
+        <div className="inner">
+          <div className="reveal" style={{ maxWidth: 640, margin: '0 auto 40px', textAlign: 'center' }}>
+            <span className="section-label" style={{ justifyContent: 'center' }}>Archives &amp; Mémoire</span>
+            <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 700, color: 'var(--text)' }}>Traces du passé</h2>
+          </div>
+          <div className="grid-4">
+            {HISTOIRE.map(h => (
+              <Link key={h.annee} to="/histoire" className="dark-card reveal" style={{ overflow: 'hidden', textDecoration: 'none', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ aspectRatio: '4/3', position: 'relative', overflow: 'hidden' }}>
+                  <img src="/cathedrale.jpg" alt={h.titre} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1) contrast(1.15)' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(18,59,93,.15)' }} />
+                  <span style={{ position: 'absolute', top: 10, right: 10, padding: '2px 9px', background: 'rgba(18,59,93,.85)', color: '#fff', fontSize: 9, fontFamily: 'monospace', borderRadius: 3 }}>{h.annee}</span>
+                </div>
+                <div style={{ padding: 16, flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 15, fontWeight: 600, color: 'var(--text)', lineHeight: 1.3 }}>{h.titre}</h3>
+                  <span style={{ marginTop: 'auto', fontSize: 11, fontWeight: 700, color: 'var(--blue)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    Consulter la notice <ArrowRight size={12} />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 40 }}>
+            <Link to="/histoire" className="btn-outline">Consulter toute la chronologie</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ DON & SOLIDARITÉ (bandeau) ══ */}
+      <section style={{ padding: 'var(--space-xl) 0', background: 'var(--primary)', textAlign: 'center' }}>
+        <div className="inner" style={{ maxWidth: 680 }}>
+          <div className="icon-tile reveal" style={{ background: 'rgba(255,255,255,.1)', color: 'var(--accent-light)', margin: '0 auto 20px', border: '1px solid rgba(228,199,102,.4)' }}>
+            <HandHeart size={24} />
+          </div>
+          <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,40px)', fontWeight: 700, color: '#fff', marginBottom: 14 }}>
+            Participez à la préservation du sanctuaire
+          </h2>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,.7)', lineHeight: 1.8, marginBottom: 30 }}>
+            Vos offrandes permettent d'entretenir la cathédrale, de soutenir les projets paroissiaux et de financer les œuvres de charité à Brazzaville.
+          </p>
+          <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/dons" className="btn-gold">Faire un don (Mobile Money / Carte)</Link>
+            <Link to="/horaires" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 28px', border: '1.5px solid rgba(255,255,255,.4)', color: '#fff', fontFamily: 'var(--v2-font-sans)', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: 'var(--r-md)' }}>
+              Secrétariat paroissial
+            </Link>
           </div>
         </div>
       </section>
