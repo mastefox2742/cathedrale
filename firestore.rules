@@ -10,7 +10,7 @@ service cloud.firestore {
       return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     function isStaff() {
-      return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'redacteur'];
+      return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'redacteur', 'catechiste'];
     }
     function isActive() {
       return isAuth() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.actif == true;
@@ -38,10 +38,61 @@ service cloud.firestore {
       allow create, update, delete: if isStaff() && isActive();
     }
 
-    // ── Formations / Parcours ─────────────────────────────────────────────────
+    // ── Formations / Parcours (module admin "Formations & mouvements") ────────
     match /formations/{id} {
       allow read: if true; // Publiques (filtrées par actif côté client)
       allow create, update, delete: if isStaff() && isActive();
+    }
+
+    // ── Catéchisme (cours + modules) ───────────────────────────────────────────
+    match /catechisme_cours/{id} {
+      allow read: if resource.data.publie == true || isStaff();
+      allow create, update, delete: if isStaff() && isActive();
+    }
+    match /catechisme_modules/{id} {
+      allow read: if resource.data.publie == true || isStaff();
+      allow create, update, delete: if isStaff() && isActive();
+    }
+
+    // ── Événements & retransmissions ──────────────────────────────────────────
+    match /evenements/{id} {
+      allow read: if resource.data.publie == true || isStaff();
+      allow create, update, delete: if isStaff() && isActive();
+    }
+
+    // ── Médiathèque (gestion admin uniquement pour l'instant, pas de page publique) ──
+    match /medias/{id} {
+      allow read: if isStaff();
+      allow create, update, delete: if isStaff() && isActive();
+    }
+
+    // ── Dons (données financières — jamais de lecture publique) ───────────────
+    match /dons/{id} {
+      allow create: if true;
+      allow read, update, delete: if isStaff() && isActive();
+    }
+
+    // ── Abonnements WhatsApp / email ───────────────────────────────────────────
+    // NOTE : le flux public (vérif. doublon + désinscription) lit par contact
+    // côté client, ce que les règles Firestore ne peuvent pas filtrer précisément
+    // sans Cloud Function. Lecture publique acceptée pour ne pas casser ce flux ;
+    // à déplacer côté serveur si la confidentialité des contacts devient critique.
+    match /abonnements/{id} {
+      allow read, create, delete: if true;
+      allow update: if isStaff() && isActive();
+    }
+
+    // ── Tokens de notification push (FCM) ──────────────────────────────────────
+    match /notification_tokens/{token} {
+      allow create, update, delete: if true; // enregistrement anonyme par appareil
+      allow read: if isStaff();
+    }
+
+    // ── Journaux d'audit (admin) ───────────────────────────────────────────────
+    match /audit_logs/{id} {
+      allow create: if isStaff() && isActive();
+      allow read: if isAdmin();
+      allow update, delete: if false; // immuable
     }
 
     // ── Intentions de prière (Phase 3) ────────────────────────────────────────

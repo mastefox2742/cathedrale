@@ -1,113 +1,155 @@
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { getServicesParoissiaux, type ServiceParoissial } from '../services/servicesParoissiaux'
 
 const MESSES = [
-  { jour: 'Lundi – Vendredi', horaires: ['07h00', '18h30'], stripe: 'var(--liturgy-green)' },
-  { jour: 'Samedi', horaires: ['07h00', '10h00', '18h30'], stripe: 'var(--secondary)' },
-  { jour: 'Dimanche', horaires: ['07h00', '09h00', '11h00', '17h00'], stripe: 'var(--primary)' },
+  { jour: 'Lundi – Vendredi', horaires: ['07h00', '18h30'], accent: false },
+  { jour: 'Samedi',           horaires: ['07h00', '10h00', '18h30'], accent: false },
+  { jour: 'Dimanche',         horaires: ['07h00', '09h00', '11h00', '17h00'], accent: true },
 ]
 
 const SACREMENTS = [
-  { nom: 'Confessions', detail: 'Sam 15h–17h · Dim 8h–9h45', icon: 'handshake' },
-  { nom: 'Baptêmes', detail: '1er dimanche du mois — sur RDV', icon: 'water_drop' },
-  { nom: 'Mariages', detail: 'Sur rendez-vous — 2 mois à l\'avance', icon: 'favorite' },
-  { nom: 'Onction des malades', detail: '1er vendredi du mois à 18h30', icon: 'healing' },
+  { icon: '🤝', nom: 'Confessions', detail: 'Samedi 15h–17h · Dimanche 8h–9h45' },
+  { icon: '💧', nom: 'Baptêmes', detail: '1er dimanche du mois — sur rendez-vous', demarche: true },
+  { icon: '💍', nom: 'Mariages', detail: "Sur rendez-vous — 2 mois à l'avance minimum", demarche: true },
+  { icon: '✋', nom: 'Onction des malades', detail: '1er vendredi du mois à 18h30' },
 ]
 
-const INFOS = [
-  { icon: 'location_on', label: 'Adresse', value: 'Avenue de la Paix, Centre-ville\nBrazzaville, République du Congo' },
-  { icon: 'call', label: 'Téléphone', value: '+242 06 000 00 00' },
-  { icon: 'mail', label: 'Email', value: 'contact@sacrecoeur-brazza.cg' },
-  { icon: 'chat', label: 'WhatsApp', value: '+242 06 000 00 01' },
+const CONTACTS = [
+  { icon: '📍', label: 'Adresse', value: 'Avenue de la Paix, Centre-ville\nBrazzaville, République du Congo', href: 'https://maps.google.com/?q=Cathedrale+Sacre+Coeur+Brazzaville' },
+  { icon: '📞', label: 'Téléphone', value: '+242 06 000 00 00', href: 'tel:+242060000000' },
+  { icon: '✉️', label: 'Email', value: 'contact@sacrecoeur-brazza.cg', href: 'mailto:contact@sacrecoeur-brazza.cg' },
+  { icon: '💬', label: 'WhatsApp', value: '+242 06 000 00 01', href: 'https://wa.me/242060000001' },
 ]
+
+function contactHref(contact: string) {
+  return contact.includes('@') ? `mailto:${contact}` : `tel:${contact.replace(/\s/g, '')}`
+}
 
 export function HorairesPage() {
+  const [services, setServices] = useState<ServiceParoissial[]>([])
+  const [loadingServices, setLoadingServices] = useState(true)
+
+  useEffect(() => {
+    getServicesParoissiaux().then(setServices).catch(() => setServices([])).finally(() => setLoadingServices(false))
+  }, [])
+
   return (
-    <div style={{ padding: '0 var(--margin) var(--space-lg)' }}>
-
-      {/* ── Titre ── */}
-      <div style={{ paddingTop: 'var(--space-lg)', marginBottom: 'var(--space-lg)' }}>
-        <h1 className="text-headline-lg" style={{ color: 'var(--primary)' }}>Horaires & Contact</h1>
-        <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', marginTop: 4 }}>
-          Cathédrale Sacré-Cœur de Brazzaville
-        </p>
+    <>
+      <div className="page-hero">
+        <div className="page-hero-content">
+          <p className="page-hero-eyebrow">Informations pratiques</p>
+          <h1>Horaires <em style={{ color: 'var(--accent-light)', fontStyle: 'italic' }}>&amp; Contact</em></h1>
+        </div>
       </div>
 
-      {/* ── Messes ── */}
-      <h2 className="text-title-md" style={{ color: 'var(--primary)', marginBottom: 'var(--space-sm)' }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 20, verticalAlign: 'middle', marginRight: 6 }}>schedule</span>
-        Horaires des Messes
-      </h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 'var(--space-lg)' }}>
-        {MESSES.map(m => (
-          <div key={m.jour} className="card" style={{ padding: 'var(--space-md)' }}>
-            <div className="liturgical-stripe" style={{ background: m.stripe }} />
-            <div style={{ paddingLeft: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-              <p style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, fontSize: 17, color: 'var(--on-surface)' }}>{m.jour}</p>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {m.horaires.map(h => (
-                  <span key={h} style={{
-                    padding: '4px 12px', borderRadius: 'var(--r-full)',
-                    background: 'var(--primary)', color: 'white',
-                    fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 14,
-                  }}>{h}</span>
-                ))}
+      <div style={{ padding: 'var(--space-xl) 0' }}>
+        <div className="inner" style={{ maxWidth: 860 }}>
+
+          <div className="reveal" style={{ marginBottom: 40 }}>
+            <span className="section-label">Horaires des Messes</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 'var(--space-xl)' }}>
+            {MESSES.map((m, i) => (
+              <div key={i} className="reveal" style={{
+                display: 'flex', alignItems: 'center', gap: 20,
+                padding: '22px 28px',
+                background: 'var(--surface)', border: `1px solid ${m.accent ? 'rgba(193,164,97,.2)' : 'rgba(193,164,97,.07)'}`,
+                transition: 'background .2s',
+              }}
+                onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-alt)'}
+                onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'var(--surface)'}
+              >
+                <div style={{ width: 4, height: 48, background: m.accent ? 'var(--gold)' : 'var(--gold-dark)', borderRadius: 2, flexShrink: 0 }} />
+                <span style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 17, fontWeight: 600, color: 'var(--text)', flex: 1 }}>{m.jour}</span>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {m.horaires.map(h => (
+                    <span key={h} style={{ padding: '5px 14px', border: `1px solid ${m.accent ? 'rgba(193,164,97,.4)' : 'rgba(193,164,97,.2)'}`, color: m.accent ? 'var(--gold)' : 'var(--grey)', fontFamily: 'var(--v2-font-sans)', fontSize: 13, fontWeight: 600, letterSpacing: '.04em' }}>{h}</span>
+                  ))}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* ── Sacrements ── */}
-      <h2 className="text-title-md" style={{ color: 'var(--primary)', marginBottom: 'var(--space-sm)' }}>Sacrements</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 'var(--space-lg)' }}>
-        {SACREMENTS.map(s => (
-          <div key={s.nom} className="card" style={{ padding: '12px var(--space-md)', display: 'flex', gap: 14, alignItems: 'center' }}>
-            <div style={{ width: 40, height: 40, borderRadius: 'var(--r-full)', background: 'var(--surface-container)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: 20, fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
-            </div>
-            <div>
-              <p style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, fontSize: 16, color: 'var(--on-surface)' }}>{s.nom}</p>
-              <p style={{ fontSize: 13, color: 'var(--on-surface-variant)', marginTop: 2 }}>{s.detail}</p>
-            </div>
+          <div className="reveal" style={{ marginBottom: 28 }}>
+            <span className="section-label">Sacrements</span>
           </div>
-        ))}
-      </div>
-
-      {/* ── Contact ── */}
-      <h2 className="text-title-md" style={{ color: 'var(--primary)', marginBottom: 'var(--space-sm)' }}>Informations pratiques</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 'var(--space-md)' }}>
-        {INFOS.map(({ icon, label, value }) => (
-          <div key={label} className="card" style={{ padding: '12px var(--space-md)', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-            <div style={{ width: 40, height: 40, borderRadius: 'var(--r-full)', background: 'rgba(115,92,0,0.1)', border: '1px solid rgba(115,92,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--secondary)', fontSize: 18, fontVariationSettings: "'FILL' 1" }}>{icon}</span>
-            </div>
-            <div>
-              <p className="text-label-sm" style={{ color: 'var(--on-surface-variant)', marginBottom: 2 }}>{label}</p>
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--on-surface)', whiteSpace: 'pre-line', lineHeight: 1.5 }}>{value}</p>
-            </div>
+          <div className="sacrement-grid-resp" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'rgba(193,164,97,.07)', marginBottom: 'var(--space-xl)' }}>
+            {SACREMENTS.map((s, i) => (
+              <div key={i} className="reveal" style={{ background: 'var(--surface)', padding: '28px 24px', display: 'flex', gap: 16, alignItems: 'flex-start', transition: 'background .2s' }}
+                onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-alt)'}
+                onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'var(--surface)'}
+              >
+                <div style={{ width: 44, height: 44, border: '1px solid rgba(193,164,97,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{s.icon}</div>
+                <div>
+                  <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 17, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>{s.nom}</h3>
+                  <p style={{ fontSize: 13, color: 'var(--text-light)', fontWeight: 300 }}>{s.detail}</p>
+                  {s.demarche && (
+                    <Link to="/demarches" style={{ display: 'inline-block', marginTop: 8, fontSize: 12, fontWeight: 700, color: 'var(--gold)', textDecoration: 'underline' }}>
+                      Faire une demande →
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* ── Bouton itinéraire ── */}
-      <button
-        className="btn-primary"
-        style={{ width: '100%', justifyContent: 'center', marginBottom: 12 }}
-        onClick={() => window.open('https://maps.google.com/?q=Cathédrale+Sacré-Coeur+Brazzaville', '_blank')}
-      >
-        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>near_me</span>
-        Obtenir l'itinéraire
-      </button>
+          <div className="reveal" style={{ marginBottom: 28 }}>
+            <span className="section-label">Services paroissiaux</span>
+          </div>
+          {loadingServices ? (
+            <p style={{ fontSize: 13, color: 'var(--text-light)', marginBottom: 'var(--space-xl)' }}>Chargement…</p>
+          ) : services.length === 0 ? (
+            <p style={{ fontSize: 13, color: 'var(--text-light)', marginBottom: 'var(--space-xl)' }}>Le répertoire des services sera bientôt disponible.</p>
+          ) : (
+            <div className="sacrement-grid-resp" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'rgba(193,164,97,.07)', marginBottom: 'var(--space-xl)' }}>
+              {services.map(s => (
+                <div key={s.id} className="reveal" style={{ background: 'var(--surface)', padding: '28px 24px', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                  <div style={{ width: 44, height: 44, border: '1px solid rgba(193,164,97,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{s.emoji}</div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: 9, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: 4 }}>{s.categorie}</span>
+                    <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>{s.nom}</h3>
+                    <p style={{ fontSize: 13, color: 'var(--text-light)', fontWeight: 300, lineHeight: 1.6 }}>{s.description}</p>
+                    {s.horaire && <p style={{ fontSize: 12, color: 'var(--accent-dark)', fontWeight: 600, marginTop: 6 }}>{s.horaire}</p>}
+                    {s.contact && (
+                      <a href={contactHref(s.contact)} style={{ display: 'inline-block', marginTop: 6, fontSize: 12, fontWeight: 700, color: 'var(--gold)', textDecoration: 'underline' }}>
+                        Contacter →
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
-      {/* ── Carte placeholder ── */}
-      <div className="card" style={{
-        height: 180, display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        background: 'var(--surface-container)',
-      }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--outline-variant)', marginBottom: 8 }}>map</span>
-        <p style={{ fontSize: 13, color: 'var(--on-surface-variant)' }}>Carte interactive — disponible Phase 2</p>
-        <p style={{ fontSize: 11, color: 'var(--outline)', marginTop: 2 }}>Centre-ville, Brazzaville</p>
+          <div className="reveal" style={{ marginBottom: 28 }}>
+            <span className="section-label">Informations pratiques</span>
+          </div>
+          <div className="contact-grid-resp" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'rgba(193,164,97,.06)', marginBottom: 'var(--space-xl)' }}>
+            {CONTACTS.map((c, i) => (
+              <div key={i} className="reveal" style={{ background: 'var(--bg-alt)', padding: '28px 24px', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                <div style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>{c.icon}</div>
+                <div>
+                  <h4 style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: 6 }}>{c.label}</h4>
+                  <a href={c.href} target={c.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer"
+                    style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 15, color: 'var(--text)', textDecoration: 'none', whiteSpace: 'pre-line', lineHeight: 1.5, transition: 'color .2s' }}
+                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--primary)')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text)')}
+                  >{c.value}</a>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="reveal" style={{ background: 'var(--surface)', border: '1px solid var(--border)', height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 14 }}>
+            <p style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 16, color: 'var(--text-light)', textAlign: 'center' }}>Avenue de la Paix, Centre-ville, Brazzaville</p>
+            <a href="https://maps.google.com/?q=Cathedrale+Sacre+Coeur+Brazzaville" target="_blank" rel="noopener noreferrer" className="btn-outline">
+              ↗ Ouvrir dans Google Maps
+            </a>
+          </div>
+
+        </div>
       </div>
-    </div>
+    </>
   )
 }

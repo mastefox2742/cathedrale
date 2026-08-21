@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { logout } from '../../services/auth'
+import { logout, ROLE_LABELS } from '../../services/auth'
 import { useAuth } from '../../contexts/AuthContext'
 
 const NAV = [
@@ -7,17 +7,20 @@ const NAV = [
   { to: '/admin/annonces',    icon: 'campaign',           label: 'Annonces' },
   { to: '/admin/homelies',    icon: 'record_voice_over',  label: 'Homélies' },
   { to: '/admin/formations',  icon: 'school',             label: 'Formations' },
+  { to: '/admin/groupes',     icon: 'groups',             label: 'Groupes' },
+  { to: '/admin/demarches',   icon: 'assignment',         label: 'Démarches pastorales' },
+  { to: '/admin/intentions',  icon: 'volunteer_activism',  label: 'Intentions de prière' },
+  { to: '/admin/projets-dons', icon: 'paid',                label: 'Projets de dons' },
+  { to: '/admin/catechiste',  icon: 'edit_calendar',       label: 'Espace catéchiste' },
+  { to: '/admin/parent-enfant', icon: 'family_restroom',   label: 'Suivi Parent-Enfant' },
   { to: '/admin/catechisme',     icon: 'school',             label: 'Catéchisme' },
   { to: '/admin/notifications',  icon: 'notifications',      label: 'Notifications' },
   { to: '/admin/evenements',  icon: 'live_tv',            label: 'Médias & Lives' },
   { to: '/admin/medias',      icon: 'perm_media',         label: 'Médiathèque' },
+  { to: '/admin/temoignages', icon: 'rate_review',        label: 'Témoignages' },
+  { to: '/admin/services-paroissiaux', icon: 'apartment', label: 'Services paroissiaux' },
+  { to: '/admin/audit',       icon: 'history',            label: "Journaux d'audit" },
 ]
-
-const ROLE_LABELS: Record<string, string> = {
-  admin: 'Administrateur',
-  redacteur: 'Rédacteur',
-  catechiste: 'Catéchiste',
-}
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { profile } = useAuth()
@@ -59,7 +62,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: '16px 12px' }}>
-          {NAV.map(({ to, icon, label, exact }) => (
+          {[...NAV, ...(profile?.role === 'admin' ? [{ to: '/admin/utilisateurs', icon: 'manage_accounts', label: 'Utilisateurs & Rôles' }] : [])].map(({ to, icon, label, exact }) => (
             <NavLink
               key={to}
               to={to}
@@ -85,7 +88,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           {profile && (
             <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.08)' }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: 'white', marginBottom: 2 }}>{profile.nom}</p>
-              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{ROLE_LABELS[profile.role] || profile.role}</p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{(profile.role && ROLE_LABELS[profile.role]) || profile.role}</p>
             </div>
           )}
           <button

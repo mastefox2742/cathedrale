@@ -1,385 +1,253 @@
-import { useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, X } from 'lucide-react'
+import { getAnnonces, type Annonce } from '../services/annonces'
 
-const VERSET = {
-  texte: '« Venez à moi, vous tous qui peinez et ployez sous le fardeau, et moi je vous donnerai le repos. »',
-  ref: 'Matthieu 11, 28',
+const HISTOIRE = [
+  { annee: '1887', texte: "Le père Hippolyte Carrié fonde la Mission du Saint-Esprit à Brazzaville." },
+  { annee: '1894', texte: 'Consécration de la cathédrale, plus ancienne encore conservée en Afrique centrale.' },
+  { annee: '1977', texte: 'Sépulture du cardinal Émile Biayenda, premier cardinal congolais.' },
+  { annee: '1980', texte: 'Visite du pape Jean-Paul II à la cathédrale.' },
+]
+
+function getLiturgicalColor() {
+  const m = new Date().getMonth() + 1, d = new Date().getDate()
+  if ((m === 11 && d >= 27) || (m === 12 && d <= 24)) return { color: '#ce93d8', label: 'Avent', bg: 'rgba(106,27,154,.15)', border: 'rgba(106,27,154,.3)' }
+  if (m === 12 && d >= 25) return { color: '#f0f0f0', label: 'Temps de Noël', bg: 'rgba(255,255,255,.08)', border: 'rgba(255,255,255,.2)' }
+  if ((m === 2 && d >= 10) || (m === 3 && d <= 29)) return { color: '#ce93d8', label: 'Carême', bg: 'rgba(106,27,154,.15)', border: 'rgba(106,27,154,.3)' }
+  if ((m === 3 && d >= 30) || m === 4 || (m === 5 && d <= 18)) return { color: '#f0f0f0', label: 'Temps pascal', bg: 'rgba(255,255,255,.08)', border: 'rgba(255,255,255,.2)' }
+  return { color: '#6dbf67', label: 'Temps ordinaire', bg: 'rgba(46,125,50,.15)', border: 'rgba(46,125,50,.3)' }
 }
 
-const LITURGY_CARDS = [
-  { tag: 'Première Lecture', ref: 'Élie (1 R 19)', excerpt: '« L\'ange du Seigneur revint, le toucha et dit : Lève-toi et mange ! Autrement le chemin serait trop long pour toi. »', stripe: '#2e7d32' },
-  { tag: 'Psaume', ref: 'Psaume 33', excerpt: '« Goûtez et voyez comme est bon le Seigneur. Heureux qui trouve en lui son refuge ! »', stripe: '#2e7d32' },
-  { tag: 'Évangile', ref: 'Jean 6, 41-51', excerpt: '« Je suis le pain vivant, descendu du ciel. Celui qui mangera de ce pain vivra éternellement. »', stripe: '#2e7d32' },
-]
-
-const QUICK_ACCESS = [
-  { icon: 'live_tv',          label: 'Messe Live',  to: '/liturgie' },
-  { icon: 'self_improvement', label: 'Confession',  to: '/horaires' },
-  { icon: 'location_on',      label: 'Paroisses',   to: '/horaires' },
-]
-
-const ANNONCES = [
-  { id: 1, titre: 'Messe Solennelle — Fête du Sacré-Cœur', date: '27 Juin', tag: 'Liturgie', icon: 'church' },
-  { id: 2, titre: 'Inscriptions catéchisme 2026-2027 ouvertes', date: '10 Juin', tag: 'Formation', icon: 'school' },
-  { id: 3, titre: 'Retraite spirituelle du Carême', date: '15 Juin', tag: 'Événement', icon: 'self_improvement' },
-]
-
-const SECTIONS = [
-  { icon: 'menu_book',    label: 'Liturgie du jour',   desc: 'Lectures & Évangile',         to: '/liturgie',        bg: 'var(--primary-container)' },
-  { icon: 'campaign',     label: 'Annonces',           desc: 'Agenda & célébrations',        to: '/annonces',        bg: 'var(--secondary)' },
-  { icon: 'school',       label: 'Catéchèse',          desc: 'Formation & parcours de foi',  to: '/catechese',       bg: '#2e7d32' },
-  { icon: 'auto_stories', label: 'Formation',          desc: 'Académie des laïcs',           to: '/vie-spirituelle', bg: '#7b1fa2' },
-]
-
 export function HomePage() {
-  const [installDismissed, setInstallDismissed] = useState(false)
+  const [annonces, setAnnonces] = useState<Annonce[]>([])
+  const heroBg = useRef<HTMLDivElement>(null)
+  const coul = getLiturgicalColor()
+  const now = new Date()
+
+  useEffect(() => {
+    getAnnonces().then(d => setAnnonces(d.slice(0, 3))).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    const fn = () => { if (heroBg.current) heroBg.current.style.transform = `scale(1.06) translateY(${window.scrollY * .12}px)` }
+    window.addEventListener('scroll', fn, { passive: true })
+    return () => window.removeEventListener('scroll', fn)
+  }, [])
 
   return (
-    <div className="page-content" style={{ padding: 0 }}>
-
-      {/* ── Mobile: padding standard | Desktop: géré par page-content ── */}
-      <div style={{ padding: 'var(--space-md) var(--margin) 0' }} className="mobile-pad">
-
-        {/* PWA Banner */}
-        {!installDismissed && (
-          <div className="animate-slide-up" style={{
-            marginBottom: 'var(--space-sm)',
-            padding: '10px var(--space-sm)',
-            background: 'var(--primary-container)', color: 'white',
-            borderRadius: 'var(--r-lg)',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            boxShadow: 'var(--shadow-md)', gap: 8,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--secondary-container)', fontSize: 22, fontVariationSettings: "'FILL' 1" }}>install_mobile</span>
-              <span className="text-label-md" style={{ color: 'white' }}>Installer l'application sur votre écran</span>
-            </div>
-            <button onClick={() => setInstallDismissed(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', padding: 4 }}>
-              <X size={18} />
-            </button>
-          </div>
-        )}
-
-        {/* ── Hero photo cathédrale ── */}
-        <div
-          className="hero-banner"
-          style={{
-            position: 'relative', height: 260,
-            borderRadius: 'var(--r-xl)', overflow: 'hidden',
-            boxShadow: 'var(--shadow-lg)',
-            marginBottom: 'var(--space-md)',
-          }}
-        >
-          <img
-            src="/cathedrale.jpg"
-            alt="Cathédrale Sacré-Cœur de Brazzaville"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', transition: 'transform 0.7s' }}
-            onMouseEnter={e => ((e.currentTarget as HTMLImageElement).style.transform = 'scale(1.04)')}
-            onMouseLeave={e => ((e.currentTarget as HTMLImageElement).style.transform = 'scale(1)')}
-          />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,35,111,0.88) 0%, rgba(0,35,111,0.3) 55%, transparent 100%)' }} />
-          {/* Bande d'or */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #D4AF37, #f0d060, #D4AF37)' }} />
-          <div style={{ position: 'absolute', bottom: 0, padding: 'var(--space-md)' }}>
-            <span style={{ display: 'inline-block', marginBottom: 6, background: 'var(--secondary)', color: 'white', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              Actualité
-            </span>
-            <h2 className="text-headline-mobile" style={{ color: 'white', marginBottom: 4 }}>
-              Messe Solennelle à la Cathédrale
-            </h2>
-            <p className="text-body-md" style={{ color: 'rgba(255,255,255,0.8)' }}>
-              Célébration présidée par Monseigneur l'Archevêque ce dimanche à 10h.
-            </p>
-          </div>
-        </div>
-
-        {/* ── Devise liturgique ── */}
-        <div className="animate-slide-up" style={{
-          marginBottom: 'var(--space-md)',
-          padding: '14px 20px',
-          background: 'linear-gradient(135deg, var(--primary) 0%, #1a3a9a 100%)',
-          borderRadius: 'var(--r-xl)',
-          borderTop: '3px solid #D4AF37',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: 14, flexWrap: 'wrap',
-          boxShadow: '0 4px 20px rgba(0,35,111,0.2)',
-          position: 'relative', overflow: 'hidden',
+    <>
+      {/* ══ HERO ══ */}
+      <section style={{ position: 'relative', height: '100svh', minHeight: 600, display: 'flex', alignItems: 'center', overflow: 'hidden', width: '100%' }}>
+        <div ref={heroBg} style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `url('/cathedrale.jpg')`,
+          backgroundSize: 'cover', backgroundPosition: 'center',
+          transform: 'scale(1.06)',
+          willChange: 'transform',
         }}>
-          <div style={{ position: 'absolute', right: -16, top: -16, opacity: 0.06, pointerEvents: 'none' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 100, color: 'white' }}>auto_awesome</span>
-          </div>
-          <span style={{ color: '#D4AF37', fontSize: 18, flexShrink: 0 }}>✦</span>
-          <p style={{
-            fontFamily: 'var(--font-serif)', fontStyle: 'italic',
-            fontSize: 17, color: 'white', letterSpacing: '0.04em',
-            textAlign: 'center', lineHeight: 1.4,
-          }}>
-            Sumus corpus Christi,{' '}
-            <span style={{ color: '#D4AF37', fontStyle: 'normal', fontWeight: 600 }}>unum corpus</span>
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(30,58,95,.88) 0%, rgba(30,58,95,.6) 55%, rgba(74,127,181,.3) 100%)' }} />
+        </div>
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 80% at 10% 70%, rgba(184,168,130,.15) 0%, transparent 70%)' }} />
+
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: 'var(--max-w)', width: '100%', margin: '0 auto', padding: '0 var(--pad-x)' }}>
+          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.28em', textTransform: 'uppercase', color: 'var(--accent-light)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ width: 28, height: 1, background: 'var(--accent-light)', display: 'inline-block' }} />
+            Archidiocèse de Brazzaville · Congo
           </p>
-          <span style={{ color: '#D4AF37', fontSize: 18, flexShrink: 0 }}>✦</span>
+          <h1 className="hero-title" style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(48px,8vw,90px)', fontWeight: 700, lineHeight: 1.05, color: '#fff', marginBottom: 8 }}>
+            Cathédrale<br />
+            <em style={{ color: 'var(--accent-light)', fontStyle: 'italic' }}>Sacré-Cœur</em>
+          </h1>
+          <p style={{ fontSize: 14, fontWeight: 300, color: 'var(--text-mid)', maxWidth: 460, lineHeight: 1.8, marginBottom: 40 }}>
+            Liturgie quotidienne, catéchèse et vie spirituelle au cœur de Brazzaville depuis 1887.
+          </p>
+          <div className="hero-btns" style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+            <Link to="/liturgie" className="btn-gold">✝ Liturgie du jour</Link>
+            <Link to="/annonces" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 28px', border: '1.5px solid rgba(255,255,255,.55)', color: '#fff', fontFamily: 'var(--v2-font-sans)', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: 'var(--r-sm)', transition: 'all .2s' }}>◉ Annonces</Link>
+          </div>
         </div>
 
-        {/* ── Verset (desktop uniquement) ── */}
-        <div className="desktop-verset" style={{ display: 'none', marginBottom: 'var(--space-lg)' }}>
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(0,35,111,0.04), rgba(0,35,111,0.08))',
-            border: '1px solid rgba(0,35,111,0.1)',
-            borderRadius: 'var(--r-xl)', padding: '24px 28px',
-            borderLeft: '4px solid var(--secondary)',
-          }}>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--secondary)', marginBottom: 12 }}>
-              ✦ Verset du jour
+        <div style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, zIndex: 2 }}>
+          <span style={{ fontSize: 9, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--text-mid)' }}>Défiler</span>
+          <div style={{ width: 1, height: 48, background: 'linear-gradient(to bottom, rgba(255,255,255,.6), transparent)', animation: 'scrollLine 1.8s ease infinite' }} />
+        </div>
+      </section>
+
+      {/* ══ DEVISE ══ */}
+      <div style={{ background: 'var(--bg-alt)', borderTop: '1px solid var(--border-accent)', borderBottom: '1px solid var(--border-accent)', padding: '28px var(--pad-x)', textAlign: 'center' }}>
+        <p style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(14px,2vw,19px)', fontStyle: 'italic', color: 'var(--primary)', letterSpacing: '.02em' }}>
+          ✦ « Où laisserais-je ce peuple qui m'a été confié ? » ✦
+        </p>
+        <p style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 8, letterSpacing: '.05em' }}>
+          Cardinal Émile Biayenda, 1977
+        </p>
+      </div>
+
+      {/* ══ LITURGIE ══ */}
+      <section style={{ padding: 'var(--space-xl) 0', background: 'var(--surface)' }}>
+        <div className="inner grid-2" style={{ alignItems: 'center', gap: 'clamp(28px,5vw,72px)' }}>
+          <div className="reveal">
+            <span className="section-label">Liturgie</span>
+            <p style={{ fontSize: 11, color: 'var(--accent-dark)', letterSpacing: '.12em', marginBottom: 10 }}>
+              {now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
-            <blockquote className="text-body-lg" style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'var(--on-surface)', lineHeight: 1.75 }}>
-              {VERSET.texte}
+            <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,40px)', fontWeight: 700, color: 'var(--text)', marginBottom: 16, lineHeight: 1.2 }}>
+              Liturgie du Jour
+            </h2>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 14px', fontSize: 9, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 18, background: coul.bg, color: coul.color, border: `1px solid ${coul.border}` }}>
+              ● {coul.label}
+            </span>
+            <blockquote style={{ fontFamily: 'var(--v2-font-serif)', fontStyle: 'italic', fontSize: 16, color: 'var(--text-mid)', lineHeight: 1.8, borderLeft: '3px solid var(--blue)', paddingLeft: 18, marginBottom: 26 }}>
+              « Que votre lumière brille ainsi devant les hommes, afin qu'ils voient vos bonnes œuvres et glorifient votre Père qui est dans les cieux. »
+              <small style={{ display: 'block', marginTop: 8, fontSize: 12, fontStyle: 'normal', color: 'var(--blue)' }}>— Matthieu 5:16</small>
             </blockquote>
-            <cite style={{ display: 'block', marginTop: 10, fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--secondary)', fontStyle: 'normal', fontWeight: 600 }}>
-              — {VERSET.ref}
-            </cite>
+            <Link to="/liturgie" className="btn-gold">Lire les lectures du jour</Link>
+          </div>
+          <div className="reveal" style={{ position: 'relative' }}>
+            <img src="/cathedrale.jpg" alt="Cathédrale Sacré-Cœur de Brazzaville" style={{ width: '100%', aspectRatio: '4/5', objectFit: 'cover', filter: 'brightness(.8) saturate(.75)' }} />
+            <div style={{ position: 'absolute', inset: '-12px -12px auto auto', width: 100, height: 100, borderTop: '2px solid var(--accent)', borderRight: '2px solid var(--accent)' }} />
+            <div style={{ position: 'absolute', inset: 'auto auto -12px -12px', width: 100, height: 100, borderBottom: '2px solid var(--accent)', borderLeft: '2px solid var(--accent)' }} />
           </div>
         </div>
+      </section>
 
-        {/* ── Accès rapide ── */}
-        <div
-          className="desktop-grid-3"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 'var(--space-lg)' }}
-        >
-          {QUICK_ACCESS.map(({ icon, label, to }) => (
-            <Link key={to + label} to={to} className="tap-none" style={{ textDecoration: 'none' }}>
-              <div className="card" style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', padding: 'var(--space-sm)',
-                gap: 6, cursor: 'pointer',
-              }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-container)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'white')}
+      {/* ══ VERSE ══ */}
+      <div className="verse-band reveal">
+        <blockquote>
+          La foi vient de ce qu'on entend, et ce qu'on entend vient de la parole de Dieu.
+          <cite className="verse-ref">Romains 10 : 17</cite>
+        </blockquote>
+      </div>
+
+      {/* ══ ANNONCES ══ */}
+      <section style={{ padding: 'var(--space-xl) 0', background: 'var(--bg-alt)' }}>
+        <div className="inner">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 40 }} className="reveal">
+            <div>
+              <span className="section-label">Paroisse</span>
+              <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 700, color: 'var(--text)' }}>Annonces & Agenda</h2>
+            </div>
+            <Link to="/annonces" className="btn-outline" style={{ fontSize: 10, flexShrink: 0 }}>Tout voir →</Link>
+          </div>
+
+          {(annonces.length > 0 ? annonces : [
+            { id: '1', date: '2026-06-08', titre: 'Grand-messe — Corpus Christi', desc: '10h30 · Procession eucharistique', tag: 'Liturgie' as const, epingle: true, publie: true },
+            { id: '2', date: '2026-06-15', titre: 'Veillée de prière — Jeunes', desc: '20h00 · Crypte · Retransmis en direct', tag: 'Prière' as const, epingle: false, publie: true },
+            { id: '3', date: '2026-06-29', titre: 'Fête des Saints Pierre et Paul', desc: '10h00 · Célébration pontificale', tag: 'Liturgie' as const, epingle: false, publie: true },
+          ]).map((a, i) => {
+            const d = new Date(a.date + 'T12:00:00')
+            return (
+              <div key={a.id || i} className="reveal" style={{ display: 'grid', gridTemplateColumns: '64px 1fr auto', gap: 20, alignItems: 'center', padding: '18px 0', borderBottom: '1px solid var(--border)', transition: 'padding-left .25s', cursor: 'pointer' }}
+                onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.paddingLeft = '8px'}
+                onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.paddingLeft = '0'}
               >
-                <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: 28 }}>{icon}</span>
-                <span className="text-label-md" style={{ color: 'var(--primary)', textAlign: 'center' }}>{label}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* ── Grille 2 colonnes desktop : Lectures + Annonces ── */}
-        <div className="desktop-two-col" style={{ display: 'block' }}>
-
-          {/* Lectures du jour */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-sm)' }}>
-              <h3 className="text-title-md" style={{ color: 'var(--primary)' }}>Lectures du Jour</h3>
-              <span className="text-label-sm" style={{ color: 'var(--secondary)' }}>Temps Ordinaire</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 'var(--space-lg)' }}>
-              {LITURGY_CARDS.map((c, i) => (
-                <Link key={i} to="/liturgie" className="tap-none" style={{ textDecoration: 'none' }}>
-                  <div className={`card animate-slide-up delay-${i + 1}`} style={{ padding: 'var(--space-md)', opacity: i > 0 ? 0.85 : 1 }}>
-                    <div className="liturgical-stripe" style={{ background: c.stripe }} />
-                    <div style={{ paddingLeft: 12 }}>
-                      <p className="text-label-sm" style={{ color: 'var(--on-surface-variant)', marginBottom: 4 }}>{c.tag}</p>
-                      <h4 className="text-headline-mobile" style={{ color: 'var(--primary)', fontSize: 18, lineHeight: '1.3' }}>{c.ref}</h4>
-                      {i === 0 && (
-                        <p className="text-body-md" style={{ color: 'var(--on-surface)', marginTop: 8, fontStyle: 'italic', lineHeight: 1.7, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                          {c.excerpt}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Annonces */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-sm)' }}>
-              <h3 className="text-title-md" style={{ color: 'var(--primary)' }}>Annonces</h3>
-              <Link to="/annonces" style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--secondary)', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
-                Tout voir <ArrowRight size={14} />
-              </Link>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 'var(--space-lg)' }}>
-              {ANNONCES.map((a, i) => (
-                <div key={a.id} className={`card animate-slide-up delay-${i + 1}`} style={{ padding: '14px var(--space-md)', display: 'flex', alignItems: 'center', gap: 'var(--space-md)', cursor: 'pointer' }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 'var(--r-full)', background: 'var(--surface-container)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: 22 }}>{a.icon}</span>
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p className="text-label-md" style={{ color: 'var(--on-surface)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.titre}</p>
-                    <p style={{ fontSize: 13, color: 'var(--on-surface-variant)', marginTop: 2 }}>{a.date} · {a.tag}</p>
-                  </div>
-                  <span className="material-symbols-outlined" style={{ color: 'var(--on-surface-variant)', fontSize: 20, flexShrink: 0 }}>chevron_right</span>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 30, fontWeight: 700, color: 'var(--primary)', lineHeight: 1 }}>{d.toLocaleDateString('fr-FR', { day: '2-digit' })}</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.15em', textTransform: 'uppercase', color: 'var(--text-mid)' }}>{d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}</div>
                 </div>
-              ))}
-            </div>
+                <div>
+                  <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 3 }}>{a.titre}</h3>
+                  <p style={{ fontSize: 12, color: 'var(--text-mid)' }}>{a.desc}</p>
+                </div>
+                <span style={{ padding: '4px 10px', background: 'rgba(74,127,181,.1)', border: '1px solid rgba(74,127,181,.2)', borderRadius: 'var(--r-full)', fontSize: 9, fontWeight: 700, letterSpacing: '.12em', color: 'var(--blue)', whiteSpace: 'nowrap' }}>{a.tag}</span>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* ══ CATÉCHISME ══ */}
+      <section style={{ padding: 'var(--space-xl) 0', background: 'var(--surface)' }}>
+        <div className="inner">
+          <div className="reveal" style={{ maxWidth: 560, marginBottom: 48 }}>
+            <span className="section-label">Formation</span>
+            <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 700, color: 'var(--text)' }}>Parcours de Catéchèse</h2>
+            <p style={{ fontSize: 13, color: 'var(--text-mid)', marginTop: 12, lineHeight: 1.75 }}>Des parcours progressifs conçus et animés par l'équipe catéchétique de la cathédrale, adaptés à chaque tranche d'âge.</p>
+          </div>
+          <div className="grid-4">
+            {[
+              { emoji: '🌿', num: '01', name: 'Éveil à la Foi', tranche: '6 – 8 ans' },
+              { emoji: '🍞', num: '02', name: '1ère Communion', tranche: '8 – 10 ans' },
+              { emoji: '🔥', num: '03', name: 'Confirmation', tranche: '12 – 15 ans' },
+              { emoji: '💧', num: '04', name: 'RICA — Adultes', tranche: 'Tout âge' },
+            ].map((p, i) => (
+              <Link key={i} to="/catechese" className="dark-card reveal" style={{
+                padding: '28px 22px', textDecoration: 'none',
+                display: 'flex', flexDirection: 'column', gap: 12,
+              }}>
+                <span style={{ fontSize: 34 }}>{p.emoji}</span>
+                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.2em', color: 'var(--accent-dark)', textTransform: 'uppercase' }}>Niveau {p.num}</span>
+                <span style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>{p.name}</span>
+                <span style={{ fontSize: 11, color: 'var(--text-mid)' }}>{p.tranche}</span>
+                <span style={{ fontSize: 18, color: 'var(--blue)', marginTop: 'auto' }}>→</span>
+              </Link>
+            ))}
           </div>
         </div>
+      </section>
 
-        {/* ── Sections rapides desktop ── */}
-        <div className="desktop-sections-grid" style={{ display: 'none', marginBottom: 'var(--space-lg)' }}>
-          <h3 className="text-title-md" style={{ color: 'var(--primary)', marginBottom: 'var(--space-sm)' }}>Nos services</h3>
-          <div className="desktop-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
-            {SECTIONS.map(({ icon, label, desc, to, bg }) => (
-              <Link key={to} to={to} style={{ textDecoration: 'none' }}>
-                <div className="card" style={{
-                  padding: '20px 18px', cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-lg)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-sm)' }}
-                >
-                  <div style={{ width: 48, height: 48, borderRadius: 'var(--r-lg)', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-                    <span className="material-symbols-outlined" style={{ color: 'white', fontSize: 24, fontVariationSettings: "'FILL' 1" }}>{icon}</span>
+      {/* ══ HISTOIRE ══ */}
+      <section style={{ padding: 'var(--space-xl) 0', background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 100%)' }}>
+        <div className="inner grid-2" style={{ alignItems: 'center', gap: 'clamp(28px,5vw,72px)' }}>
+          <div className="reveal">
+            <span className="section-label" style={{ color: 'var(--accent-light)' }}>Notre Identité</span>
+            <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 700, color: '#fff', marginBottom: 16 }}>Histoire de la Cathédrale</h2>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,.65)', lineHeight: 1.8, marginBottom: 14 }}>
+              Depuis plus d'un siècle, la Cathédrale Sacré-Cœur est le cœur spirituel de Brazzaville et de l'Archidiocèse du Congo.
+            </p>
+            {HISTOIRE.map(h => (
+              <div key={h.annee} style={{ display: 'flex', gap: 18, padding: '14px 0', borderBottom: '1px solid rgba(255,255,255,.1)' }}>
+                <span style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 20, fontWeight: 700, color: 'var(--accent-light)', minWidth: 52 }}>{h.annee}</span>
+                <span style={{ fontSize: 13, color: 'rgba(255,255,255,.65)', lineHeight: 1.6, paddingTop: 3 }}>{h.texte}</span>
+              </div>
+            ))}
+            <div style={{ marginTop: 24, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <Link to="/histoire" className="btn-gold">Notre histoire complète</Link>
+            </div>
+          </div>
+          <div className="reveal" style={{ position: 'relative' }}>
+            <img src="/cathedrale.jpg" alt="Histoire" style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', filter: 'brightness(.75) saturate(.7)' }} />
+            <div style={{ position: 'absolute', inset: 'auto -16px -16px auto', width: '55%', height: '45%', borderRight: '2px solid var(--accent)', borderBottom: '2px solid var(--accent)' }} />
+          </div>
+        </div>
+      </section>
+
+      {/* ══ MÉDIAS HOME ══ */}
+      <section style={{ padding: 'var(--space-xl) 0', background: 'var(--bg-alt)' }}>
+        <div className="inner">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 36 }} className="reveal">
+            <div>
+              <span className="section-label">Médias</span>
+              <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 700, color: 'var(--text)' }}>Messes en Direct & Replays</h2>
+            </div>
+            <Link to="/evenements" className="btn-outline" style={{ fontSize: 10, flexShrink: 0 }}>Voir tout →</Link>
+          </div>
+          <div className="reveal grid-med">
+            {[
+              { img: '/cathedrale.jpg', plat: 'YouTube', platCls: '#FF0000', type: 'Replay · Messe', titre: 'Solennité de la Pentecôte — Messe Pontificale', date: 'Dim 25 mai 2026 · 10h30' },
+              { img: '/hero-bg.jpg', plat: 'Facebook', platCls: '#1877F2', type: 'Replay · Événement', titre: 'Grande Veillée Pascale — Nuit Sainte', date: 'Sam 19 avr 2026 · 22h00' },
+            ].map((m, i) => (
+              <Link key={i} to="/evenements" className="dark-card" style={{ overflow: 'hidden', cursor: 'pointer', textDecoration: 'none' }}>
+                <div style={{ aspectRatio: '16/9', overflow: 'hidden', position: 'relative' }}>
+                  <img src={m.img} alt={m.titre} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(.85)', transition: 'transform .5s' }}
+                    onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.04)')}
+                    onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+                  />
+                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 52, height: 52, borderRadius: '50%', background: 'rgba(30,58,95,.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-md)' }}>
+                    <svg viewBox="0 0 20 22" style={{ fill: 'white', width: 14, height: 16, marginLeft: 2 }}><path d="M2 1l16 10L2 21V1z"/></svg>
                   </div>
-                  <p style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, fontSize: 17, color: 'var(--on-surface)', marginBottom: 4 }}>{label}</p>
-                  <p style={{ fontSize: 13, color: 'var(--on-surface-variant)', lineHeight: 1.5 }}>{desc}</p>
+                  <span style={{ position: 'absolute', top: 10, right: 10, padding: '3px 9px', background: m.platCls, color: 'white', fontSize: 8, fontWeight: 700, letterSpacing: '.1em', borderRadius: 3 }}>{m.plat}</span>
+                </div>
+                <div style={{ padding: '16px 18px' }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.18em', color: 'var(--accent-dark)', textTransform: 'uppercase', marginBottom: 7 }}>{m.type}</div>
+                  <div style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 16, fontWeight: 600, color: 'var(--text)', lineHeight: 1.35 }}>{m.titre}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-mid)', marginTop: 7 }}>{m.date}</div>
                 </div>
               </Link>
             ))}
           </div>
         </div>
-
-        {/* ── Réflexion du jour ── */}
-        <div style={{ marginBottom: 'var(--space-lg)' }}>
-          <div className="card" style={{
-            background: 'var(--primary)', padding: 'var(--space-lg)',
-            borderRadius: 'var(--r-xl)', position: 'relative', overflow: 'hidden',
-            borderTop: '3px solid #D4AF37',
-          }}>
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <span className="material-symbols-outlined" style={{ color: 'var(--secondary-container)', fontSize: 28, fontVariationSettings: "'FILL' 1" }}>format_quote</span>
-                <h3 className="text-title-md" style={{ color: 'white' }}>Réflexion du Jour</h3>
-              </div>
-              <p className="text-headline-mobile" style={{ color: 'var(--secondary-container)', lineHeight: 1.45, marginBottom: 'var(--space-md)', fontStyle: 'italic' }}>
-                « La prière est le souffle de l'âme, elle nous permet d'écouter le silence de Dieu. »
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 'var(--r-full)', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--secondary-container)', flexShrink: 0 }}>
-                  <span className="material-symbols-outlined" style={{ color: 'var(--secondary-container)', fontVariationSettings: "'FILL' 1" }}>person</span>
-                </div>
-                <div>
-                  <p className="text-label-md" style={{ color: 'white' }}>Abbé Pierre N.</p>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>Aumônier diocésain</p>
-                </div>
-              </div>
-            </div>
-            <div style={{ position: 'absolute', right: -20, bottom: -20, opacity: 0.08 }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 140 }}>auto_awesome</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Histoire de la Paroisse ── */}
-        <div style={{ marginBottom: 'var(--space-lg)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 'var(--space-sm)' }}>
-            <span className="material-symbols-outlined" style={{ color: 'var(--secondary)', fontSize: 20, fontVariationSettings: "'FILL' 1" }}>history_edu</span>
-            <h3 className="text-title-md" style={{ color: 'var(--primary)' }}>Notre Histoire</h3>
-          </div>
-
-          <div className="card" style={{ overflow: 'hidden' }}>
-            {/* Bande liturgique */}
-            <div style={{ height: 4, background: 'linear-gradient(90deg, var(--primary), var(--secondary))' }} />
-
-            <div style={{ padding: 'var(--space-md)' }}>
-              {/* Années en médaillon */}
-              <div style={{ display: 'flex', gap: 12, marginBottom: 'var(--space-md)', overflowX: 'auto', paddingBottom: 4 }} className="no-scrollbar">
-                {[
-                  { annee: '1892', label: 'Fondation' },
-                  { annee: '1930', label: 'Consécration' },
-                  { annee: '1961', label: 'Diocèse' },
-                  { annee: '1995', label: 'Archidiocèse' },
-                ].map(({ annee, label }) => (
-                  <div key={annee} style={{
-                    flex: '0 0 auto', textAlign: 'center',
-                    padding: '10px 16px', borderRadius: 'var(--r-lg)',
-                    background: 'var(--surface-container)',
-                    border: '1px solid rgba(0,35,111,0.08)',
-                  }}>
-                    <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 700, color: 'var(--primary)', lineHeight: 1 }}>{annee}</p>
-                    <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 3 }}>{label}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Texte court */}
-              <p style={{ fontFamily: 'var(--font-serif)', fontSize: 17, lineHeight: 1.85, color: 'var(--on-surface)', marginBottom: 14 }}>
-                Fondée en <strong>1892</strong> par les Pères du Saint-Esprit, la Cathédrale Sacré-Cœur de Brazzaville
-                est l'une des plus anciennes églises d'Afrique centrale. Consacrée en <strong>1930</strong>, elle
-                est devenue cathédrale lors de la création du diocèse de Brazzaville en <strong>1961</strong>,
-                puis siège de l'Archidiocèse en <strong>1995</strong>.
-              </p>
-              <p style={{ fontFamily: 'var(--font-serif)', fontSize: 16, lineHeight: 1.8, color: 'var(--on-surface-variant)' }}>
-                Témoin de l'histoire du Congo, elle accueille chaque semaine des milliers de fidèles venus de toutes
-                les paroisses de Brazzaville, portant dans sa pierre le souffle de plus d'un siècle de foi congolaise.
-              </p>
-
-              {/* Lien vers histoire complète */}
-              <button style={{
-                marginTop: 'var(--space-md)',
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: 'var(--primary)', fontWeight: 700, fontSize: 14,
-                fontFamily: 'var(--font-sans)',
-                padding: '8px 0',
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>auto_stories</span>
-                Lire l'histoire complète
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Notifications ── */}
-        <div style={{ marginBottom: 'var(--space-lg)', padding: 'var(--space-md)', background: 'rgba(115,92,0,0.08)', borderRadius: 'var(--r-xl)', border: '1px solid rgba(115,92,0,0.18)' }}>
-          <div style={{ display: 'flex', gap: 'var(--space-md)', alignItems: 'flex-start' }}>
-            <span className="material-symbols-outlined" style={{ color: 'var(--secondary)', fontSize: 32, marginTop: 2, fontVariationSettings: "'FILL' 1" }}>notifications_active</span>
-            <div style={{ flex: 1 }}>
-              <h3 className="text-title-md" style={{ color: 'var(--on-surface)', marginBottom: 6, fontSize: 18 }}>Restez en Prière</h3>
-              <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: 'var(--space-md)', fontSize: 15 }}>
-                Recevez les rappels pour l'Angélus et les alertes de l'Évêché directement sur votre téléphone.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {['Rappels de Prière', 'Nouvelles de l\'Archidiocèse'].map(item => (
-                  <label key={item} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(117,118,130,0.12)', cursor: 'pointer' }}>
-                    <span className="text-label-md" style={{ color: 'var(--on-surface)' }}>{item}</span>
-                    <input type="checkbox" defaultChecked style={{ width: 20, height: 20, accentColor: 'var(--primary)', cursor: 'pointer' }} />
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Styles desktop inline */}
-      <style>{`
-        @media (min-width: 1024px) {
-          .mobile-pad { padding: 40px 0 0 !important; }
-          .page-content { padding: 0 !important; max-width: none !important; }
-          .desktop-layout main { padding: 0 56px; }
-
-          .desktop-two-col {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr;
-            gap: 28px;
-            align-items: start;
-          }
-          .desktop-verset     { display: block !important; }
-          .desktop-sections-grid { display: block !important; }
-
-          .hero-banner { height: 400px !important; border-radius: 20px !important; }
-
-          .text-headline-mobile { font-size: 32px !important; line-height: 40px !important; }
-          .text-title-md { font-size: 24px !important; }
-
-          .card { border-radius: 14px; }
-        }
-      `}</style>
-    </div>
+      </section>
+    </>
   )
 }

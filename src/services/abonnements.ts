@@ -1,8 +1,4 @@
-import {
-  collection, addDoc, deleteDoc, getDocs,
-  query, where, serverTimestamp, type Timestamp,
-} from 'firebase/firestore'
-import { db } from './firebase'
+import { supabase } from './supabase'
 
 export type CanalType = 'email' | 'whatsapp'
 
@@ -17,30 +13,43 @@ export interface Abonnement {
     newsletter: boolean // Newsletter hebdo (email seulement)
   }
   confirme: boolean
-  createdAt?: Timestamp
+  createdAt?: string
 }
 
-const COL = 'abonnements'
+const TABLE = 'abonnements'
+
+interface AbonnementRow {
+  id: string
+  canal: CanalType
+  contact: string
+  prefs: Abonnement['prefs']
+  confirme: boolean
+  created_at: string
+}
+
+function fromRow(r: AbonnementRow): Abonnement {
+  return { id: r.id, canal: r.canal, contact: r.contact, prefs: r.prefs, confirme: r.confirme, createdAt: r.created_at }
+}
 
 export async function subscribe(data: Omit<Abonnement, 'id' | 'createdAt' | 'confirme'>): Promise<string> {
-  // Vérifie doublon
-  const existing = await getDocs(query(collection(db, COL), where('contact', '==', data.contact)))
-  if (!existing.empty) return existing.docs[0].id
+  const { data: existing } = await supabase.from(TABLE).select('id').eq('contact', data.contact).maybeSingle()
+  if (existing) return existing.id
 
-  const ref = await addDoc(collection(db, COL), {
-    ...data,
+  const { data: row, error } = await supabase.from(TABLE).insert({
+    canal: data.canal, contact: data.contact, prefs: data.prefs,
     confirme: data.canal === 'whatsapp', // WhatsApp confirmé directement
-    createdAt: serverTimestamp(),
-  })
-  return ref.id
+  }).select('id').single()
+  if (error) throw error
+  return row.id
 }
 
 export async function unsubscribe(contact: string): Promise<void> {
-  const snap = await getDocs(query(collection(db, COL), where('contact', '==', contact)))
-  for (const d of snap.docs) await deleteDoc(d.ref)
+  const { error } = await supabase.from(TABLE).delete().eq('contact', contact)
+  if (error) throw error
 }
 
 export async function getAbonnements(): Promise<Abonnement[]> {
-  const snap = await getDocs(query(collection(db, COL)))
-  return snap.docs.map(d => ({ id: d.id, ...d.data() } as Abonnement))
+  const { data, error } = await supabase.from(TABLE).select('*')
+  if (error) throw error
+  return (data ?? []).map(fromRow)
 }

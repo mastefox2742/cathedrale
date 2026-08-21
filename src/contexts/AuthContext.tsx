@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { type User } from 'firebase/auth'
+import type { User } from '@supabase/supabase-js'
 import { onAuthChange, getUserProfile, type UserProfile } from '../services/auth'
 
 interface AuthContextValue {
@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return onAuthChange(async (u) => {
       setUser(u)
       if (u) {
-        const p = await getUserProfile(u.uid)
+        const p = await getUserProfile(u.id)
         setProfile(p)
       } else {
         setProfile(null)

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, getDocs, query, orderBy, getCountFromServer } from 'firebase/firestore'
-import { db } from '../../services/firebase'
+import { supabase } from '../../services/supabase'
 import { NOTIF_LABELS, type NotifPreferences } from '../../services/notifications'
 
 type NotifType = keyof NotifPreferences | 'tous'
@@ -35,19 +34,12 @@ export function AdminNotificationsPage() {
 
   async function loadStats() {
     try {
-      const snap = await getCountFromServer(collection(db, 'notification_tokens'))
-      setTotalAbonnes(snap.data().count)
+      const { count } = await supabase.from('notification_tokens').select('*', { count: 'exact', head: true })
+      setTotalAbonnes(count ?? 0)
     } catch (_) { setTotalAbonnes(0) }
-    try {
-      const snap = await getDocs(query(collection(db, 'notifications_log'), orderBy('createdAt', 'desc')))
-      setHistorique(snap.docs.slice(0, 10).map(d => ({
-        id: d.id,
-        titre: d.data().titre as string,
-        type: d.data().type as string,
-        date: d.data().createdAt?.toDate?.()?.toLocaleDateString('fr-FR') ?? '—',
-        envoye: d.data().envoye as number ?? 0,
-      })))
-    } catch (_) { setHistorique([]) }
+    // Note : l'historique d'envoi nécessite un endpoint serveur d'envoi FCM (non implémenté) ;
+    // pas de collection à lire tant que cette fonctionnalité n'existe pas réellement.
+    setHistorique([])
   }
 
   async function handleSend() {

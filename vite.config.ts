@@ -87,6 +87,20 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          // ── Contenu des formations (cours + modules) — Cache First, pour la
+          // lecture hors ligne une fois le parcours visité en ligne ────────
+          {
+            urlPattern: /supabase\.co\/rest\/v1\/(cours|catechisme_modules|lecons)/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'formations-hors-ligne',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 30 * 86400,   // 30 jours
+              },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           // ── Firebase Firestore — Network First ───────────────────────────
           {
             urlPattern: /firestore\.googleapis\.com/,

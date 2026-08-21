@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Cathédrale Sacré-Cœur",
+    "slug": "cathedrale-sacre-coeur",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FAF8F2",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mmboniobambi.cathedralesacrecoeur"
+    },
+    "android": {
+      "package": "com.mmboniobambi.cathedralesacrecoeur",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-audio"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7de1f2c5-2daf-4431-ad7d-c7ac69f09ade"
+      }
+    },
+    "owner": "m.mboniobambi",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/7de1f2c5-2daf-4431-ad7d-c7ac69f09ade"
+    }
+  }
+}

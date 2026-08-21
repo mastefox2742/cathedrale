@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { collection, getCountFromServer, query, where } from 'firebase/firestore'
-import { db } from '../../services/firebase'
+import { supabase } from '../../services/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -13,16 +12,16 @@ interface Stats {
 
 async function fetchStats(): Promise<Stats> {
   const [annonces, pinned, homelies, formations] = await Promise.all([
-    getCountFromServer(query(collection(db, 'annonces'), where('publie', '==', true))),
-    getCountFromServer(query(collection(db, 'annonces'), where('epingle', '==', true))),
-    getCountFromServer(query(collection(db, 'homelies'), where('publie', '==', true))),
-    getCountFromServer(collection(db, 'formations')),
+    supabase.from('annonces').select('*', { count: 'exact', head: true }).eq('publie', true),
+    supabase.from('annonces').select('*', { count: 'exact', head: true }).eq('epingle', true),
+    supabase.from('homelies').select('*', { count: 'exact', head: true }).eq('publie', true),
+    supabase.from('formations').select('*', { count: 'exact', head: true }),
   ])
   return {
-    annonces: annonces.data().count,
-    annoncesPinned: pinned.data().count,
-    homelies: homelies.data().count,
-    formations: formations.data().count,
+    annonces: annonces.count ?? 0,
+    annoncesPinned: pinned.count ?? 0,
+    homelies: homelies.count ?? 0,
+    formations: formations.count ?? 0,
   }
 }
 
@@ -172,7 +171,7 @@ export function DashboardPage() {
       }}>
         <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: 20, fontVariationSettings: "'FILL' 1" }}>cloud_done</span>
         <p style={{ fontSize: 13, color: 'var(--on-surface-variant)' }}>
-          Base de données connectée — Firebase Firestore · Stockage Firebase Storage
+          Base de données connectée — Supabase
         </p>
         <span style={{
           marginLeft: 'auto', padding: '3px 10px', borderRadius: 20,

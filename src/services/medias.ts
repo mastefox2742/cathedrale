@@ -1,9 +1,5 @@
-import {
-  collection, doc, getDocs, addDoc, deleteDoc,
-  query, orderBy, where, serverTimestamp, type Timestamp,
-} from 'firebase/firestore'
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage'
-import { db, storage } from './firebase'
+import { supabase } from './supabase'
+import { logAudit } from './auditLog'
 
 export type MediaType = 'photo' | 'document' | 'audio' | 'video'
 
@@ -16,29 +12,67 @@ export interface Media {
   taille?: number        // bytes
   categorie: string
   description?: string
-  createdAt?: Timestamp
+  createdAt?: string
 }
 
-const COL = 'medias'
+const TABLE = 'medias'
+const BUCKET = 'medias'
+
+interface MediaRow {
+  id: string
+  nom: string
+  type: MediaType
+  url: string
+  storage_path: string | null
+  taille: number | null
+  categorie: string
+  description: string | null
+  created_at: string
+}
+
+function fromRow(r: MediaRow): Media {
+  return {
+    id: r.id, nom: r.nom, type: r.type, url: r.url,
+    storagePath: r.storage_path ?? undefined, taille: r.taille ?? undefined,
+    categorie: r.categorie, description: r.description ?? undefined, createdAt: r.created_at,
+  }
+}
+
+// Bucket "medias" privé (réservé au staff) : les URLs stockées expirent, on les
+// régénère systématiquement à la lecture plutôt que de faire confiance à une valeur figée.
+async function withFreshUrl(r: MediaRow): Promise<Media> {
+  if (r.storage_path) {
+    const { data } = await supabase.storage.from(BUCKET).createSignedUrl(r.storage_path, 3600)
+    if (data?.signedUrl) return fromRow({ ...r, url: data.signedUrl })
+  }
+  return fromRow(r)
+}
 
 export async function getMedias(type?: MediaType): Promise<Media[]> {
-  const q = type
-    ? query(collection(db, COL), where('type', '==', type), orderBy('createdAt', 'desc'))
-    : query(collection(db, COL), orderBy('createdAt', 'desc'))
-  const snap = await getDocs(q)
-  return snap.docs.map(d => ({ id: d.id, ...d.data() } as Media))
+  let query = supabase.from(TABLE).select('*').order('created_at', { ascending: false })
+  if (type) query = query.eq('type', type)
+  const { data, error } = await query
+  if (error) throw error
+  return Promise.all((data ?? []).map(withFreshUrl))
 }
 
 export async function addMedia(data: Omit<Media, 'id' | 'createdAt'>): Promise<string> {
-  const ref_ = await addDoc(collection(db, COL), { ...data, createdAt: serverTimestamp() })
-  return ref_.id
+  const { data: row, error } = await supabase.from(TABLE).insert({
+    nom: data.nom, type: data.type, url: data.url, storage_path: data.storagePath || null,
+    taille: data.taille ?? null, categorie: data.categorie, description: data.description || null,
+  }).select('id').single()
+  if (error) throw error
+  await logAudit('create', 'media', row.id, data.nom)
+  return row.id
 }
 
 export async function deleteMedia(id: string, storagePath?: string): Promise<void> {
   if (storagePath) {
-    try { await deleteObject(ref(storage, storagePath)) } catch (_) {}
+    try { await supabase.storage.from(BUCKET).remove([storagePath]) } catch (_) {}
   }
-  await deleteDoc(doc(db, COL, id))
+  const { error } = await supabase.from(TABLE).delete().eq('id', id)
+  if (error) throw error
+  await logAudit('delete', 'media', id)
 }
 
 export function uploadMedia(
@@ -47,18 +81,16 @@ export function uploadMedia(
   onProgress: (pct: number) => void,
 ): Promise<{ url: string; path: string }> {
   return new Promise((resolve, reject) => {
-    const path = `medias/${folder}/${Date.now()}_${file.name}`
-    const storageRef = ref(storage, path)
-    const task = uploadBytesResumable(storageRef, file)
-    task.on(
-      'state_changed',
-      snap => onProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)),
-      reject,
-      async () => {
-        const url = await getDownloadURL(task.snapshot.ref)
-        resolve({ url, path })
-      },
-    )
+    const path = `${folder}/${Date.now()}_${file.name}`
+    onProgress(10)
+    supabase.storage.from(BUCKET).upload(path, file, { upsert: true })
+      .then(async ({ error }) => {
+        if (error) { reject(error); return }
+        onProgress(100)
+        const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, 3600)
+        resolve({ url: data?.signedUrl ?? '', path })
+      })
+      .catch(reject)
   })
 }
 

@@ -26,9 +26,9 @@ export function LoginPage() {
       }
     } catch (err: unknown) {
       const msg = (err as Error).message || ''
-      if (msg.includes('invalid-credential') || msg.includes('wrong-password') || msg.includes('user-not-found')) {
+      if (msg.toLowerCase().includes('invalid login credentials')) {
         setError('Email ou mot de passe incorrect.')
-      } else if (msg.includes('too-many-requests')) {
+      } else if (msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('too many requests')) {
         setError('Trop de tentatives. Réessayez dans quelques minutes.')
       } else {
         setError(msg || 'Une erreur est survenue.')

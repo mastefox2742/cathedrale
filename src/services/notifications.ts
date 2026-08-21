@@ -1,12 +1,6 @@
 import { getMessaging, getToken, onMessage, type MessagePayload } from 'firebase/messaging'
-import { doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
-import { db } from './firebase'
-import { getApps } from 'firebase/app'
-
-// Firebase app (déjà initialisée dans firebase.ts)
-function getApp() {
-  return getApps()[0]
-}
+import { firebaseApp } from './firebase'
+import { supabase } from './supabase'
 
 export interface NotifPreferences {
   liturgie: boolean      // Évangile du jour à 6h
@@ -45,7 +39,7 @@ export async function requestNotificationPermission(): Promise<string | null> {
   if (permission !== 'granted') return null
 
   try {
-    const messaging = getMessaging(getApp())
+    const messaging = getMessaging(firebaseApp)
     const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
     const token = await getToken(messaging, { vapidKey })
     return token
@@ -55,18 +49,15 @@ export async function requestNotificationPermission(): Promise<string | null> {
   }
 }
 
-// Sauvegarde le token + préférences dans Firestore
+// Sauvegarde le token + préférences dans Supabase
 export async function saveNotificationToken(
   token: string,
   prefs: NotifPreferences = DEFAULT_PREFS,
 ): Promise<void> {
-  await setDoc(doc(db, 'notification_tokens', token), {
-    token,
-    prefs,
-    platform: 'web',
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  const { error } = await supabase.from('notification_tokens').upsert({
+    token, prefs, platform: 'web', updated_at: new Date().toISOString(),
   })
+  if (error) throw error
 }
 
 // Met à jour les préférences
@@ -74,18 +65,21 @@ export async function updateNotificationPrefs(
   token: string,
   prefs: NotifPreferences,
 ): Promise<void> {
-  await setDoc(doc(db, 'notification_tokens', token), { prefs, updatedAt: serverTimestamp() }, { merge: true })
+  const { error } = await supabase.from('notification_tokens')
+    .update({ prefs, updated_at: new Date().toISOString() }).eq('token', token)
+  if (error) throw error
 }
 
 // Désabonnement
 export async function unsubscribeNotifications(token: string): Promise<void> {
-  await deleteDoc(doc(db, 'notification_tokens', token))
+  const { error } = await supabase.from('notification_tokens').delete().eq('token', token)
+  if (error) throw error
 }
 
 // Écoute les messages en premier plan
 export function onForegroundMessage(callback: (payload: MessagePayload) => void): () => void {
   try {
-    const messaging = getMessaging(getApp())
+    const messaging = getMessaging(firebaseApp)
     return onMessage(messaging, callback)
   } catch (_) {
     return () => {}

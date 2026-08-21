@@ -1,224 +1,149 @@
 import { useEffect, useState } from 'react'
-import { getEvenements, type Evenement, type EvenementType } from '../services/evenements'
+import { getEvenements, type Evenement } from '../services/evenements'
+import { Play } from 'lucide-react'
 
-const TABS: { key: EvenementType | 'tous'; label: string; icon: string }[] = [
-  { key: 'tous',      label: 'Tout',        icon: 'grid_view' },
-  { key: 'live',      label: 'En direct',   icon: 'sensors' },
-  { key: 'replay',    label: 'Replays',     icon: 'play_circle' },
-  { key: 'evenement', label: 'Événements',  icon: 'event' },
-]
+const FALLBACK: Evenement[] = []
 
-const PLATFORM_COLORS = { youtube: '#FF0000', facebook: '#1877F2' }
+function fmtDate(iso: string, heure?: string) {
+  const d = new Date(iso + 'T12:00:00')
+  const date = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  return heure ? `${date} · ${heure}` : date
+}
 
-function EvenementCard({ ev }: { ev: Evenement }) {
-  const [showEmbed, setShowEmbed] = useState(ev.type === 'live' && !!ev.estEnLive)
-
-  function getEmbedUrl() {
-    if (ev.platform === 'youtube' && ev.videoId) {
-      return `https://www.youtube.com/embed/${ev.videoId}?autoplay=${ev.estEnLive ? 1 : 0}&rel=0`
-    }
-    if (ev.platform === 'facebook') {
-      return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(ev.url)}&show_text=false`
-    }
-    return null
-  }
-
-  const embedUrl = getEmbedUrl()
+function VideoCard({ ev }: { ev: Evenement }) {
+  const [playing, setPlaying] = useState(false)
+  const isLive = ev.type === 'live'
+  const isYT = ev.platform === 'youtube'
 
   return (
-    <div style={{
-      background: 'white', borderRadius: 16,
-      overflow: 'hidden', marginBottom: 16,
-      boxShadow: '0 2px 12px rgba(0,35,111,0.08)',
-      border: ev.estEnLive ? '2px solid #ff3b30' : '1px solid rgba(0,35,111,0.08)',
-    }}>
-      {/* Badge LIVE */}
-      {ev.estEnLive && (
-        <div style={{
-          background: '#ff3b30', color: 'white',
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '6px 14px', fontSize: 12, fontWeight: 700,
-        }}>
-          <span style={{
-            display: 'inline-block', width: 8, height: 8,
-            borderRadius: '50%', background: 'white',
-            animation: 'pulse 1.2s infinite',
-          }} />
-          EN DIRECT MAINTENANT
-        </div>
-      )}
-
-      {/* Thumbnail ou embed */}
-      {showEmbed && embedUrl ? (
-        <div style={{ position: 'relative', paddingBottom: '56.25%', background: '#000' }}>
+    <div className="dark-card reveal" style={{ overflow: 'hidden' }}>
+      <div style={{ aspectRatio: '16/9', position: 'relative', background: 'var(--surface-mid)', cursor: 'pointer', overflow: 'hidden' }}
+        onClick={() => setPlaying(true)}>
+        {playing && ev.videoId && isYT ? (
           <iframe
-            src={embedUrl}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+            src={`https://www.youtube.com/embed/${ev.videoId}?autoplay=1`}
+            style={{ width: '100%', height: '100%', border: 'none' }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
-            title={ev.titre}
           />
-        </div>
-      ) : (
-        <div
-          style={{ position: 'relative', paddingBottom: '56.25%', cursor: 'pointer', background: '#1a1a2e' }}
-          onClick={() => setShowEmbed(true)}
-        >
-          {ev.thumbnail && (
-            <img
-              src={ev.thumbnail}
-              alt={ev.titre}
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }}
-            />
-          )}
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(0,0,0,0.25)',
-          }}>
-            <div style={{
-              width: 64, height: 64, borderRadius: '50%',
-              background: PLATFORM_COLORS[ev.platform],
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-              transition: 'transform 0.15s',
-            }}>
-              <span className="material-symbols-outlined" style={{ color: 'white', fontSize: 32, fontVariationSettings: "'FILL' 1" }}>
-                {ev.platform === 'youtube' ? 'smart_display' : 'play_circle'}
-              </span>
+        ) : (
+          <>
+            {ev.thumbnail && (
+              <img src={ev.thumbnail} alt={ev.titre} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(.65)', transition: 'transform .5s' }}
+                onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.04)')}
+                onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+              />
+            )}
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 54, height: 54, borderRadius: '50%', background: 'rgba(193,164,97,.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform .2s', boxShadow: '0 4px 20px rgba(0,0,0,.4)' }}
+                onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.08)')}
+                onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+              >
+                <Play size={20} color="var(--black)" style={{ marginLeft: 3 }} />
+              </div>
             </div>
-          </div>
-          {/* Platform badge */}
-          <div style={{
-            position: 'absolute', top: 10, right: 10,
-            background: PLATFORM_COLORS[ev.platform],
-            color: 'white', borderRadius: 6,
-            padding: '3px 8px', fontSize: 11, fontWeight: 700,
-          }}>
-            {ev.platform === 'youtube' ? 'YouTube' : 'Facebook'}
-          </div>
-        </div>
-      )}
-
-      {/* Infos */}
-      <div style={{ padding: '14px 16px' }}>
-        <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 17, fontWeight: 700, color: 'var(--primary)', marginBottom: 6 }}>
-          {ev.titre}
-        </h3>
-        {ev.description && (
-          <p style={{ fontSize: 13, color: 'var(--on-surface-variant)', lineHeight: 1.55, marginBottom: 10 }}>
-            {ev.description}
-          </p>
+            {isLive && (
+              <div style={{ position: 'absolute', top: 12, left: 12 }} className="live-badge">
+                <span className="live-dot" />EN DIRECT
+              </div>
+            )}
+            <span style={{
+              position: 'absolute', top: 12, right: 12,
+              padding: '3px 10px',
+              background: ev.platform === 'youtube' ? '#FF0000' : '#1877F2',
+              color: 'white', fontSize: 8, fontWeight: 700, letterSpacing: '.1em',
+            }}>
+              {ev.platform === 'youtube' ? 'YouTube' : 'Facebook'}
+            </span>
+          </>
         )}
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 12, color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>calendar_today</span>
-            {new Date(ev.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-            {ev.heure && ` · ${ev.heure}`}
-          </span>
-          {!showEmbed && (
-            <button
-              onClick={() => setShowEmbed(true)}
-              style={{
-                marginLeft: 'auto', padding: '6px 14px', borderRadius: 8, border: 'none',
-                background: PLATFORM_COLORS[ev.platform], color: 'white',
-                fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-              }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
-              Regarder
-            </button>
-          )}
-        </div>
       </div>
 
-      <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
+      <div style={{ padding: '18px 20px' }}>
+        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent-dark)', marginBottom: 8 }}>
+          {ev.type === 'live' ? 'En direct' : ev.type === 'replay' ? 'Replay' : 'Événement'}
+        </p>
+        <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 16, fontWeight: 600, color: 'var(--text)', lineHeight: 1.35, marginBottom: 8 }}>{ev.titre}</h3>
+        <p style={{ fontSize: 12, color: 'var(--text-light)', marginBottom: 10 }}>{fmtDate(ev.date, ev.heure)}</p>
+        {ev.description && <p style={{ fontSize: 13, color: 'var(--text-light)', fontWeight: 300, lineHeight: 1.6 }}>{ev.description}</p>}
+        <a href={ev.url} target="_blank" rel="noopener noreferrer"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 14, fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--blue)', textDecoration: 'none', transition: 'opacity .2s' }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = '.7')}
+          onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+        >
+          ↗ Ouvrir dans {ev.platform === 'youtube' ? 'YouTube' : 'Facebook'}
+        </a>
+      </div>
     </div>
   )
 }
 
 export function EvenementsPage() {
-  const [tab, setTab] = useState<EvenementType | 'tous'>('tous')
-  const [evenements, setEvenements] = useState<Evenement[]>([])
+  const [events, setEvents] = useState<Evenement[]>([])
   const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState<'all' | 'live' | 'replay'>('all')
 
   useEffect(() => {
-    setLoading(true)
-    getEvenements(tab === 'tous' ? undefined : tab)
-      .then(setEvenements)
-      .catch(() => setEvenements([]))
-      .finally(() => setLoading(false))
-  }, [tab])
+    getEvenements().then(setEvents).catch(() => setEvents(FALLBACK)).finally(() => setLoading(false))
+  }, [])
 
-  const lives = evenements.filter(e => e.estEnLive)
+  const live  = events.filter(e => e.type === 'live')
+  const shown = tab === 'all' ? events : tab === 'live' ? events.filter(e => e.type === 'live') : events.filter(e => e.type === 'replay')
 
   return (
-    <div style={{ padding: '0 var(--margin) var(--space-lg)' }}>
-
-      {/* Header */}
-      <div style={{ paddingTop: 'var(--space-lg)', marginBottom: 'var(--space-md)' }}>
-        <h1 className="text-headline-lg" style={{ color: 'var(--primary)' }}>Médias & Événements</h1>
-        <p className="text-body-md" style={{ color: 'var(--on-surface-variant)', marginTop: 4 }}>
-          Lives, replays et grands événements de la paroisse
-        </p>
+    <>
+      <div className="page-hero">
+        <div className="page-hero-content">
+          <p className="page-hero-eyebrow">Médias &amp; Diffusion</p>
+          <h1>Messes en Direct <em style={{ color: 'var(--accent-light)', fontStyle: 'italic' }}>&amp; Replays</em></h1>
+        </div>
       </div>
 
-      {/* Alerte live en cours */}
-      {lives.length > 0 && (
-        <div style={{
-          background: 'rgba(255,59,48,0.08)', border: '1.5px solid #ff3b30',
-          borderRadius: 12, padding: '12px 16px', marginBottom: 16,
-          display: 'flex', alignItems: 'center', gap: 10,
-        }}>
-          <span style={{
-            width: 10, height: 10, borderRadius: '50%', background: '#ff3b30', flexShrink: 0,
-            animation: 'pulse 1.2s infinite',
-          }} />
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#ff3b30' }}>
-            {lives.length === 1 ? '1 événement en direct maintenant !' : `${lives.length} événements en direct !`}
-          </span>
-        </div>
-      )}
+      <div style={{ padding: 'var(--space-lg) 0 var(--space-xl)' }}>
+        <div className="inner">
 
-      {/* Tabs */}
-      <div style={{
-        display: 'flex', gap: 8, marginBottom: 'var(--space-md)',
-        overflowX: 'auto', paddingBottom: 4,
-      }}>
-        {TABS.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '8px 14px', borderRadius: 'var(--r-full)', border: 'none',
-              background: tab === t.key ? 'var(--primary)' : 'var(--surface-container)',
-              color: tab === t.key ? 'white' : 'var(--on-surface-variant)',
-              fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              whiteSpace: 'nowrap', flexShrink: 0,
-              transition: 'all 0.15s',
-            }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1" }}>{t.icon}</span>
-            {t.label}
-          </button>
-        ))}
+          {live.filter(e => e.estEnLive).map((ev, i) => (
+            <div key={i} style={{ marginBottom: 32, padding: 24, border: '1px solid rgba(200,40,40,.3)', background: 'rgba(139,26,26,.1)' }}>
+              <div className="live-badge" style={{ marginBottom: 14 }}>
+                <span className="live-dot" />EN DIRECT MAINTENANT
+              </div>
+              <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 22, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>{ev.titre}</h3>
+              {ev.videoId && (
+                <div style={{ aspectRatio: '16/9', marginTop: 16 }}>
+                  <iframe src={`https://www.youtube.com/embed/${ev.videoId}?autoplay=1`} style={{ width: '100%', height: '100%', border: 'none' }} allow="autoplay" allowFullScreen />
+                </div>
+              )}
+            </div>
+          ))}
+
+          <div style={{ display: 'flex', gap: 2, marginBottom: 36 }}>
+            {(['all', 'live', 'replay'] as const).map(t => (
+              <button key={t} onClick={() => setTab(t)} style={{
+                padding: '9px 22px',
+                background: tab === t ? 'var(--gold)' : 'var(--anthracite)',
+                border: '1px solid var(--border-accent)',
+                color: tab === t ? 'var(--black)' : 'var(--grey)',
+                fontFamily: 'var(--v2-font-sans)', fontSize: 10, fontWeight: 700,
+                letterSpacing: '.12em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all .2s',
+              }}>
+                {t === 'all' ? 'Tous' : t === 'live' ? 'En direct' : 'Replays'}
+              </button>
+            ))}
+          </div>
+
+          {loading && <div className="page-loader"><div className="page-loader-ring" /></div>}
+
+          <div className="events-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
+            {shown.map((ev, i) => <VideoCard key={ev.id || i} ev={ev} />)}
+          </div>
+
+          {!loading && shown.length === 0 && (
+            <p style={{ color: 'var(--text-light)', textAlign: 'center', padding: '48px 0', fontSize: 14 }}>
+              Aucune vidéo disponible pour le moment.
+            </p>
+          )}
+        </div>
       </div>
-
-      {/* Contenu */}
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: 48, color: 'var(--on-surface-variant)' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 36, color: 'var(--primary)' }}>hourglass_top</span>
-          <p style={{ marginTop: 8 }}>Chargement…</p>
-        </div>
-      ) : evenements.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 48 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 48, color: 'var(--outline)' }}>videocam_off</span>
-          <p style={{ color: 'var(--on-surface-variant)', marginTop: 8 }}>Aucun contenu disponible pour le moment.</p>
-        </div>
-      ) : (
-        evenements.map(ev => <EvenementCard key={ev.id} ev={ev} />)
-      )}
-    </div>
+    </>
   )
 }

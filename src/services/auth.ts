@@ -1,49 +1,104 @@
-import {
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  sendPasswordResetEmail,
-  type User,
-} from 'firebase/auth'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { auth, db } from './firebase'
+import type { User } from '@supabase/supabase-js'
+import { supabase } from './supabase'
 
-export type Role = 'admin' | 'redacteur' | 'catechiste'
+export type Role =
+  | 'admin' | 'redacteur' | 'catechiste' | 'pretre' | 'secretariat' | 'tresorier'
+  | 'responsable_groupe' | 'animateur_jeunesse' | 'responsable_securite' | 'responsable_liturgie'
+  | 'parent' | 'benevole' | 'membre'
+
+export const ROLE_LABELS: Record<Role, string> = {
+  admin: 'Administrateur',
+  redacteur: 'Rédacteur',
+  catechiste: 'Catéchiste',
+  pretre: 'Prêtre',
+  secretariat: 'Secrétariat',
+  tresorier: 'Trésorier',
+  responsable_groupe: 'Responsable de groupe',
+  animateur_jeunesse: 'Animateur Jeunesse',
+  responsable_securite: 'Responsable sécurité',
+  responsable_liturgie: 'Responsable liturgie',
+  parent: 'Parent',
+  benevole: 'Bénévole',
+  membre: 'Membre',
+}
+
+/** Rôles opérationnels — donnent accès au panneau d'administration. */
+export const STAFF_ROLES: Role[] = [
+  'admin', 'redacteur', 'catechiste', 'pretre', 'secretariat', 'tresorier',
+  'responsable_groupe', 'animateur_jeunesse', 'responsable_securite', 'responsable_liturgie',
+]
+
+export function isStaffRole(role: Role | null): boolean {
+  return !!role && STAFF_ROLES.includes(role)
+}
 
 export interface UserProfile {
   uid: string
   email: string
-  nom: string
-  role: Role
+  nom: string | null
+  role: Role | null
   actif: boolean
 }
 
 export async function login(email: string, password: string): Promise<UserProfile> {
-  const cred = await signInWithEmailAndPassword(auth, email, password)
-  const profile = await getUserProfile(cred.user.uid)
-  if (!profile) throw new Error('Profil introuvable. Contactez l\'administrateur.')
-  if (!profile.actif) throw new Error('Compte désactivé. Contactez l\'administrateur.')
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) throw error
+
+  const profile = await getUserProfile(data.user.id)
+  if (!profile) {
+    await supabase.auth.signOut()
+    throw new Error('Profil introuvable. Contactez l\'administrateur.')
+  }
+  if (!profile.actif) {
+    await supabase.auth.signOut()
+    throw new Error('Compte désactivé. Contactez l\'administrateur.')
+  }
+  if (!isStaffRole(profile.role)) {
+    await supabase.auth.signOut()
+    throw new Error('Ce compte n\'a pas accès à l\'administration.')
+  }
   return profile
 }
 
 export async function logout(): Promise<void> {
-  await signOut(auth)
+  await supabase.auth.signOut()
 }
 
 export async function resetPassword(email: string): Promise<void> {
-  await sendPasswordResetEmail(auth, email)
+  const { error } = await supabase.auth.resetPasswordForEmail(email)
+  if (error) throw error
 }
 
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
-  const snap = await getDoc(doc(db, 'users', uid))
-  if (!snap.exists()) return null
-  return { uid, ...snap.data() } as UserProfile
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', uid).maybeSingle()
+  if (error || !data) return null
+  return { uid: data.id, email: data.email, nom: data.nom, role: data.role, actif: data.actif }
 }
 
-export async function createUserProfile(user: User, data: Omit<UserProfile, 'uid'>): Promise<void> {
-  await setDoc(doc(db, 'users', user.uid), data)
+export async function getStaffProfiles(): Promise<UserProfile[]> {
+  const { data, error } = await supabase.from('profiles').select('*').in('role', STAFF_ROLES).order('nom')
+  if (error) throw error
+  return (data ?? []).map(d => ({ uid: d.id, email: d.email, nom: d.nom, role: d.role, actif: d.actif }))
 }
 
-export function onAuthChange(cb: (user: User | null) => void) {
-  return onAuthStateChanged(auth, cb)
+export async function getAllProfiles(): Promise<UserProfile[]> {
+  const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []).map(d => ({ uid: d.id, email: d.email, nom: d.nom, role: d.role, actif: d.actif }))
+}
+
+export async function updateUserRole(uid: string, role: Role | null): Promise<void> {
+  const { error } = await supabase.from('profiles').update({ role }).eq('id', uid)
+  if (error) throw error
+}
+
+export async function updateUserActif(uid: string, actif: boolean): Promise<void> {
+  const { error } = await supabase.from('profiles').update({ actif }).eq('id', uid)
+  if (error) throw error
+}
+
+export function onAuthChange(cb: (user: User | null) => void): () => void {
+  supabase.auth.getSession().then(({ data }) => cb(data.session?.user ?? null))
+  const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => cb(session?.user ?? null))
+  return () => sub.subscription.unsubscribe()
 }
