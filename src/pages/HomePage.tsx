@@ -1,6 +1,13 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { Clock, HeartHandshake, Radio, ArrowRight } from 'lucide-react'
 import { getAnnonces, type Annonce } from '../services/annonces'
+
+const QUICK_ACCESS = [
+  { icon: Clock, titre: 'Horaires & Messes', desc: "Consultez les horaires des offices et l'agenda liturgique de la semaine.", to: '/horaires', bg: 'var(--primary)', fg: '#fff' },
+  { icon: HeartHandshake, titre: 'Intentions de prière', desc: 'Confiez vos intentions aux prêtres et à la communauté de la cathédrale.', to: '/vie-spirituelle', bg: 'var(--primary-mid)', fg: '#fff' },
+  { icon: Radio, titre: 'Homélies & Enseignements', desc: "Réécoutez les homélies dominicales pour nourrir votre chemin spirituel.", to: '/homelies', bg: 'var(--accent)', fg: 'var(--text)' },
+]
 
 const HISTOIRE = [
   { annee: '1887', texte: "Le père Hippolyte Carrié fonde la Mission du Saint-Esprit à Brazzaville." },
@@ -45,9 +52,9 @@ export function HomePage() {
           transform: 'scale(1.06)',
           willChange: 'transform',
         }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(30,58,95,.88) 0%, rgba(30,58,95,.6) 55%, rgba(74,127,181,.3) 100%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(18,59,93,.88) 0%, rgba(18,59,93,.6) 55%, rgba(62,124,177,.3) 100%)' }} />
         </div>
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 80% at 10% 70%, rgba(184,168,130,.15) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 80% at 10% 70%, rgba(201,162,39,.15) 0%, transparent 70%)' }} />
 
         <div style={{ position: 'relative', zIndex: 2, maxWidth: 'var(--max-w)', width: '100%', margin: '0 auto', padding: '0 var(--pad-x)' }}>
           <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.28em', textTransform: 'uppercase', color: 'var(--accent-light)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -63,13 +70,55 @@ export function HomePage() {
           </p>
           <div className="hero-btns" style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
             <Link to="/liturgie" className="btn-gold">✝ Liturgie du jour</Link>
-            <Link to="/annonces" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 28px', border: '1.5px solid rgba(255,255,255,.55)', color: '#fff', fontFamily: 'var(--v2-font-sans)', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: 'var(--r-sm)', transition: 'all .2s' }}>◉ Annonces</Link>
+            <Link to="/annonces" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 28px', border: '1.5px solid rgba(255,255,255,.55)', color: '#fff', fontFamily: 'var(--v2-font-sans)', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: 'var(--r-md)', transition: 'all .2s' }}>◉ Annonces</Link>
           </div>
         </div>
 
         <div style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, zIndex: 2 }}>
           <span style={{ fontSize: 9, letterSpacing: '.22em', textTransform: 'uppercase', color: 'var(--text-mid)' }}>Défiler</span>
           <div style={{ width: 1, height: 48, background: 'linear-gradient(to bottom, rgba(255,255,255,.6), transparent)', animation: 'scrollLine 1.8s ease infinite' }} />
+        </div>
+      </section>
+
+      {/* ══ BANDE DE STATUT ══ */}
+      <div style={{ background: 'var(--primary)', padding: '14px var(--pad-x)' }}>
+        <div className="inner" style={{ padding: '0 var(--pad-x)', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <Clock size={15} color="var(--accent-light)" />
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,.85)' }}>
+              {now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 12px', fontSize: 9, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', borderRadius: 'var(--r-full)', background: coul.bg, color: coul.color, border: `1px solid ${coul.border}` }}>
+              ● {coul.label}
+            </span>
+          </div>
+          <Link to="/horaires" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--accent-light)', textDecoration: 'none' }}>
+            Horaires des messes <ArrowRight size={14} />
+          </Link>
+        </div>
+      </div>
+
+      {/* ══ ACCÈS RAPIDE ══ */}
+      <section style={{ padding: 'var(--space-xl) 0', background: 'var(--bg-alt)' }}>
+        <div className="inner">
+          <div className="reveal" style={{ maxWidth: 560, marginBottom: 40 }}>
+            <span className="section-label">Vie spirituelle</span>
+            <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 700, color: 'var(--text)' }}>Au rythme de la foi chrétienne</h2>
+          </div>
+          <div className="grid-3">
+            {QUICK_ACCESS.map((q, i) => (
+              <Link key={i} to={q.to} className="dark-card reveal" style={{ padding: 26, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div className="icon-tile" style={{ background: q.bg, color: q.fg }}>
+                  <q.icon size={22} />
+                </div>
+                <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>{q.titre}</h3>
+                <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, flex: 1 }}>{q.desc}</p>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--blue)' }}>
+                  Découvrir <ArrowRight size={13} />
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -149,7 +198,7 @@ export function HomePage() {
                   <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 3 }}>{a.titre}</h3>
                   <p style={{ fontSize: 12, color: 'var(--text-mid)' }}>{a.desc}</p>
                 </div>
-                <span style={{ padding: '4px 10px', background: 'rgba(74,127,181,.1)', border: '1px solid rgba(74,127,181,.2)', borderRadius: 'var(--r-full)', fontSize: 9, fontWeight: 700, letterSpacing: '.12em', color: 'var(--blue)', whiteSpace: 'nowrap' }}>{a.tag}</span>
+                <span style={{ padding: '4px 10px', background: 'rgba(62,124,177,.1)', border: '1px solid rgba(62,124,177,.2)', borderRadius: 'var(--r-full)', fontSize: 9, fontWeight: 700, letterSpacing: '.12em', color: 'var(--blue)', whiteSpace: 'nowrap' }}>{a.tag}</span>
               </div>
             )
           })}
@@ -233,7 +282,7 @@ export function HomePage() {
                     onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.04)')}
                     onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
                   />
-                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 52, height: 52, borderRadius: '50%', background: 'rgba(30,58,95,.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-md)' }}>
+                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 52, height: 52, borderRadius: '50%', background: 'rgba(18,59,93,.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-md)' }}>
                     <svg viewBox="0 0 20 22" style={{ fill: 'white', width: 14, height: 16, marginLeft: 2 }}><path d="M2 1l16 10L2 21V1z"/></svg>
                   </div>
                   <span style={{ position: 'absolute', top: 10, right: 10, padding: '3px 9px', background: m.platCls, color: 'white', fontSize: 8, fontWeight: 700, letterSpacing: '.1em', borderRadius: 3 }}>{m.plat}</span>
