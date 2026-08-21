@@ -705,3 +705,84 @@ drop policy if exists "Lecture staff notifications_log" on public.notifications_
 create policy "Lecture staff notifications_log" on public.notifications_log for select using (public.is_staff());
 drop policy if exists "Ecriture staff notifications_log" on public.notifications_log;
 create policy "Ecriture staff notifications_log" on public.notifications_log for insert with check (public.is_staff());
+
+-- ── Protection des mineurs — premiere couche (dossiers enfants, consentements,
+-- signalements). Voir docs/charte-protection-mineurs.md pour le cadre associe. ──
+
+-- Roles ayant un besoin operationnel reel de voir des dossiers enfants
+-- (a l'exclusion des signalements, plus restreints : voir plus bas).
+create or replace function public.is_protection_mineurs() returns boolean
+language sql security definer stable as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and actif = true
+    and role in ('admin','responsable_securite','catechiste','secretariat')
+  );
+$$;
+
+create table if not exists public.enfants (
+  id uuid primary key default gen_random_uuid(),
+  prenom text not null,
+  nom text not null,
+  date_naissance date,
+  parent_nom text not null,
+  parent_contact text not null,
+  parent_profile_id uuid references public.profiles(id),
+  cours_id uuid references public.cours(id),
+  demande_id uuid references public.demandes_pastorales(id),
+  notes text,
+  actif boolean not null default true,
+  created_by uuid references public.profiles(id),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.enfants enable row level security;
+drop policy if exists "Gestion protection mineurs enfants" on public.enfants;
+create policy "Gestion protection mineurs enfants" on public.enfants for all using (public.is_protection_mineurs()) with check (public.is_protection_mineurs());
+
+create table if not exists public.consentements_parentaux (
+  id uuid primary key default gen_random_uuid(),
+  enfant_id uuid not null references public.enfants(id) on delete cascade,
+  type text not null check (type in ('participation_activites','droit_image','sortie')),
+  accorde boolean not null,
+  date_signature date not null default current_date,
+  signataire text not null,
+  notes text,
+  created_by uuid references public.profiles(id),
+  created_at timestamptz not null default now()
+);
+alter table public.consentements_parentaux enable row level security;
+drop policy if exists "Gestion protection mineurs consentements" on public.consentements_parentaux;
+create policy "Gestion protection mineurs consentements" on public.consentements_parentaux for all using (public.is_protection_mineurs()) with check (public.is_protection_mineurs());
+
+-- Signalements : le plus sensible -- soumission publique (y compris anonyme),
+-- mais lecture reservee a admin + responsable securite uniquement (jamais aux
+-- catechistes/secretariat, un signalement peut les concerner directement).
+create table if not exists public.signalements (
+  id uuid primary key default gen_random_uuid(),
+  concerne text,
+  description text not null,
+  gravite text check (gravite in ('faible','moyenne','elevee')),
+  statut text not null default 'nouveau' check (statut in ('nouveau','en_cours','traite','archive')),
+  reporter_nom text,
+  reporter_contact text,
+  enfant_id uuid references public.enfants(id),
+  notes_suivi text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.signalements enable row level security;
+drop policy if exists "Creation publique signalements" on public.signalements;
+create policy "Creation publique signalements" on public.signalements for insert with check (true);
+drop policy if exists "Lecture restreinte signalements" on public.signalements;
+create policy "Lecture restreinte signalements" on public.signalements for select using (public.is_admin() or public.is_responsable_securite());
+drop policy if exists "Modification restreinte signalements" on public.signalements;
+create policy "Modification restreinte signalements" on public.signalements for update using (public.is_admin() or public.is_responsable_securite()) with check (public.is_admin() or public.is_responsable_securite());
+drop policy if exists "Suppression restreinte signalements" on public.signalements;
+create policy "Suppression restreinte signalements" on public.signalements for delete using (public.is_admin() or public.is_responsable_securite());
+
+-- Trace administrative qu'une verification (habilitation/antecedents) reelle a
+-- eu lieu pour un encadrant -- le processus lui-meme se deroule hors de l'app.
+alter table public.profiles add column if not exists verifie_securite boolean not null default false;
+alter table public.profiles add column if not exists date_verification date;
+alter table public.profiles add column if not exists verifie_par uuid references public.profiles(id);

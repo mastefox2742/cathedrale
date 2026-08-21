@@ -19,6 +19,7 @@ import { FormationsScreen } from '../screens/FormationsScreen'
 import { EvenementsScreen } from '../screens/EvenementsScreen'
 import { GroupesScreen } from '../screens/GroupesScreen'
 import { TemoignagesScreen } from '../screens/TemoignagesScreen'
+import { SignalerScreen } from '../screens/SignalerScreen'
 import { ConnexionScreen } from '../screens/ConnexionScreen'
 
 const Tab = createBottomTabNavigator()
@@ -38,6 +39,7 @@ function AccueilNavigator() {
       <AccueilStack.Screen name="Paroisse" component={ParoisseScreen} />
       <AccueilStack.Screen name="Histoire" component={HistoireScreen} />
       <AccueilStack.Screen name="Jeunesse" component={JeunesseScreen} />
+      <AccueilStack.Screen name="Signaler" component={SignalerScreen} />
     </AccueilStack.Navigator>
   )
 }

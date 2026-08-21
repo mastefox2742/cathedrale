@@ -23,6 +23,7 @@ const AbonnementsPage   = lazy(() => import('./pages/AbonnementsPage').then(m =>
 const ConnexionPage     = lazy(() => import('./pages/ConnexionPage').then(m => ({ default: m.ConnexionPage })))
 const AttestationPage   = lazy(() => import('./pages/AttestationPage').then(m => ({ default: m.AttestationPage })))
 const TemoignagesPage   = lazy(() => import('./pages/TemoignagesPage').then(m => ({ default: m.TemoignagesPage })))
+const SignalerPage      = lazy(() => import('./pages/SignalerPage').then(m => ({ default: m.SignalerPage })))
 
 // Pages admin (chunk séparé)
 const LoginPage               = lazy(() => import('./pages/admin/LoginPage').then(m => ({ default: m.LoginPage })))
@@ -44,6 +45,7 @@ const AdminParentEnfantPage   = lazy(() => import('./pages/admin/AdminParentEnfa
 const AdminUtilisateursPage   = lazy(() => import('./pages/admin/AdminUtilisateursPage').then(m => ({ default: m.AdminUtilisateursPage })))
 const AdminTemoignagesPage    = lazy(() => import('./pages/admin/AdminTemoignagesPage').then(m => ({ default: m.AdminTemoignagesPage })))
 const AdminServicesParoissiauxPage = lazy(() => import('./pages/admin/AdminServicesParoissiauxPage').then(m => ({ default: m.AdminServicesParoissiauxPage })))
+const AdminSignalementsPage   = lazy(() => import('./pages/admin/AdminSignalementsPage').then(m => ({ default: m.AdminSignalementsPage })))
 
 // ── Spinner de chargement ──────────────────────────────────────────────────
 function PageLoader() {
@@ -91,6 +93,7 @@ export default function App() {
         <Route path="/connexion"          element={<Layout2><Wrap><ConnexionPage /></Wrap></Layout2>} />
         <Route path="/attestation/:coursId" element={<Wrap><AttestationPage /></Wrap>} />
         <Route path="/temoignages"        element={<Layout2><Wrap><TemoignagesPage /></Wrap></Layout2>} />
+        <Route path="/signaler"           element={<Layout2><Wrap><SignalerPage /></Wrap></Layout2>} />
 
         {/* ── Admin ── */}
         <Route path="/admin/login" element={<Wrap><LoginPage /></Wrap>} />
@@ -182,6 +185,11 @@ export default function App() {
         <Route path="/admin/services-paroissiaux" element={
           <AdminGuard>
             <AdminLayout><Wrap><AdminServicesParoissiauxPage /></Wrap></AdminLayout>
+          </AdminGuard>
+        } />
+        <Route path="/admin/signalements" element={
+          <AdminGuard>
+            <AdminLayout><Wrap><AdminSignalementsPage /></Wrap></AdminLayout>
           </AdminGuard>
         } />
 

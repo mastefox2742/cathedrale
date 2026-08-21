@@ -26,6 +26,7 @@ const COLS = [
       { to: '/dons', label: 'Don & Offrande' },
       { to: '/abonnements', label: "S'abonner" },
       { to: '/connexion', label: 'Espace Membre' },
+      { to: '/signaler', label: 'Signaler une préoccupation' },
     ],
   },
 ]

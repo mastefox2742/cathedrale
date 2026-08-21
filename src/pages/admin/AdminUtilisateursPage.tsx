@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
-  getAllProfiles, updateUserRole, updateUserActif, ROLE_LABELS,
+  getAllProfiles, updateUserRole, updateUserActif, updateUserVerification, ROLE_LABELS,
   type UserProfile, type Role,
 } from '../../services/auth'
 import { useAuth } from '../../contexts/AuthContext'
@@ -58,6 +58,14 @@ export function AdminUtilisateursPage() {
     } catch { showToast('Erreur', 'err') }
   }
 
+  async function handleVerificationChange(p: UserProfile, verifie: boolean) {
+    try {
+      await updateUserVerification(p.uid, verifie)
+      showToast(verifie ? 'Marqué comme vérifié ✓' : 'Vérification retirée ✓')
+      await load()
+    } catch { showToast('Erreur', 'err') }
+  }
+
   return (
     <div style={{ padding: '32px 36px', maxWidth: 1100, fontFamily: 'var(--font-sans)' }}>
 
@@ -96,7 +104,7 @@ export function AdminUtilisateursPage() {
           <table style={{ width: '100%', minWidth: 720, borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--surface-container)', textAlign: 'left' }}>
-                {['Nom', 'Email', 'Rôle', 'Statut', ''].map(h => (
+                {['Nom', 'Email', 'Rôle', 'Statut', 'Habilitation', ''].map(h => (
                   <th key={h} style={{ padding: '12px 16px', fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--on-surface-variant)' }}>{h}</th>
                 ))}
               </tr>
@@ -129,6 +137,19 @@ export function AdminUtilisateursPage() {
                       }}
                     >
                       {p.actif ? 'Actif' : 'Désactivé'}
+                    </button>
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <button
+                      onClick={() => handleVerificationChange(p, !p.verifieSecurite)}
+                      title={p.dateVerification ? `Vérifié le ${new Date(p.dateVerification).toLocaleDateString('fr-FR')}` : "Vérification (habilitation/antécédents) auprès de mineurs, réalisée hors de l'application"}
+                      style={{
+                        padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, border: 'none', cursor: 'pointer',
+                        background: p.verifieSecurite ? 'rgba(21,101,192,.12)' : 'rgba(0,0,0,.06)',
+                        color: p.verifieSecurite ? '#1565C0' : 'var(--on-surface-variant)',
+                      }}
+                    >
+                      {p.verifieSecurite ? '✓ Vérifié' : 'Non vérifié'}
                     </button>
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: 11, color: 'var(--on-surface-variant)' }}>

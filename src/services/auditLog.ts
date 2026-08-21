@@ -28,6 +28,9 @@ export const RESOURCE_LABELS: Record<string, string> = {
   temoignage: 'Témoignage',
   service_paroissial: 'Service paroissial',
   lecon: 'Leçon',
+  enfant: 'Fiche enfant',
+  consentement: 'Consentement parental',
+  signalement: 'Signalement',
 }
 
 /** Ne doit jamais faire échouer l'action admin qu'elle accompagne. */

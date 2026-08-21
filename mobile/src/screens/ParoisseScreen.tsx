@@ -1,10 +1,12 @@
-import { View, Text, StyleSheet, Linking } from 'react-native'
+import { View, Text, StyleSheet, Linking, Pressable } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
 import { Screen } from '../components/Screen'
 import { BackHeader, PrimaryButton } from '../components/ui'
 import { Icon } from '../components/Icon'
 import { colors, fonts, radius } from '../theme/colors'
 
 export function ParoisseScreen() {
+  const navigation = useNavigation<any>()
   return (
     <Screen>
       <BackHeader title="Informations & Contact" subtitle="Tout savoir sur la Cathédrale Sacré-Cœur" />
@@ -56,13 +58,20 @@ export function ParoisseScreen() {
           </View>
         </View>
 
-        <View style={{ marginBottom: 24 }}>
+        <View style={{ marginBottom: 12 }}>
           <PrimaryButton
             label="Obtenir l'itinéraire"
             icon="map-pin"
             onPress={() => Linking.openURL('https://maps.google.com/?q=Cathédrale+Sacré-Coeur+Brazzaville')}
           />
         </View>
+
+        <Pressable onPress={() => navigation.navigate('Signaler')} style={styles.signalerLink}>
+          <Icon name="shield-check-fill" size={14} color={colors.mutedForeground} />
+          <Text style={styles.signalerText}>Signaler une préoccupation (protection des mineurs)</Text>
+        </Pressable>
+
+        <View style={{ marginBottom: 24 }} />
       </View>
     </Screen>
   )
@@ -86,4 +95,6 @@ const styles = StyleSheet.create({
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   rdvBadge: { backgroundColor: colors.secondary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4 },
   rdvBadgeText: { fontFamily: fonts.sansMedium, fontSize: 10, color: colors.primary },
+  signalerLink: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center', paddingVertical: 8 },
+  signalerText: { fontFamily: fonts.sans, fontSize: 11, color: colors.mutedForeground, textDecorationLine: 'underline' },
 })

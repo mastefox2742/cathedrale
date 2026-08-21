@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { logout, ROLE_LABELS } from '../../services/auth'
+import { logout, ROLE_LABELS, canManageEnfants, canViewSignalements } from '../../services/auth'
 import { useAuth } from '../../contexts/AuthContext'
 
 const NAV = [
@@ -12,7 +12,6 @@ const NAV = [
   { to: '/admin/intentions',  icon: 'volunteer_activism',  label: 'Intentions de prière' },
   { to: '/admin/projets-dons', icon: 'paid',                label: 'Projets de dons' },
   { to: '/admin/catechiste',  icon: 'edit_calendar',       label: 'Espace catéchiste' },
-  { to: '/admin/parent-enfant', icon: 'family_restroom',   label: 'Suivi Parent-Enfant' },
   { to: '/admin/catechisme',     icon: 'school',             label: 'Catéchisme' },
   { to: '/admin/notifications',  icon: 'notifications',      label: 'Notifications' },
   { to: '/admin/evenements',  icon: 'live_tv',            label: 'Médias & Lives' },
@@ -62,7 +61,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: '16px 12px' }}>
-          {[...NAV, ...(profile?.role === 'admin' ? [{ to: '/admin/utilisateurs', icon: 'manage_accounts', label: 'Utilisateurs & Rôles' }] : [])].map(({ to, icon, label, exact }) => (
+          {[
+            ...NAV,
+            ...(canManageEnfants(profile?.role ?? null) ? [{ to: '/admin/parent-enfant', icon: 'family_restroom', label: 'Suivi Parent-Enfant' }] : []),
+            ...(canViewSignalements(profile?.role ?? null) ? [{ to: '/admin/signalements', icon: 'shield', label: 'Signalements' }] : []),
+            ...(profile?.role === 'admin' ? [{ to: '/admin/utilisateurs', icon: 'manage_accounts', label: 'Utilisateurs & Rôles' }] : []),
+          ].map(({ to, icon, label, exact }) => (
             <NavLink
               key={to}
               to={to}

@@ -32,12 +32,26 @@ export function isStaffRole(role: Role | null): boolean {
   return !!role && STAFF_ROLES.includes(role)
 }
 
+/** Rôles ayant un besoin opérationnel réel de voir des dossiers enfants (protection des mineurs). */
+const PROTECTION_MINEURS_ROLES: Role[] = ['admin', 'responsable_securite', 'catechiste', 'secretariat']
+
+export function canManageEnfants(role: Role | null): boolean {
+  return !!role && PROTECTION_MINEURS_ROLES.includes(role)
+}
+
+/** Signalements : plus restreint — jamais catéchiste/secrétariat, un signalement peut les concerner. */
+export function canViewSignalements(role: Role | null): boolean {
+  return role === 'admin' || role === 'responsable_securite'
+}
+
 export interface UserProfile {
   uid: string
   email: string
   nom: string | null
   role: Role | null
   actif: boolean
+  verifieSecurite?: boolean
+  dateVerification?: string | null
 }
 
 export async function login(email: string, password: string): Promise<UserProfile> {
@@ -69,22 +83,32 @@ export async function resetPassword(email: string): Promise<void> {
   if (error) throw error
 }
 
+function profileFromRow(d: {
+  id: string; email: string; nom: string | null; role: Role | null; actif: boolean
+  verifie_securite?: boolean; date_verification?: string | null
+}): UserProfile {
+  return {
+    uid: d.id, email: d.email, nom: d.nom, role: d.role, actif: d.actif,
+    verifieSecurite: d.verifie_securite ?? false, dateVerification: d.date_verification ?? null,
+  }
+}
+
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   const { data, error } = await supabase.from('profiles').select('*').eq('id', uid).maybeSingle()
   if (error || !data) return null
-  return { uid: data.id, email: data.email, nom: data.nom, role: data.role, actif: data.actif }
+  return profileFromRow(data)
 }
 
 export async function getStaffProfiles(): Promise<UserProfile[]> {
   const { data, error } = await supabase.from('profiles').select('*').in('role', STAFF_ROLES).order('nom')
   if (error) throw error
-  return (data ?? []).map(d => ({ uid: d.id, email: d.email, nom: d.nom, role: d.role, actif: d.actif }))
+  return (data ?? []).map(profileFromRow)
 }
 
 export async function getAllProfiles(): Promise<UserProfile[]> {
   const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false })
   if (error) throw error
-  return (data ?? []).map(d => ({ uid: d.id, email: d.email, nom: d.nom, role: d.role, actif: d.actif }))
+  return (data ?? []).map(profileFromRow)
 }
 
 export async function updateUserRole(uid: string, role: Role | null): Promise<void> {
@@ -94,6 +118,16 @@ export async function updateUserRole(uid: string, role: Role | null): Promise<vo
 
 export async function updateUserActif(uid: string, actif: boolean): Promise<void> {
   const { error } = await supabase.from('profiles').update({ actif }).eq('id', uid)
+  if (error) throw error
+}
+
+export async function updateUserVerification(uid: string, verifie: boolean): Promise<void> {
+  const { data: user } = await supabase.auth.getUser()
+  const { error } = await supabase.from('profiles').update({
+    verifie_securite: verifie,
+    date_verification: verifie ? new Date().toISOString().slice(0, 10) : null,
+    verifie_par: verifie ? (user.user?.id ?? null) : null,
+  }).eq('id', uid)
   if (error) throw error
 }
 
