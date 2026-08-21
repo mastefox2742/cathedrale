@@ -82,7 +82,21 @@ export function HomeScreen() {
 
   return (
     <Screen>
-      <View style={{ paddingHorizontal: 20, paddingTop: 20 }}>
+      <View style={styles.topBar}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+          <Image source={require('../../assets/icon.png')} style={styles.topBarLogo} />
+          <Text style={styles.topBarTitle} numberOfLines={1}>Cathédrale Sacré-Cœur</Text>
+        </View>
+        <Pressable
+          onPress={() => Alert.alert('Bientôt disponible', 'Les notifications dans l\'application arrivent dans une prochaine version.')}
+          style={styles.bellBtn}
+          hitSlop={8}
+        >
+          <Icon name="bell" size={19} color={colors.foreground} />
+        </Pressable>
+      </View>
+
+      <View style={{ paddingHorizontal: 20, paddingTop: 12 }}>
         <View style={styles.hero}>
           <Image source={require('../../assets/cathedrale.jpg')} style={StyleSheet.absoluteFill} resizeMode="cover" />
           <LinearGradient
@@ -271,6 +285,10 @@ export function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  topBar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 6 },
+  topBarLogo: { width: 34, height: 34, borderRadius: radius.full },
+  topBarTitle: { flex: 1, fontFamily: fonts.heading, fontSize: 16, color: colors.primary },
+  bellBtn: { width: 38, height: 38, borderRadius: radius.full, backgroundColor: colors.secondary, alignItems: 'center', justifyContent: 'center' },
   hero: { height: 230, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.primary },
   heroContent: { flex: 1, justifyContent: 'flex-end', padding: 20 },
   heroKicker: { fontFamily: fonts.sansSemiBold, fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: colors.accent, marginBottom: 4 },

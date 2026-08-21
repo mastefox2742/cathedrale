@@ -1,6 +1,7 @@
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { colors, fonts } from '../theme/colors'
 import { Icon, type IconName } from '../components/Icon'
 
@@ -96,28 +97,44 @@ const navTheme = {
   colors: { ...DefaultTheme.colors, background: colors.background, card: colors.card, border: colors.border, primary: colors.primary, text: colors.foreground },
 }
 
+function AppTabs() {
+  // Les hauteurs/marges fixes (pensées pour l'encoche iOS) débordaient ou
+  // écrasaient les onglets sur beaucoup d'Android (barre de geste ou barre à
+  // 3 boutons de hauteur variable) — on calcule désormais l'espace réel du
+  // système via useSafeAreaInsets() plutôt qu'une valeur codée en dur.
+  const insets = useSafeAreaInsets()
+  const bottomInset = Math.max(insets.bottom, 8)
+
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.mutedForeground,
+        tabBarStyle: {
+          backgroundColor: colors.card, borderTopColor: colors.border,
+          height: 54 + bottomInset, paddingBottom: bottomInset, paddingTop: 8,
+        },
+        tabBarLabelStyle: { fontFamily: fonts.sansSemiBold, fontSize: 10.5 },
+        tabBarIcon: ({ focused, color }) => {
+          const def = TAB_ICONS[route.name]
+          return <Icon name={focused ? def.iconActive : def.icon} size={20} color={color} />
+        },
+      })}
+    >
+      <Tab.Screen name="Accueil" component={AccueilNavigator} />
+      <Tab.Screen name="Prier" component={PrierNavigator} />
+      <Tab.Screen name="Se former" component={FormationNavigator} />
+      <Tab.Screen name="Participer" component={ParticiperNavigator} />
+      <Tab.Screen name="Profil" component={ProfilNavigator} />
+    </Tab.Navigator>
+  )
+}
+
 export function RootNavigator() {
   return (
     <NavigationContainer theme={navTheme}>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.mutedForeground,
-          tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border, height: 62, paddingBottom: 8, paddingTop: 8 },
-          tabBarLabelStyle: { fontFamily: fonts.sansSemiBold, fontSize: 10.5 },
-          tabBarIcon: ({ focused, color }) => {
-            const def = TAB_ICONS[route.name]
-            return <Icon name={focused ? def.iconActive : def.icon} size={20} color={color} />
-          },
-        })}
-      >
-        <Tab.Screen name="Accueil" component={AccueilNavigator} />
-        <Tab.Screen name="Prier" component={PrierNavigator} />
-        <Tab.Screen name="Se former" component={FormationNavigator} />
-        <Tab.Screen name="Participer" component={ParticiperNavigator} />
-        <Tab.Screen name="Profil" component={ProfilNavigator} />
-      </Tab.Navigator>
+      <AppTabs />
     </NavigationContainer>
   )
 }
