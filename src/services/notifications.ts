@@ -43,8 +43,7 @@ export async function requestNotificationPermission(): Promise<string | null> {
     const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
     const token = await getToken(messaging, { vapidKey })
     return token
-  } catch (err) {
-    console.error('Erreur FCM token:', err)
+  } catch {
     return null
   }
 }

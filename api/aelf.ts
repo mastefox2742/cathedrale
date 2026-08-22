@@ -4,7 +4,9 @@ export const config = { runtime: 'edge' }
 export default async function handler(request: Request) {
   const url = new URL(request.url)
   const date = url.searchParams.get('date') // format: 2026-06-04
-  if (!date) return new Response('date requis', { status: 400 })
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return new Response('date invalide (format attendu : AAAA-MM-JJ)', { status: 400 })
+  }
 
   const aelfUrl = `https://www.aelf.org/${date}/romain/messe`
   const res = await fetch(aelfUrl, {
