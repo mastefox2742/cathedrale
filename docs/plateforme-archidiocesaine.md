@@ -1,8 +1,9 @@
 # Plateforme archidiocésaine d'évangélisation et de médiation
 
-> Cahier des charges adapté au code existant + analyse des écarts + plan de réalisation.
+> Cahier des charges adapté au code existant, état de réalisation et mise en production.
 > Projet : `cathedrale-sacre-coeur` · Archidiocèse de Brazzaville
 > Dernière mise à jour : 26 septembre 2026
+> Voir aussi : [architecture.md](architecture.md) · [guide-archeveche.md](guide-archeveche.md)
 
 ---
 
@@ -19,8 +20,8 @@ catéchumènes), faire vivre la prière, et coordonner toutes les paroisses.
 | 3 | **Vie ecclésiale** | Prière, sacrements, groupes, mouvements |
 | 4 | **Coordination** | Vue globale de l'archidiocèse, standards communs, rapports fiables |
 
-La plateforme actuelle est celle **d'une seule paroisse** (la Cathédrale Sacré-Cœur). Le cœur du
-chantier est de la rendre **multi-paroisses** sans casser ce qui existe.
+Au départ, la plateforme était celle **d'une seule paroisse** (la Cathédrale Sacré-Cœur). Le cœur du
+chantier a été de la rendre **multi-paroisses** sans casser l'existant.
 
 ---
 
@@ -32,237 +33,199 @@ chantier est de la rendre **multi-paroisses** sans casser ce qui existe.
 | Contrôle d'accès admin | Middleware Next.js | **`AdminGuard` côté client + RLS Supabase côté serveur** | La vraie sécurité est dans la base (RLS) ; le garde client ne sert qu'à l'affichage. |
 | Mobile | Expo | **Expo (existant, `mobile/`)** | Inchangé |
 | Base / Auth / Stockage / Fonctions | Supabase | **Supabase** | Inchangé |
-| Notifications push | FCM via `send-notification` | **Inchangé** | Firebase n'est utilisé que pour le jeton FCM côté navigateur |
+| Notifications push | FCM via `send-notification` | **Inchangé**, avec ciblage paroisse / rôle / groupe | Firebase n'est utilisé que pour le jeton FCM côté navigateur |
 | Hébergement | Vercel | **Vercel** + `vercel.json` (réécriture SPA) | |
-| Schéma BDD | — | **Migrations versionnées** dans `supabase/migrations/` | Aujourd'hui tout est dans un seul `mobile/supabase/schema.sql` rejoué à la main |
-
-> ⚠️ Le `README.md` mentionne encore Firebase (Firestore/Auth) comme backend : il est obsolète et
-> sera corrigé dans le lot 8.
+| Schéma BDD | — | **Migrations versionnées** dans `mobile/supabase/migrations/` | Le schéma historique reste `mobile/supabase/schema.sql` ; les évolutions sont des fichiers datés |
+| Rôles | Table unique | **Rôles globaux** (`profiles.role`) + **rôles paroissiaux** (`parish_members`) | Une personne peut être catéchiste dans une paroisse et membre d'une autre |
 
 ---
 
-## 3. Périmètre fonctionnel et état actuel
+## 3. Périmètre fonctionnel et état de réalisation
 
-Légende : ✅ fait · ⚠️ partiel · ❌ à faire
+Légende : ✅ fait · ⚠️ partiel · ❌ non fait · 🔌 dépend d'un service externe à contractualiser
 
 ### 3.1 Partie publique (site, PWA, app mobile)
 
-| Fonction | État | Détail / écart |
-|----------|------|----------------|
-| **Accueil** – actualités, liturgie, horaires, histoire | ✅ | |
-| Accueil – 4 portes d'entrée « Je découvre la foi / Je veux me convertir / Approfondir / Prier » | ❌ | |
-| Accueil – flux vidéo « À la une » | ❌ | |
-| Accueil – horaires selon la paroisse choisie ou géolocalisée | ❌ | Dépend du multi-paroisses |
-| **Médiation / TV** (`/tv`) – directs, replays, playlists, filtres par public | ⚠️ | `/evenements` liste des vidéos YouTube/Facebook ; pas de playlists, thèmes, intervenants, calendrier des directs |
-| **Parcours de foi** « Premiers pas », « Conversion & catéchuménat », « Approfondir » | ❌ | Réutiliser le moteur de la catéchèse (cours → modules → leçons → quiz) |
-| **Catéchèse** – cours, modules, leçons, quiz, progression, attestation | ✅ | Progression par compte ; pas encore « par enfant » côté parent |
-| Catéchèse – espace catéchiste, séances, présences | ✅ | |
-| **Prière** – liturgie du jour, intentions, groupes | ✅ | |
-| Prière – mur de prière public | ⚠️ | Intentions publiques lisibles en base, pas de page « mur » dédiée |
-| Prière – liturgie des heures, chapelet, neuvaines, retraites en ligne | ❌ | |
-| Prière – page unique `/prier` | ❌ | |
-| **Témoignages** – soumission + modération | ✅ | |
-| Témoignages – catégories (conversion, famille, jeunes, guérison…) | ❌ | Table `temoignages` sans catégorie |
-| **Médiathèque** publique | ⚠️ | La table `medias` n'est lisible que par le staff |
-| **Annuaire des paroisses** `/paroisses` + fiche `/paroisses/:slug` | ❌ | |
-| **Annonces & Agenda** archidiocésaines + paroissiales | ⚠️ | Existe pour une seule paroisse |
-| **Histoire** | ✅ | Cathédrale + Cardinal Biayenda ; histoire de l'archidiocèse à ajouter |
-| **Démarches pastorales** – formulaire | ✅ | |
-| Démarches – suivi par le demandeur | ❌ | Seul le staff voit le statut |
-| **Dons** – formulaire + enregistrement | ✅ | |
-| Dons – vrais numéros MTN / Airtel / IBAN | ❌ | **Numéros fictifs en production** (`src/services/dons.ts`) |
-| Dons – paiement carte CinetPay | ❌ | Affiché « Bientôt disponible » |
-| **Connexion** email + mot de passe | ✅ | |
-| Inscription publique avec choix de paroisse | ❌ | |
-| Profil – infos, paroisses, progression, historique (dons, intentions, témoignages) | ❌ | |
-| **Abonnements** email / WhatsApp | ⚠️ | Inscriptions enregistrées, aucun envoi, pas de page admin |
-| **PWA** – installation, hors-ligne, notifications | ✅ | |
-| **App mobile Expo** – 17 écrans | ✅ | Manquent : TV, parcours de foi, prière unifiée, annuaire |
-| Liens directs (`/histoire`, `/dons`…) | ❌ | **404 en production** : pas de `vercel.json` |
+| Fonction | État | Où |
+|----------|------|----|
+| Accueil : 4 portes d'entrée « Je découvre / Je veux me convertir / Approfondir / Prier » | ✅ | `/` |
+| Accueil : flux vidéo « À la une » + prochain direct | ✅ | `/` |
+| Accueil : actualités, liturgie, horaires de la paroisse choisie, aperçu de l'histoire | ✅ | `/` |
+| Médiation / TV : directs, programme, replays, playlists, filtres par public, recherche par thème/intervenant | ✅ | `/tv` |
+| Parcours de foi « Premiers pas », « Conversion & catéchuménat », « Approfondir » | ✅ | `/decouvrir-la-foi`, `/se-convertir`, `/approfondir` |
+| Parcours : étapes, vidéo, quiz, appels à l'action, progression, attestation | ✅ | `/parcours/:slug` |
+| Catéchèse enfants et jeunes : cours, modules, leçons, quiz, progression, attestation | ✅ | `/catechese` |
+| Prier : Évangile du jour + méditation, liturgie des heures (AELF), chapelet du jour | ✅ | `/prier` |
+| Mur de prière avec « Je prie pour cette intention » | ✅ | `/prier` |
+| Neuvaines et retraites en ligne | ✅ | `/prier` (parcours de type neuvaine / retraite) |
+| Groupes de prière et mouvements avec formulaire d'adhésion | ✅ | `/prier`, `/vie-spirituelle`, `/jeunesse` |
+| Témoignages par catégorie, mise en avant des conversions | ✅ | `/temoignages`, `/se-convertir` |
+| Médiathèque publique (photos, documents) | ✅ | `/tv` → onglet Médiathèque |
+| Annuaire des paroisses, fiche, plan, « la plus proche de moi » | ✅ | `/paroisses`, `/paroisses/:slug` |
+| Choix de la paroisse dans l'en-tête ; contenus filtrés par paroisse | ✅ | tout le site |
+| Histoire de la Cathédrale et du Cardinal Biayenda | ✅ | `/histoire` |
+| Histoire de l'archidiocèse | ⚠️ | Chronologie en place ; un texte dédié reste à fournir |
+| Démarches pastorales + suivi par le demandeur connecté | ✅ | `/demarches`, profil |
+| Dons : formulaire, enregistrement, instructions Mobile Money | ✅ | `/dons` |
+| Dons : vrais numéros MTN / Airtel / IBAN | ❌ | **Numéros fictifs** dans `src/services/dons.ts` et `DonsPage.tsx` : à remplacer |
+| Paiement carte CinetPay, Mobile Money automatique | 🔌 | Affiché « Bientôt disponible » ; contrat marchand nécessaire |
+| Inscription avec paroisse principale, rejoindre d'autres paroisses | ✅ | `/inscription`, `/paroisses/:slug` |
+| Profil : infos, paroisses, parcours, formations obligatoires, historique (dons, intentions, témoignages, démarches) | ✅ | `/profil` |
+| Mot de passe oublié | ✅ | `/connexion` |
+| PWA : installation, hors-ligne, notifications | ✅ | existant |
+| Liens directs sans 404 | ✅ | `vercel.json` |
+| App mobile : TV, parcours de foi, neuvaines, annuaire, paroisse choisie | ✅ | `mobile/` |
+| App mobile : notifications push natives | 🔌 | Nécessite `expo-notifications` et la configuration Firebase Android/iOS |
 
 ### 3.2 Staff et administration
 
-| Fonction | État | Détail / écart |
-|----------|------|----------------|
-| Tableau de bord | ⚠️ | Chiffres d'une seule paroisse ; carte « Intentions » affiche « Bientôt disponible » à tort |
-| KPI globaux (fidèles, catéchistes, enfants, dons, vues vidéo…) | ❌ | |
-| **Gestion des paroisses** (créer, modifier, désactiver, nommer un `parish_admin`) | ❌ | |
-| Utilisateurs et rôles | ⚠️ | 13 rôles, mais **un seul rôle par personne et sans paroisse** |
-| Journal d'audit | ✅ | Sans `parish_id` |
-| Catéchèse – programmes de référence archidiocésains + programmes paroissiaux | ❌ | Un seul niveau aujourd'hui |
-| Catéchèse – statistiques par paroisse | ❌ | |
-| Formation / certification / registre des catéchistes | ❌ | |
-| Médiation – playlists, directs, émissions | ❌ | |
-| Parcours de foi – édition + statistiques | ❌ | |
-| Gestion des demandes (démarches, intentions, témoignages, signalements) avec statuts | ✅ | |
-| Notification des responsables à chaque nouvelle demande | ❌ | |
-| Dons – liste, statuts | ✅ | |
-| Dons – export CSV | ❌ | |
-| Notifications push – envoi | ✅ | Via la fonction Edge `send-notification` |
-| Notifications – ciblage par paroisse / rôle / groupe + historique | ⚠️ | Table `notifications_log` existe ; ciblage par paroisse impossible |
-| Protection des mineurs – signalement anonyme, rôle `responsable_securite`, consentements parentaux | ✅ | |
-| Formations obligatoires staff (safeguarding) | ❌ | |
+| Fonction | État | Où |
+|----------|------|----|
+| Périmètre de travail (une paroisse / tout l'archidiocèse) | ✅ | menu admin |
+| Tableau de bord : fidèles, catéchistes, enfants, dons, demandes, témoignages, adhésions, signalements, vidéos et lectures, parcours | ✅ | `/admin` |
+| Tableau comparatif par paroisse | ✅ | `/admin` (périmètre archidiocèse) |
+| Temps de visionnage des vidéos | 🔌 | Nécessite l'API YouTube Analytics ; le site compte les lectures |
+| Paroisses : créer, modifier, désactiver, horaires, nommer l'équipe | ✅ | `/admin/paroisses` |
+| Utilisateurs : rôles archidiocésains, rôles paroissiaux visibles, activation, habilitation | ✅ | `/admin/utilisateurs` |
+| Journal d'audit par paroisse | ✅ | `/admin/audit` |
+| Programmes de catéchèse de référence (archidiocèse) et paroissiaux | ✅ | `/admin/catechisme`, selon le périmètre |
+| Registre des catéchistes et formations obligatoires | ✅ | `/admin/registre` + parcours « formation du staff » |
+| Médiation : directs, passage en replay, playlists, thèmes, intervenants, public, à la une | ✅ | `/admin/tv`, `/admin/evenements` |
+| Parcours de foi : éditeur d'étapes, quiz, statistiques | ✅ | `/admin/parcours` |
+| Demandes : démarches, intentions, témoignages, adhésions, signalements (statuts, filtres) | ✅ | pages admin correspondantes |
+| Alerte des responsables à chaque nouvelle demande | ⚠️ | Compteurs « à traiter » sur le tableau de bord ; pas d'email automatique (fournisseur d'email à choisir) |
+| Dons : liste, statuts, filtres, export CSV | ✅ | `/admin/dons` |
+| Abonnés : liste, export CSV | ✅ | `/admin/abonnes` |
+| Abonnés : envoi automatique email / WhatsApp | 🔌 | Fournisseur d'email / API WhatsApp Business à choisir |
+| Notifications push : ciblage paroisse / rôle / groupe, historique | ✅ | `/admin/notifications` + fonction `send-notification` |
+| Protection des mineurs : signalements, dossiers enfants, consentements, responsable diocésain | ✅ | existant, désormais par paroisse |
 
-### 3.3 Sécurité – problèmes relevés dans le schéma actuel
+### 3.3 Sécurité
 
-| Gravité | Problème | Fichier |
-|---------|----------|---------|
-| 🔴 Haute | Table `abonnements` : **lecture et suppression publiques** (`using (true)`). N'importe qui peut récupérer tous les emails/téléphones des abonnés, ou les effacer. | `mobile/supabase/schema.sql` l. 359 et 363 |
-| 🟠 Moyenne | Table `notification_tokens` : mise à jour et suppression publiques de n'importe quel jeton. | l. 379-381 |
-| 🟡 Faible | Aucune isolation par paroisse (normal aujourd'hui, bloquant demain). | — |
+| Point | État |
+|-------|------|
+| Abonnés et jetons push lisibles et effaçables par n'importe qui | ✅ Corrigé (lot 0 + migration) |
+| Isolation des données par paroisse (RLS) | ✅ Toutes les politiques réécrites |
+| Brouillons visibles par le staff d'autres paroisses | ✅ Corrigé : `can_manage(parish_id)` |
+| Contenu saisi dans l'admin affiché sans échappement (injection HTML) | ✅ Le nouveau rendu échappe le HTML (`src/components/Markdown.tsx`) |
+| Totaux des projets de dons illisibles par le public | ✅ Fonction `collecte_projets()` |
 
 ---
 
-## 4. Modèle de données cible (Supabase)
+## 4. Modèle de données (Supabase)
 
-Principe : **on ajoute sans casser.** Chaque table existante reçoit un `parish_id` **nullable** ;
-`parish_id = null` signifie « contenu archidiocésain » (visible partout). Toutes les données actuelles
-sont rattachées à la paroisse « Cathédrale Sacré-Cœur » lors de la migration.
+Principe : **on ajoute sans casser.** Chaque table existante reçoit un `parish_id` ; toutes les données
+existantes sont rattachées à la Cathédrale ; `parish_id = null` signifie « contenu archidiocésain ».
+La colonne a pour valeur par défaut la Cathédrale, pour que l'app mobile déjà installée continue de fonctionner.
 
 ### 4.1 Nouvelles tables
 
 | Table | Colonnes principales |
 |-------|----------------------|
-| `archdioceses` | `id`, `nom`, `slug`, `created_at` |
-| `parishes` | `id`, `archdiocese_id`, `nom`, `slug` (unique), `adresse`, `quartier`, `latitude`, `longitude`, `telephone`, `email`, `horaires` (jsonb), `photo_url`, `description`, `actif`, `created_at` |
-| `parish_members` | `user_id`, `parish_id`, `role`, `principale` (bool), `created_at` · PK (`user_id`, `parish_id`, `role`) |
-| `evangelization_paths` | `id`, `parish_id` (null = archidiocèse), `type` (`decouvrir` \| `conversion` \| `approfondir`), `titre`, `slug`, `description`, `image_url`, `ordre`, `publie` |
-| `path_steps` | `id`, `path_id`, `ordre`, `titre`, `contenu` (markdown), `video_url`, `quiz` (jsonb), `appel_action` (`parler_pretre` \| `commencer_parcours` \| `aucun`) |
-| `user_path_progress` | `user_id`, `step_id`, `termine_le`, `score` |
-| `live_events` | `id`, `parish_id`, `titre`, `description`, `url`, `debut`, `fin`, `statut` (`programme` \| `en_direct` \| `termine`), `playlist_id` |
-| `playlists` | `id`, `parish_id`, `titre`, `slug`, `public_cible` (`decouvre` \| `baptise` \| `prier` \| `jeunes` \| `famille`), `ordre` |
-| `playlist_items` | `playlist_id`, `evenement_id` \| `live_event_id`, `ordre` |
-| `testimony_categories` | `id`, `slug`, `libelle`, `ordre` |
+| `archdioceses` | `id`, `nom`, `slug` |
+| `parishes` | `archdiocese_id`, `nom`, `slug`, `description`, `cure`, `adresse`, `quartier`, `ville`, `latitude`, `longitude`, `telephone`, `email`, `whatsapp`, `horaires` (jsonb), `photo_url`, `actif` |
+| `parish_members` | `user_id`, `parish_id`, `role`, `principale` · clé (`user_id`, `parish_id`, `role`) |
+| `evangelization_paths` | `parish_id`, `type` (`decouvrir`, `conversion`, `approfondir`, `neuvaine`, `retraite`, `formation_staff`), `titre`, `slug`, `description`, `emoji`, `duree`, `obligatoire_pour`, `ordre`, `publie` |
+| `path_steps` | `path_id`, `ordre`, `titre`, `contenu` (markdown), `video_url`, `quiz` (jsonb), `appel_action` |
+| `user_path_progress` | `user_id`, `step_id`, `path_id`, `score`, `termine_le` |
+| `live_events` | `parish_id`, `titre`, `description`, `url`, `debut`, `fin`, `statut`, `intervenant`, `theme`, `publie` |
+| `playlists`, `playlist_items` | playlists de vidéos par public (`public_cible`) |
+| `testimony_categories` | conversion, famille, jeunes, engagement, guérison, prière exaucée, vocation, autre |
+| `groupe_adhesions` | `groupe_id`, `parish_id`, `user_id`, `nom`, `contact`, `message`, `statut` |
 
 ### 4.2 Tables existantes modifiées
 
 | Table | Ajout |
 |-------|-------|
-| `annonces`, `homelies`, `evenements`, `formations`, `medias`, `cours`, `catechisme_modules`, `groupes`, `projets_dons`, `services_paroissiaux`, `seances_catechisme`, `enfants` | `parish_id uuid null references parishes` |
-| `dons`, `demandes_pastorales`, `prayer_intentions`, `signalements`, `temoignages`, `abonnements`, `notification_tokens` | `parish_id` + `user_id` (quand connecté, pour l'historique du profil) |
-| `temoignages` | `category_id` |
-| `audit_logs`, `notifications_log` | `parish_id` |
-| `evenements` | `theme`, `intervenant`, `public_cible` |
-| `profiles` | `telephone`, `avatar_url` ; la colonne `role` devient le **rôle global** (`archeveque`, `admin_diocesain`, `admin_evangelisation`, `coordinateur_catechese_diocesain`, `responsable_media_diocesain`, `responsable_securite`) |
-
-Index sur `parish_id`, `statut`/`publie`, `created_at` pour toutes les tables filtrées.
+| Toutes les tables de contenu et de demandes | `parish_id` |
+| `dons`, `demandes_pastorales`, `temoignages`, `notification_tokens` | `user_id` (historique du profil, ciblage des notifications) |
+| `temoignages` | `category_id`, `mis_en_avant` |
+| `evenements` | `theme`, `intervenant`, `public_cible`, `vues`, `a_la_une` |
+| `medias` | `publie` (médiathèque publique) |
+| `prayer_intentions` | `nb_prieres` |
+| `notifications_log` | `cible` |
+| `profiles` | `telephone`, `avatar_url` ; `role` ne contient plus que les rôles archidiocésains |
 
 ### 4.3 Rôles
 
-**Globaux** (dans `profiles.role`) : `archeveque`, `admin_diocesain`, `admin_evangelisation`,
+**Archidiocésains** (`profiles.role`) : `archeveque`, `admin`, `admin_diocesain`, `admin_evangelisation`,
 `coordinateur_catechese_diocesain`, `responsable_media_diocesain`, `responsable_securite`.
 
-**Paroissiaux** (dans `parish_members.role`) : `admin_paroisse`, `pretre`, `secretariat`, `tresorier`,
-`coordinateur_catechese`, `catechiste`, `staff_media`, `responsable_groupe`, `animateur_jeunesse`,
-`responsable_liturgie`, `parent`, `benevole`, `membre`.
+**Paroissiaux** (`parish_members.role`) : `admin_paroisse`, `pretre`, `secretariat`, `tresorier`,
+`coordinateur_catechese`, `catechiste`, `staff_media`, `redacteur`, `responsable_groupe`,
+`animateur_jeunesse`, `responsable_liturgie`, `responsable_securite`, `parent`, `benevole`, `membre`.
 
-Les rôles actuels sont conservés et migrés : un `catechiste` aujourd'hui devient
-`parish_members(role='catechiste', parish_id=<cathédrale>)`.
+Les anciens rôles paroissiaux stockés dans `profiles.role` sont déplacés vers la Cathédrale par la migration.
 
-### 4.4 Fonctions RLS
+### 4.4 Fonctions de droits (RLS)
 
 ```sql
-is_diocesan_admin()                    -- rôle global d'administration
-has_parish_role(p uuid, roles text[])  -- l'utilisateur a l'un de ces rôles dans la paroisse p
-can_manage(p uuid)                     -- is_diocesan_admin() or has_parish_role(p, <rôles staff>)
+is_admin()                             -- archevêque, admin, admin diocésain
+has_parish_role(p uuid, roles text[])  -- a l'un de ces rôles dans la paroisse p
+can_manage(p uuid)                     -- gérer un contenu de la paroisse p (null = archidiocèse)
+can_manage_dons(p)  can_protect(p)  can_signalement(p)
 ```
-
-Règle type pour un contenu :
-- **lecture** : `publie = true or can_manage(parish_id)`
-- **écriture** : `can_manage(parish_id)`, et `parish_id is null` réservé à `is_diocesan_admin()`
 
 ---
 
-## 5. Pages et écrans à créer
+## 5. Pages et écrans
 
 | Route web | Écran mobile | Contenu |
 |-----------|--------------|---------|
-| `/tv` | `TvScreen` | Direct en cours, prochains directs, playlists, replays filtrables |
-| `/decouvrir-la-foi`, `/se-convertir`, `/approfondir` | `ParcoursScreen` | Liste des parcours du type |
-| `/parcours/:slug` | `ParcoursDetailScreen` | Étapes, vidéo, quiz, appel à l'action, progression |
-| `/prier` | `PrierHubScreen` (existe) | Liturgie du jour, chapelet, mur de prière, groupes, neuvaines |
-| `/paroisses` | `ParoissesScreen` | Annuaire + recherche + carte |
-| `/paroisses/:slug` | `ParoisseScreen` (existe, à généraliser) | Fiche, horaires, annonces, activités |
-| `/inscription` | `InscriptionScreen` | Création de compte + paroisse principale |
-| `/profil` | `ProfilScreen` | Infos, paroisses, progression, historique |
-| `/admin/paroisses` | — | CRUD paroisses + nomination des responsables |
-| `/admin/parcours` | — | Éditeur de parcours de foi + statistiques |
-| `/admin/tv` | — | Directs, playlists, émissions |
-| `/admin/abonnes` | — | Liste et export des abonnés |
-
-Toutes les pages existantes deviennent « conscientes de la paroisse » via un **sélecteur de paroisse**
-dans l'en-tête (mémorisé dans le navigateur ; par défaut : Cathédrale Sacré-Cœur).
+| `/tv` | `TvScreen` | Direct en cours, prochains directs, playlists, replays |
+| `/decouvrir-la-foi`, `/se-convertir`, `/approfondir` | `ParcoursListeScreen` | Parcours par public |
+| `/parcours/:slug` (+ `/attestation`) | `ParcoursScreen` | Étapes, vidéo, quiz, appel à l'action, progression |
+| `/prier` | `PrierHubScreen` | Liturgie du jour, heures, chapelet, mur de prière, neuvaines, groupes |
+| `/paroisses`, `/paroisses/:slug` | `ParoissesScreen` | Annuaire, fiche, plan |
+| `/inscription`, `/profil` | `ConnexionScreen` | Compte, paroisses, parcours, historique |
+| `/admin/paroisses`, `/admin/parcours`, `/admin/tv`, `/admin/dons`, `/admin/abonnes`, `/admin/registre` | — | Nouvelles pages d'administration |
 
 ---
 
-## 6. Plan de réalisation
+## 6. Réalisation
 
-Chaque lot se termine par : compilation OK, vérification dans le navigateur, commit.
-**Les lots marqués 🔒 modifient la base de production : confirmation obligatoire avant exécution.**
+| Lot | Contenu | État |
+|-----|---------|------|
+| 0 | `vercel.json`, carte « Intentions », fermeture de l'accès public aux abonnés | ✅ |
+| 1 | Migration multi-paroisses, rôles, RLS, index, profil créé à l'inscription | ✅ `mobile/supabase/migrations/20260926000000_plateforme_archidiocesaine.sql` |
+| 2 | Inscription avec paroisse, profil, sélecteur de paroisse, droits par périmètre | ✅ |
+| 3 | Paroisses (admin + annuaire + fiche), pages filtrées par paroisse | ✅ |
+| 4 | Médiation / TV (directs, playlists, À la une) | ✅ |
+| 5 | Parcours de foi + contenus exemples (en brouillon) | ✅ |
+| 6 | Prier, témoignages catégorisés, adhésions | ✅ |
+| 7 | Tableau de bord, notifications ciblées, dons, abonnés, registre | ✅ |
+| 8 | Mobile, documentation, guide | ✅ (sauf notifications push natives 🔌) |
 
-### Lot 0 — Corrections immédiates
-- [x] `vercel.json` : réécriture SPA (fin des 404 sur les liens directs)
-- [ ] Carte « Intentions de prière » du tableau de bord reliée à `/admin/intentions`
-- [ ] 🔒 Correction RLS `abonnements` et `notification_tokens`
-- [ ] Remplacer les numéros MTN / Airtel / IBAN fictifs *(attend les vrais numéros)*
+### Mise en production (dans cet ordre)
 
-### Lot 1 — 🔒 Fondations multi-paroisses (base de données)
-- [ ] Mettre en place `supabase/migrations/` (le schéma actuel devient la migration initiale)
-- [ ] Tables `archdioceses`, `parishes`, `parish_members`
-- [ ] Colonnes `parish_id` sur les tables existantes + rattachement des données à la Cathédrale
-- [ ] Fonctions `is_diocesan_admin`, `has_parish_role`, `can_manage` et réécriture des politiques RLS
-- [ ] Index
-- [ ] Tests RLS : un compte par rôle, vérifier ce que chacun voit
+1. **Supabase → SQL Editor** : exécuter la dernière section de `mobile/supabase/schema.sql` (« Sécurité : fermeture de l'accès public… »), si ce n'est pas déjà fait.
+2. **Supabase → SQL Editor** : exécuter `mobile/supabase/migrations/20260926000000_plateforme_archidiocesaine.sql`. Le script peut être rejoué sans risque.
+3. **Redéployer la fonction** `send-notification` (Supabase → Edge Functions, ou `supabase functions deploy send-notification`).
+4. **Pousser le code** sur GitHub : Vercel redéploie le site.
+5. **Vérifier** : annuaire des paroisses, connexion admin, tableau de bord, publication d'un parcours d'exemple après relecture.
+6. Publier une nouvelle version de l'app mobile (EAS).
 
-### Lot 2 — Authentification, rôles, profil
-- [ ] Page `/inscription` (paroisse principale) + trigger de création de `profiles` / `parish_members`
-- [ ] `AuthContext` expose rôle global + rôles par paroisse ; `AdminGuard` s'appuie dessus
-- [ ] Page `/profil`
-- [ ] Sélecteur de paroisse dans l'en-tête
+### Tests à faire après la mise en production
 
-### Lot 3 — Paroisses
-- [ ] `/admin/paroisses` (CRUD + nomination)
-- [ ] `/paroisses` et `/paroisses/:slug`
-- [ ] Filtrage par paroisse des annonces, horaires, homélies, groupes, événements
+- Créer un compte test par rôle (admin de paroisse, catéchiste, trésorier, membre) dans deux paroisses différentes, et vérifier que chacun ne voit que ce qui le concerne.
+- S'inscrire en choisissant une paroisse, puis vérifier le profil créé et l'appartenance.
+- Suivre un parcours jusqu'au bout, puis ouvrir l'attestation.
+- Envoyer une notification ciblée sur un rôle.
+- Vérifier le journal d'audit après quelques modifications.
 
-### Lot 4 — Médiation / TV
-- [ ] Tables `live_events`, `playlists`, `playlist_items` + colonnes `theme`, `intervenant`, `public_cible`
-- [ ] `/admin/tv`
-- [ ] `/tv` + bloc « À la une » sur l'accueil
+### Hors périmètre (services externes)
 
-### Lot 5 — Parcours de foi
-- [ ] Tables `evangelization_paths`, `path_steps`, `user_path_progress`
-- [ ] `/admin/parcours`
-- [ ] `/decouvrir-la-foi`, `/se-convertir`, `/approfondir`, `/parcours/:slug` + attestation
-- [ ] Les 4 portes d'entrée sur l'accueil
-- [ ] Contenus exemples : 1 parcours « Découvrir la foi », 1 parcours « Conversion »
-
-### Lot 6 — Prière et témoignages
-- [ ] Page `/prier` (mur de prière, chapelet, neuvaines)
-- [ ] Catégories de témoignages + mise en avant des conversions
-
-### Lot 7 — Tableau de bord archidiocésain et notifications
-- [ ] KPI globaux et par paroisse
-- [ ] Ciblage des notifications par paroisse / rôle / groupe + historique
-- [ ] Alerte des responsables à chaque nouvelle demande
-- [ ] Export CSV des dons ; page `/admin/abonnes`
-
-### Lot 8 — Mobile, documentation, mise en production
-- [ ] Écrans Expo manquants (TV, parcours, annuaire, profil)
-- [ ] Mise à jour du `README.md` et de `docs/architecture.md`
-- [ ] Guide pour l'archevêché : créer une paroisse, lancer un parcours, envoyer une notification
-
-### Hors périmètre pour l'instant
-- Paiement CinetPay et Mobile Money automatique (nécessite un contrat marchand)
-- Envoi réel des messages email / WhatsApp aux abonnés (nécessite un fournisseur)
-- Bible en lingala / kikongo / kitouba (nécessite des textes sous licence)
-- Liturgie des heures complète (droits AELF à vérifier)
+- Paiement CinetPay et Mobile Money automatique (contrat marchand)
+- Envoi des emails / messages WhatsApp aux abonnés, alertes email au staff (fournisseur à choisir)
+- Notifications push natives de l'app mobile (configuration Firebase Android/iOS)
+- Temps de visionnage des vidéos (API YouTube Analytics)
+- Bible en lingala / kikongo / kitouba (textes sous licence)
 
 ---
 
 ## 7. Questions ouvertes
 
 1. **Numéros de dons** : vrais numéros MTN, Airtel et IBAN de la paroisse ?
-2. **Liste des paroisses** : nom, quartier, contacts, horaires des paroisses à intégrer au départ ?
-3. **Accès Supabase** : qui applique les migrations en production (toi via le dashboard, ou la CLI Supabase) ?
+2. **Liste des paroisses** : nom, quartier, contacts et horaires des paroisses à créer au départ ?
+3. **Contenus exemples** : relecture par un prêtre des six parcours préparés avant publication.
 4. **Nom de la plateforme** : reste-t-elle « Cathédrale Sacré-Cœur » ou devient-elle un portail de l'archidiocèse (nom, domaine) ?

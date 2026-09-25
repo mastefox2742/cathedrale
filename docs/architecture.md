@@ -1,134 +1,97 @@
-# Architecture — Cathédrale Sacré-Cœur de Brazzaville
-> Document BMAD · Phase 3 · Plateforme Catéchisme
+# Architecture — Plateforme de l'Archidiocèse de Brazzaville
+
+> Mise à jour : 26 septembre 2026 · Cahier des charges : [plateforme-archidiocesaine.md](plateforme-archidiocesaine.md) · Guide d'utilisation : [guide-archeveche.md](guide-archeveche.md)
 
 ## Vision
 
-Plateforme diocésaine numérique de référence pour l'Archidiocèse de Brazzaville — liturgie, formation catéchétique, annonces et vie paroissiale.
+Plateforme numérique unique de l'archidiocèse : évangélisation (parcours de foi, chaîne vidéo), formation (catéchèse, catéchuménat, formation du staff), prière, et coordination de toutes les paroisses.
 
 ---
 
 ## Stack technique
 
-| Couche | Technologie | Justification |
-|--------|-------------|---------------|
-| Frontend | React 18 + TypeScript + Vite | Typage strict, build rapide, écosystème mature |
-| Styles | Tailwind CSS v4 + CSS Variables | Design system cohérent, tokens liturgiques |
-| Routing | React Router v6 | SPA avec navigation déclarative |
-| Backend | Firebase (Firestore + Auth + Storage) | Temps réel, gratuit tier, règles de sécurité RLS |
-| Déploiement | Vercel + GitHub CI/CD | Auto-deploy sur push, Edge Functions AELF |
-| Mobile | Expo (React Native) | Partage logique Firebase avec le web |
+| Couche | Technologie |
+|--------|-------------|
+| Site web + PWA | React 19 + TypeScript + Vite + React Router 7, `vite-plugin-pwa` |
+| Mobile | Expo 57 (React Native), dossier `mobile/` |
+| Base, authentification, fichiers | Supabase (Postgres + Row Level Security, Auth, Storage) |
+| Fonctions serveur | Supabase Edge Function `send-notification` (push FCM) · Vercel Function `api/aelf.ts` (proxy AELF) |
+| Notifications push | Firebase Cloud Messaging (jeton navigateur uniquement ; Firebase n'est pas utilisé comme base) |
+| Hébergement | Vercel (`vercel.json` : réécriture SPA pour les liens directs) |
 
 ---
 
-## Structure des dossiers
+## Multi-paroisses
+
+- **Archidiocèse → paroisses** : tables `archdioceses` et `parishes`.
+- **Toutes les données** portent un `parish_id`. `parish_id = null` = contenu archidiocésain, visible dans toutes les paroisses.
+- **Côté public**, le visiteur choisit sa paroisse (en-tête, annuaire ou « la plus proche »). Il voit les contenus de cette paroisse et ceux de l'archidiocèse. Le choix est mémorisé dans le navigateur (`src/services/scope.ts`, `src/contexts/ParoisseContext.tsx`), et sur le téléphone pour l'app mobile.
+- **Côté admin**, le staff choisit un **périmètre** (une paroisse, ou « tout l'archidiocèse » pour les rôles diocésains). Les listes sont filtrées sur ce périmètre et les créations y sont rattachées.
+- **L'isolation réelle se fait dans la base** (RLS) : une paroisse ne peut ni lire ni modifier les données privées d'une autre. Les filtres côté site servent seulement à l'affichage.
+
+## Rôles
+
+| Niveau | Stockage | Rôles |
+|--------|----------|-------|
+| Archidiocèse | `profiles.role` | `archeveque`, `admin`, `admin_diocesain` (voient et gèrent tout) · `admin_evangelisation`, `coordinateur_catechese_diocesain`, `responsable_media_diocesain` (contenus archidiocésains) · `responsable_securite` (protection des mineurs, toutes paroisses) |
+| Paroisse | `parish_members (user_id, parish_id, role)` | `admin_paroisse`, `pretre`, `secretariat`, `tresorier`, `coordinateur_catechese`, `catechiste`, `staff_media`, `redacteur`, `responsable_groupe`, `animateur_jeunesse`, `responsable_liturgie`, `responsable_securite` (staff) · `parent`, `benevole`, `membre` (fidèles) |
+
+Fonctions SQL de contrôle (utilisées par toutes les politiques RLS) : `is_admin()`, `is_staff()`, `has_parish_role(p, roles)`, `can_manage(p)`, `can_manage_dons(p)`, `can_protect(p)`, `can_signalement(p)`.
+
+Côté site : `useDroits()` (`src/contexts/AuthContext.tsx`) calcule les rôles effectifs dans le périmètre admin courant. `AdminGuard` et le menu admin s'appuient dessus.
+
+---
+
+## Base de données
+
+- Schéma historique : `mobile/supabase/schema.sql`
+- Évolutions : `mobile/supabase/migrations/` (à exécuter dans l'ordre, après `schema.sql`)
+
+| Domaine | Tables |
+|---------|--------|
+| Organisation | `archdioceses`, `parishes`, `parish_members`, `profiles` (créé automatiquement à l'inscription) |
+| Contenus | `annonces`, `homelies`, `evenements` (vidéos), `medias`, `groupes`, `services_paroissiaux`, `projets_dons` |
+| Médiation / TV | `live_events` (directs programmés), `playlists`, `playlist_items`, `evenements.vues` |
+| Évangélisation | `evangelization_paths` (découvrir, conversion, approfondir, neuvaine, retraite, formation du staff), `path_steps`, `user_path_progress` |
+| Catéchèse | `formations_catechisme`, `cours`, `catechisme_modules`, `lecons`, `formation_progress`, `module_progress`, `seances_catechisme` |
+| Demandes des fidèles | `demandes_pastorales`, `prayer_intentions`, `temoignages` (+ `testimony_categories`), `groupe_adhesions`, `dons`, `abonnements` |
+| Protection des mineurs | `enfants`, `consentements_parentaux`, `signalements` |
+| Suivi | `audit_logs`, `notifications_log`, `notification_tokens` |
+
+Fonctions appelées par le site : `stats_tableau_de_bord`, `stats_par_paroisse`, `stats_parcours`, `registre_staff`, `collecte_projets`, `incrementer_vue`, `prier_pour`, `s_abonner`, `enregistrer_jeton`, `rejoindre_paroisse`, `definir_paroisse_principale`, `maj_mon_profil`.
+
+---
+
+## Structure du code web
 
 ```
 src/
 ├── components/
-│   ├── admin/          # Guards, Layout admin
-│   ├── layout/         # TopBar, BottomNav, SideNav, Layout
-│   └── ui/             # Badge, Button, Card (design system)
-├── contexts/
-│   └── AuthContext.tsx  # Firebase Auth state global
-├── pages/
-│   ├── admin/          # Dashboard, CRUD pages admin
-│   └── *.tsx           # Pages publiques
-├── services/           # Couche d'abstraction Firebase (migration-ready)
-│   ├── firebase.ts     # Init Firebase
-│   ├── auth.ts         # Auth + profils
-│   ├── annonces.ts     # CRUD annonces
-│   ├── homelies.ts     # CRUD homélies
-│   ├── formations.ts   # CRUD formations
-│   ├── medias.ts       # Upload + CRUD médias
-│   ├── evenements.ts   # Lives YouTube/Facebook
-│   └── catechisme.ts   # Cours + modules catéchisme
-└── styles/
-    └── tokens.css      # Design tokens (couleurs, typographie, espacement)
+│   ├── admin/        AdminGuard, AdminLayout (périmètre + menu par rôle), ui.tsx (briques admin)
+│   ├── layout/       Header2 (sélecteur de paroisse), Footer2, Layout2
+│   ├── pwa/          Installation, hors-ligne, notifications
+│   └── *.tsx         Quiz, Markdown (échappe le HTML), VideoCard, Attestation, AdhesionModal, ProfilSections
+├── contexts/         AuthContext (profil, appartenances, useDroits), ParoisseContext
+├── pages/            Pages publiques
+│   └── admin/        Pages d'administration
+└── services/         Accès Supabase par domaine (+ scope.ts : paroisse courante / périmètre admin)
 ```
 
----
+## Routes publiques
 
-## Modèle de données Firestore
+| Route | Contenu |
+|-------|---------|
+| `/` | Accueil : 4 portes d'entrée, liturgie, annonces, « À la une » |
+| `/decouvrir-la-foi`, `/se-convertir`, `/approfondir` | Parcours de foi par public |
+| `/parcours/:slug`, `/parcours/:slug/attestation` | Étapes, quiz, progression, attestation |
+| `/tv` | Directs, programme, playlists, replays, médiathèque (`/evenements` redirige ici) |
+| `/prier` | Évangile, liturgie des heures, chapelet, mur de prière, neuvaines, groupes |
+| `/paroisses`, `/paroisses/:slug` | Annuaire, fiche paroisse, plan |
+| `/liturgie`, `/homelies`, `/annonces`, `/catechese`, `/catechese/:coursId`, `/vie-spirituelle`, `/jeunesse`, `/horaires`, `/histoire`, `/temoignages`, `/demarches`, `/dons`, `/abonnements`, `/signaler` | Pages existantes, filtrées par paroisse |
+| `/connexion`, `/inscription`, `/profil` | Espace membre : paroisses, parcours, historique |
 
-### Collections principales
+## Routes d'administration (`/admin`, protégées)
 
-```
-annonces/         publie, epingle, tag, imageUrl, d, m, titre, desc
-homelies/         publie, titre, predicateur, date, contenu, audioUrl
-formations/       publie, titre, description, couleur, icone
-medias/           type (photo|doc|audio|video), url, storagePath, categorie
-evenements/       type (live|replay|evenement), platform, url, estEnLive
-catechisme_cours/ niveau (1-4), titre, tranche, emoji, couleur, publie
-catechisme_modules/ coursId, ordre, titre, emoji, contenu, activite, priere, quiz[]
-users/            uid, email, nom, role (admin|redacteur|catechiste), actif
-```
+Tableau de bord · Paroisses · Notifications · Médiation / TV · Vidéos & Replays · Annonces · Homélies · Médiathèque · Témoignages · Parcours de foi · Catéchisme · Formations · Espace catéchiste · Registre du staff · Groupes & adhésions · Démarches · Intentions · Services paroissiaux · Abonnés · Dons reçus · Projets de dons · Suivi Parent-Enfant · Signalements · Utilisateurs & Rôles · Journaux d'audit.
 
-### Règles de sécurité
-
-- **Lecture publique** : annonces publiées, homélies publiées, cours publiés
-- **Écriture** : authentifié + rôle approprié
-- **Admin** : accès total
-- **Rédacteur** : annonces, homélies, événements
-- **Catéchiste** : cours, modules
-
----
-
-## Principes d'architecture (BMAD)
-
-### 1. Séparation des préoccupations
-Chaque `service/*.ts` expose une API propre — le composant ne touche jamais Firestore directement. Migration vers Supabase = modifier les services uniquement.
-
-### 2. Contenu 100% admin-géré
-Aucun contenu "hardcodé" dans les pages publiques. Tout passe par Firestore :
-- Annonces → `annonces` collection
-- Homélies → `homelies` collection
-- Cours catéchisme → `catechisme_cours` + `catechisme_modules`
-
-### 3. Offline-first (PWA - ALP-92)
-Service Worker + Cache API pour liturgie et cours. Les fidèles en bas débit peuvent lire hors connexion.
-
-### 4. Mobile-first
-Breakpoint 1024px : BottomNav (mobile) / SideNav (desktop). Padding adaptatif via CSS variables.
-
----
-
-## Routes
-
-| Path | Page | Accès |
-|------|------|-------|
-| `/` | Accueil | Public |
-| `/liturgie` | Liturgie AELF | Public |
-| `/annonces` | Annonces | Public |
-| `/evenements` | Médias & Lives | Public |
-| `/catechese` | Catéchèse (liste cours) | Public |
-| `/catechese/:coursId` | Cours + modules + quiz | Public |
-| `/vie-spirituelle` | Formation spirituelle | Public |
-| `/horaires` | Horaires & Contact | Public |
-| `/admin` | Dashboard | Admin/Rédacteur |
-| `/admin/annonces` | Gestion annonces | Admin/Rédacteur |
-| `/admin/homelies` | Gestion homélies | Admin/Rédacteur |
-| `/admin/formations` | Gestion formations | Admin/Catéchiste |
-| `/admin/evenements` | Lives & Médias | Admin/Rédacteur |
-| `/admin/catechisme` | Gestion cours | Admin/Catéchiste |
-| `/admin/medias` | Médiathèque | Admin |
-
----
-
-## Performance
-
-- Lazy loading des pages (React.lazy + Suspense) — À implémenter
-- Images Firebase Storage avec CDN
-- AELF via Vercel Edge Function (proxy sans CORS)
-- Bundle splitting Vite par route
-
----
-
-## Prochaines phases
-
-| Phase | Tickets | Description |
-|-------|---------|-------------|
-| 3 | ALP-77 à 81 | Parcours 1ère Communion, Confirmation, RICA, Quiz |
-| 4 | ALP-92 | PWA — manifest + Service Worker |
-| 5 | ALP-93 | Notifications push Firebase FCM |
-| 6 | ALP-96 | Bible Lingala/Kikongo/Kitouba |
-| 7 | ALP-100 | Dons Mobile Money |
+Chaque entrée n'apparaît que pour les rôles concernés (voir `SECTIONS` dans `AdminLayout.tsx`).

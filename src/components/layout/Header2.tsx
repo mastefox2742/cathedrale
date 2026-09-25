@@ -32,7 +32,6 @@ const DESKTOP_LINKS = [
   { to: '/tv',        label: 'Médiation / TV' },
   { to: '/catechese', label: 'Catéchèse' },
   { to: '/paroisses', label: 'Paroisses' },
-  { to: '/horaires',  label: 'Horaires & Contact' },
 ]
 
 interface Header2Props { transparent?: boolean }

@@ -79,7 +79,7 @@ function fromProjetRow(r: ProjetDonRow, collecte: number): ProjetDon {
 async function getCollecteParProjet(): Promise<Map<string, number>> {
   // Fonction SQL : le public n'a pas le droit de lire la table des dons.
   const { data, error } = await supabase.rpc('collecte_projets')
-  if (error) throw error
+  if (error) return new Map() // les projets restent affichés, montants à 0
   return new Map((data as { projet_id: string; total: number }[] ?? []).map(d => [d.projet_id, Number(d.total)]))
 }
 
