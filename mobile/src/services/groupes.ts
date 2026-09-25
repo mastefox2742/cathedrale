@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtreParoisse } from './paroisses'
 
 export interface Groupe {
   id?: string
@@ -13,7 +14,7 @@ export interface Groupe {
 }
 
 export async function getGroupes(): Promise<Groupe[]> {
-  const { data, error } = await supabase.from('groupes').select('*').eq('publie', true).order('titre')
+  const { data, error } = await filtreParoisse(supabase.from('groupes').select('*').eq('publie', true)).order('titre')
   if (error) throw error
   return (data ?? []).map(r => ({
     id: r.id, titre: r.titre, description: r.description, categorie: r.categorie,

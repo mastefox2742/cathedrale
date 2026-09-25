@@ -22,6 +22,10 @@ import { GroupesScreen } from '../screens/GroupesScreen'
 import { TemoignagesScreen } from '../screens/TemoignagesScreen'
 import { SignalerScreen } from '../screens/SignalerScreen'
 import { ConnexionScreen } from '../screens/ConnexionScreen'
+import { TvScreen } from '../screens/TvScreen'
+import { ParcoursListeScreen } from '../screens/ParcoursListeScreen'
+import { ParcoursScreen } from '../screens/ParcoursScreen'
+import { ParoissesScreen } from '../screens/ParoissesScreen'
 
 const Tab = createBottomTabNavigator()
 const AccueilStack = createNativeStackNavigator()
@@ -41,6 +45,9 @@ function AccueilNavigator() {
       <AccueilStack.Screen name="Histoire" component={HistoireScreen} />
       <AccueilStack.Screen name="Jeunesse" component={JeunesseScreen} />
       <AccueilStack.Screen name="Signaler" component={SignalerScreen} />
+      <AccueilStack.Screen name="Paroisses" component={ParoissesScreen} />
+      <AccueilStack.Screen name="ParcoursListe" component={ParcoursListeScreen} />
+      <AccueilStack.Screen name="Parcours" component={ParcoursScreen} />
     </AccueilStack.Navigator>
   )
 }
@@ -54,6 +61,8 @@ function PrierNavigator() {
       <PrierStack.Screen name="Horaires" component={HorairesScreen} />
       <PrierStack.Screen name="Intentions" component={IntentionsScreen} />
       <PrierStack.Screen name="Demarches" component={DemarchesScreen} />
+      <PrierStack.Screen name="ParcoursListe" component={ParcoursListeScreen} />
+      <PrierStack.Screen name="Parcours" component={ParcoursScreen} />
     </PrierStack.Navigator>
   )
 }
@@ -69,6 +78,7 @@ function FormationNavigator() {
 function ParticiperNavigator() {
   return (
     <ParticiperStack.Navigator screenOptions={screenOptions}>
+      <ParticiperStack.Screen name="Tv" component={TvScreen} />
       <ParticiperStack.Screen name="Evenements" component={EvenementsScreen} />
       <ParticiperStack.Screen name="Groupes" component={GroupesScreen} />
       <ParticiperStack.Screen name="Temoignages" component={TemoignagesScreen} />

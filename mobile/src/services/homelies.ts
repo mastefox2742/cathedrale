@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtreParoisse } from './paroisses'
 
 export interface Homelie {
   id?: string
@@ -12,10 +13,10 @@ export interface Homelie {
 }
 
 export async function getHomelies(): Promise<Homelie[]> {
-  const { data, error } = await supabase
+  const { data, error } = await filtreParoisse(supabase
     .from('homelies')
     .select('*')
-    .eq('publie', true)
+    .eq('publie', true))
     .order('date', { ascending: false })
   if (error) throw error
   return (data ?? []).map(r => ({

@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtreParoisse } from './paroisses'
 
 export type EvenementType = 'live' | 'replay' | 'evenement'
 export type PlatformType = 'youtube' | 'facebook'
@@ -19,7 +20,7 @@ export interface Evenement {
 }
 
 export async function getEvenements(type?: EvenementType): Promise<Evenement[]> {
-  let query = supabase.from('evenements').select('*').eq('publie', true).order('date', { ascending: false })
+  let query = filtreParoisse(supabase.from('evenements').select('*').eq('publie', true)).order('date', { ascending: false })
   if (type) query = query.eq('type', type)
   const { data, error } = await query
   if (error) throw error

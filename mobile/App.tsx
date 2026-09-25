@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { View, ActivityIndicator, StyleSheet } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -5,12 +6,16 @@ import { useFonts as usePlayfair, PlayfairDisplay_600SemiBold, PlayfairDisplay_7
 import { useFonts as useInter, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter'
 import { RootNavigator } from './src/navigation/RootNavigator'
 import { colors } from './src/theme/colors'
+import { chargerParoisseCourante } from './src/services/paroisses'
 
 export default function App() {
   const [playfairLoaded] = usePlayfair({ PlayfairDisplay_600SemiBold, PlayfairDisplay_700Bold, PlayfairDisplay_800ExtraBold })
   const [interLoaded] = useInter({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold })
+  const [paroissePrete, setParoissePrete] = useState(false)
 
-  if (!playfairLoaded || !interLoaded) {
+  useEffect(() => { chargerParoisseCourante().finally(() => setParoissePrete(true)) }, [])
+
+  if (!playfairLoaded || !interLoaded || !paroissePrete) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={colors.primary} size="large" />

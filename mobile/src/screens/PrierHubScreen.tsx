@@ -21,6 +21,7 @@ const RUBRIQUES: Rubrique[] = [
   { icon: 'book-bookmark-fill', titre: 'Liturgie du Jour', badge: "Aujourd'hui", badgeBg: 'rgba(200,155,60,0.1)', badgeColor: colors.accent, texte: 'Lectures complètes de la messe, psaume responsorial, évangile et méditation.', meta: 'Textes officiels AELF', cta: 'Ouvrir', primary: true, screen: 'Liturgie' },
   { icon: 'clock-clockwise-fill', titre: 'Liturgie des Heures', badge: 'Offices', badgeBg: colors.secondary, badgeColor: colors.mutedForeground, texte: "Priez la prière de l'Église : Laudes, Milieu du jour, Vêpres et Complies.", meta: 'Laudes · Vêpres · Complies', cta: "Prier l'Office", screen: 'Liturgie' },
   { icon: 'headphones-fill', titre: 'Médiathèque & Homélies', badge: 'Audio', badgeBg: 'rgba(18,59,93,0.1)', badgeColor: colors.primary, texte: 'Réécoutez les homélies dominicales et enseignements des prêtres.', meta: 'Dernière : Dimanche 9 juin', cta: 'Écouter', screen: 'Homelies' },
+  { icon: 'sparkle-fill', titre: 'Neuvaines & retraites', badge: 'En ligne', badgeBg: 'rgba(200,155,60,0.1)', badgeColor: colors.accent, texte: 'Neuf jours de prière au Sacré-Cœur, retraites spirituelles guidées.', meta: 'À votre rythme', cta: 'Commencer', screen: 'ParcoursListe' },
   { icon: 'church-fill', titre: 'Messes & Confessions', badge: 'Horaires', badgeBg: 'rgba(46,125,91,0.1)', badgeColor: colors.chart3, texte: 'Messes du dimanche (07h, 09h, 11h, 18h) et permanences de confessions.', meta: 'Prochaine : Dim. 09:00', cta: 'Voir horaires', screen: 'Horaires' },
 ]
 
@@ -61,7 +62,7 @@ export function PrierHubScreen() {
           <Text style={styles.mutedSm}>{RUBRIQUES.length} rubriques</Text>
         </View>
         {RUBRIQUES.map((r) => (
-          <Pressable key={r.titre} onPress={() => navigation.navigate(r.screen)} style={[styles.rubriqueCard, r.primary && styles.rubriquePrimary]}>
+          <Pressable key={r.titre} onPress={() => navigation.navigate(r.screen, r.screen === 'ParcoursListe' ? { types: ['neuvaine', 'retraite'] } : undefined)} style={[styles.rubriqueCard, r.primary && styles.rubriquePrimary]}>
             <View style={styles.rubriqueIcon}><Icon name={r.icon} size={26} color={colors.primary} /></View>
             <View style={{ flex: 1 }}>
               <View style={styles.rowBetween}>

@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtreParoisse } from './paroisses'
 
 export type TagType = 'Liturgie' | 'Formation' | 'Prière' | 'Événement'
 
@@ -14,10 +15,10 @@ export interface Annonce {
 }
 
 export async function getAnnonces(): Promise<Annonce[]> {
-  const { data, error } = await supabase
+  const { data, error } = await filtreParoisse(supabase
     .from('annonces')
     .select('*')
-    .eq('publie', true)
+    .eq('publie', true))
     .order('date', { ascending: false })
   if (error) throw error
   return (data ?? []).map(r => ({

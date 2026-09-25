@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { getParoisseCourante } from './paroisses'
 
 export type TypeDemande =
   | 'bapteme' | 'catechisme' | 'mariage' | 'obseques' | 'certificat'
@@ -25,6 +26,7 @@ function generateReference(): string {
 export async function creerDemande(data: { type: TypeDemande; nom: string; contact: string; message: string }): Promise<string> {
   const reference = generateReference()
   const { error } = await supabase.from('demandes_pastorales').insert({
+    ...(getParoisseCourante() ? { parish_id: getParoisseCourante() } : {}),
     reference, type: data.type, nom: data.nom, contact: data.contact, message: data.message,
     statut: 'recue',
   })

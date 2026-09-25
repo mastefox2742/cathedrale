@@ -11,6 +11,12 @@ import { getAnnonces, type Annonce } from '../services/annonces'
 import { getHomelies, type Homelie } from '../services/homelies'
 
 const QUICK_ACCESS: { icon: IconName; label: string; onPress: (nav: any) => void; color: string }[] = [
+  { icon: 'lightbulb-filament', label: 'Découvrir la foi', color: colors.accent, onPress: (nav) => nav.navigate('ParcoursListe', { types: ['decouvrir'] }) },
+  { icon: 'sparkle-fill', label: 'Me convertir', color: colors.accent, onPress: (nav) => nav.navigate('ParcoursListe', { types: ['conversion'] }) },
+  { icon: 'graduation-cap', label: 'Approfondir', color: colors.accent, onPress: (nav) => nav.navigate('ParcoursListe', { types: ['approfondir'] }) },
+  { icon: 'hands-praying', label: 'Prier', color: colors.accent, onPress: (nav) => nav.navigate('Prier') },
+  { icon: 'video', label: 'TV', color: colors.primary, onPress: (nav) => nav.navigate('Participer', { screen: 'Tv' }) },
+  { icon: 'church', label: 'Paroisses', color: colors.primary, onPress: (nav) => nav.navigate('Paroisses') },
   { icon: 'book-bookmark', label: 'Textes du jour', color: colors.accent, onPress: (nav) => nav.navigate('Prier', { screen: 'Liturgie' }) },
   { icon: 'clock', label: 'Horaires', color: colors.primary, onPress: (nav) => nav.navigate('Prier', { screen: 'Horaires' }) },
   { icon: 'article', label: 'Annonces', color: colors.primary, onPress: (nav) => nav.navigate('Annonces') },
