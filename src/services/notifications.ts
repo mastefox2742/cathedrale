@@ -1,6 +1,7 @@
 import { getMessaging, getToken, onMessage, type MessagePayload } from 'firebase/messaging'
 import { firebaseApp } from './firebase'
 import { supabase } from './supabase'
+import { getParoissePublique } from './scope'
 
 export interface NotifPreferences {
   liturgie: boolean      // Évangile du jour à 6h
@@ -54,7 +55,7 @@ export async function saveNotificationToken(
   prefs: NotifPreferences = DEFAULT_PREFS,
 ): Promise<void> {
   const { error } = await supabase.rpc('enregistrer_jeton', {
-    p_token: token, p_prefs: prefs, p_platform: 'web',
+    p_token: token, p_prefs: prefs, p_platform: 'web', p_parish: getParoissePublique(),
   })
   if (error) throw error
 }
@@ -65,7 +66,7 @@ export async function updateNotificationPrefs(
   prefs: NotifPreferences,
 ): Promise<void> {
   const { error } = await supabase.rpc('enregistrer_jeton', {
-    p_token: token, p_prefs: prefs, p_platform: 'web',
+    p_token: token, p_prefs: prefs, p_platform: 'web', p_parish: getParoissePublique(),
   })
   if (error) throw error
 }

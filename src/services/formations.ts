@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtreAdmin, parishIdPourCreation } from './scope'
 import { logAudit } from './auditLog'
 
 export interface Formation {
@@ -38,13 +39,14 @@ function fromRow(r: FormationRow): Formation {
 }
 
 export async function getFormations(): Promise<Formation[]> {
-  const { data, error } = await supabase.from(TABLE).select('*').order('created_at', { ascending: true })
+  const { data, error } = await filtreAdmin(supabase.from(TABLE).select('*').order('created_at', { ascending: true }))
   if (error) throw error
   return (data ?? []).map(fromRow)
 }
 
 export async function createFormation(data: Omit<Formation, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   const { data: row, error } = await supabase.from(TABLE).insert({
+    parish_id: parishIdPourCreation(),
     titre: data.titre, description: data.description, tranche: data.tranche,
     modules: data.modules, accent: data.accent, icon: data.icon, actif: data.actif,
   }).select('id').single()

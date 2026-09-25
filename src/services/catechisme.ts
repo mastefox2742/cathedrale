@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtrePublic, filtreAdmin, parishIdPourCreation } from './scope'
 import { logAudit } from './auditLog'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -116,19 +117,20 @@ function formationFromRow(r: FormationRow): FormationCatechisme {
 }
 
 export async function getFormationsCatechisme(): Promise<FormationCatechisme[]> {
-  const { data, error } = await supabase.from(FORMATIONS_TABLE).select('*').eq('publie', true).order('ordre')
+  const { data, error } = await filtrePublic(supabase.from(FORMATIONS_TABLE).select('*').eq('publie', true)).order('ordre')
   if (error) throw error
   return (data ?? []).map(formationFromRow)
 }
 
 export async function getAllFormationsCatechisme(): Promise<FormationCatechisme[]> {
-  const { data, error } = await supabase.from(FORMATIONS_TABLE).select('*').order('ordre')
+  const { data, error } = await filtreAdmin(supabase.from(FORMATIONS_TABLE).select('*')).order('ordre')
   if (error) throw error
   return (data ?? []).map(formationFromRow)
 }
 
 export async function addFormationCatechisme(data: Omit<FormationCatechisme, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   const { data: row, error } = await supabase.from(FORMATIONS_TABLE).insert({
+    parish_id: parishIdPourCreation(),
     titre: data.titre, description: data.description, emoji: data.emoji, ordre: data.ordre, publie: data.publie,
   }).select('id').single()
   if (error) throw error
@@ -244,13 +246,13 @@ export async function deleteLecon(id: string): Promise<void> {
 // ── Cours ────────────────────────────────────────────────────────────────────
 
 export async function getCours(): Promise<Cours[]> {
-  const { data, error } = await supabase.from(COURS_TABLE).select('*').eq('publie', true).order('niveau')
+  const { data, error } = await filtrePublic(supabase.from(COURS_TABLE).select('*').eq('publie', true)).order('niveau')
   if (error) throw error
   return (data ?? []).map(coursFromRow)
 }
 
 export async function getAllCours(): Promise<Cours[]> {
-  const { data, error } = await supabase.from(COURS_TABLE).select('*').order('niveau')
+  const { data, error } = await filtreAdmin(supabase.from(COURS_TABLE).select('*')).order('niveau')
   if (error) throw error
   return (data ?? []).map(coursFromRow)
 }
@@ -263,6 +265,7 @@ export async function getCoursById(id: string): Promise<Cours | null> {
 
 export async function addCours(data: Omit<Cours, 'id' | 'createdAt'>): Promise<string> {
   const { data: row, error } = await supabase.from(COURS_TABLE).insert({
+    parish_id: parishIdPourCreation(),
     niveau: data.niveau, titre: data.titre, tranche: data.tranche, description: data.description,
     objectif: data.objectif, emoji: data.emoji, couleur: data.couleur,
     total_modules: data.totalModules, publie: data.publie, formation_id: data.formationId || null,

@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtreAdmin, parishPublique } from './scope'
 
 export type TypeDemande =
   | 'bapteme' | 'catechisme' | 'mariage' | 'obseques' | 'certificat'
@@ -69,7 +70,9 @@ function generateReference(): string {
 
 export async function creerDemande(data: Pick<DemandePastorale, 'type' | 'nom' | 'contact' | 'message'>): Promise<string> {
   const reference = generateReference()
+  const { data: auth } = await supabase.auth.getUser()
   const { error } = await supabase.from('demandes_pastorales').insert({
+    ...parishPublique(), user_id: auth.user?.id ?? null,
     reference, type: data.type, nom: data.nom, contact: data.contact, message: data.message,
     statut: 'recue',
   })
@@ -78,7 +81,7 @@ export async function creerDemande(data: Pick<DemandePastorale, 'type' | 'nom' |
 }
 
 export async function getDemandes(): Promise<DemandePastorale[]> {
-  const { data, error } = await supabase.from('demandes_pastorales').select('*').order('created_at', { ascending: false })
+  const { data, error } = await filtreAdmin(supabase.from('demandes_pastorales').select('*')).order('created_at', { ascending: false })
   if (error) throw error
   return (data ?? []).map(fromRow)
 }
@@ -95,4 +98,11 @@ export async function updateDemande(id: string, patch: Partial<Pick<DemandePasto
 export async function deleteDemande(id: string): Promise<void> {
   const { error } = await supabase.from('demandes_pastorales').delete().eq('id', id)
   if (error) throw error
+}
+
+export async function getMesDemandes(userId: string): Promise<DemandePastorale[]> {
+  const { data, error } = await supabase.from('demandes_pastorales').select('*')
+    .eq('user_id', userId).order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []).map(fromRow)
 }

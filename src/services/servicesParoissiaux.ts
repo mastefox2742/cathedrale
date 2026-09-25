@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtrePublic, filtreAdmin, parishIdPourCreation } from './scope'
 import { logAudit } from './auditLog'
 
 export interface ServiceParoissial {
@@ -37,7 +38,7 @@ function fromRow(r: ServiceRow): ServiceParoissial {
 
 export async function getServicesParoissiaux(onlyPublies = true): Promise<ServiceParoissial[]> {
   let query = supabase.from('services_paroissiaux').select('*').order('categorie')
-  if (onlyPublies) query = query.eq('publie', true)
+  query = onlyPublies ? filtrePublic(query.eq('publie', true)) : filtreAdmin(query)
   const { data, error } = await query
   if (error) throw error
   return (data ?? []).map(fromRow)
@@ -45,6 +46,7 @@ export async function getServicesParoissiaux(onlyPublies = true): Promise<Servic
 
 export async function createServiceParoissial(data: Omit<ServiceParoissial, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   const { data: row, error } = await supabase.from('services_paroissiaux').insert({
+    parish_id: parishIdPourCreation(),
     nom: data.nom, description: data.description, categorie: data.categorie,
     contact: data.contact || null, horaire: data.horaire || null, emoji: data.emoji, publie: data.publie,
   }).select('id').single()

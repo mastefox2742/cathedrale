@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtrePublic, filtreAdmin, parishIdPourCreation } from './scope'
 import { logAudit } from './auditLog'
 
 export interface Groupe {
@@ -42,7 +43,7 @@ function fromRow(r: GroupeRow): Groupe {
 
 export async function getGroupes(publieSeulement = true): Promise<Groupe[]> {
   let query = supabase.from(TABLE).select('*').order('titre')
-  if (publieSeulement) query = query.eq('publie', true)
+  query = publieSeulement ? filtrePublic(query.eq('publie', true)) : filtreAdmin(query)
   const { data, error } = await query
   if (error) throw error
   return (data ?? []).map(fromRow)
@@ -50,6 +51,7 @@ export async function getGroupes(publieSeulement = true): Promise<Groupe[]> {
 
 export async function createGroupe(data: Omit<Groupe, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   const { data: row, error } = await supabase.from(TABLE).insert({
+    parish_id: parishIdPourCreation(),
     titre: data.titre, description: data.description, categorie: data.categorie,
     responsable: data.responsable || null, horaire: data.horaire || null,
     contact: data.contact || null, icon: data.icon, publie: data.publie,

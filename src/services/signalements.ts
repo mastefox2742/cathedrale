@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtreAdmin, parishPublique } from './scope'
 import { logAudit } from './auditLog'
 
 export type GraviteSignalement = 'faible' | 'moyenne' | 'elevee'
@@ -57,6 +58,7 @@ export async function creerSignalement(data: {
   concerne?: string; description: string; reporterNom?: string; reporterContact?: string
 }): Promise<void> {
   const { error } = await supabase.from(TABLE).insert({
+    ...parishPublique(),
     concerne: data.concerne || null, description: data.description,
     reporter_nom: data.reporterNom || null, reporter_contact: data.reporterContact || null,
   })
@@ -65,7 +67,7 @@ export async function creerSignalement(data: {
 
 /** Réservé admin / responsable sécurité (appliqué par les RLS). */
 export async function getSignalements(): Promise<Signalement[]> {
-  const { data, error } = await supabase.from(TABLE).select('*').order('created_at', { ascending: false })
+  const { data, error } = await filtreAdmin(supabase.from(TABLE).select('*')).order('created_at', { ascending: false })
   if (error) throw error
   return (data ?? []).map(fromRow)
 }

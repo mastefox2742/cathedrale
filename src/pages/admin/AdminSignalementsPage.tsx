@@ -5,7 +5,7 @@ import {
   type Signalement, type StatutSignalement, type GraviteSignalement,
 } from '../../services/signalements'
 import { canViewSignalements } from '../../services/auth'
-import { useAuth } from '../../contexts/AuthContext'
+import { useDroits } from '../../contexts/AuthContext'
 
 const STATUT_COLORS: Record<StatutSignalement, { bg: string; fg: string }> = {
   nouveau: { bg: 'rgba(198,40,40,.1)', fg: '#c62828' },
@@ -15,7 +15,7 @@ const STATUT_COLORS: Record<StatutSignalement, { bg: string; fg: string }> = {
 }
 
 export function AdminSignalementsPage() {
-  const { profile } = useAuth()
+  const droits = useDroits()
   const [signalements, setSignalements] = useState<Signalement[]>([])
   const [loading, setLoading] = useState(true)
   const [filterStatut, setFilterStatut] = useState<StatutSignalement | 'tous'>('nouveau')
@@ -37,7 +37,7 @@ export function AdminSignalementsPage() {
 
   useEffect(() => { load() }, [])
 
-  if (!canViewSignalements(profile?.role ?? null)) {
+  if (!canViewSignalements(droits.roles)) {
     return (
       <div style={{ padding: '32px 36px', fontFamily: 'var(--font-sans)' }}>
         <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--on-surface-variant)' }}>

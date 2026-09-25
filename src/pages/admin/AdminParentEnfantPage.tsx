@@ -6,14 +6,14 @@ import {
 } from '../../services/enfants'
 import { getDemandes, type DemandePastorale } from '../../services/demandesPastorales'
 import { canManageEnfants } from '../../services/auth'
-import { useAuth } from '../../contexts/AuthContext'
+import { useDroits } from '../../contexts/AuthContext'
 
 const EMPTY_ENFANT: Omit<Enfant, 'id' | 'createdAt' | 'updatedAt'> = {
   prenom: '', nom: '', dateNaissance: '', parentNom: '', parentContact: '', demandeId: '', notes: '', actif: true,
 }
 
 export function AdminParentEnfantPage() {
-  const { profile } = useAuth()
+  const droits = useDroits()
 
   const [enfants, setEnfants] = useState<Enfant[]>([])
   const [demandes, setDemandes] = useState<DemandePastorale[]>([])
@@ -50,7 +50,7 @@ export function AdminParentEnfantPage() {
 
   useEffect(() => { load() }, [])
 
-  if (!canManageEnfants(profile?.role ?? null)) {
+  if (!canManageEnfants(droits.roles)) {
     return (
       <div style={{ padding: '32px 36px', fontFamily: 'var(--font-sans)' }}>
         <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--on-surface-variant)' }}>

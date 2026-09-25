@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtreAdmin, parishIdPourCreation } from './scope'
 import { logAudit } from './auditLog'
 
 export type TypeConsentement = 'participation_activites' | 'droit_image' | 'sortie'
@@ -87,7 +88,7 @@ function consentementFromRow(r: ConsentementRow): ConsentementParental {
 }
 
 export async function getEnfants(): Promise<Enfant[]> {
-  const { data, error } = await supabase.from(ENFANTS_TABLE).select('*').order('nom')
+  const { data, error } = await filtreAdmin(supabase.from(ENFANTS_TABLE).select('*')).order('nom')
   if (error) throw error
   return (data ?? []).map(enfantFromRow)
 }
@@ -95,6 +96,7 @@ export async function getEnfants(): Promise<Enfant[]> {
 export async function addEnfant(data: Omit<Enfant, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   const { data: user } = await supabase.auth.getUser()
   const { data: row, error } = await supabase.from(ENFANTS_TABLE).insert({
+    ...(parishIdPourCreation() ? { parish_id: parishIdPourCreation() } : {}),
     prenom: data.prenom, nom: data.nom, date_naissance: data.dateNaissance || null,
     parent_nom: data.parentNom, parent_contact: data.parentContact,
     parent_profile_id: data.parentProfileId || null, cours_id: data.coursId || null,

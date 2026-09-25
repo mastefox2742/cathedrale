@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtrePublic, filtreAdmin, parishPublique } from './scope'
 
 export type StatutIntention = 'recue' | 'en_cours' | 'traitee' | 'archivee'
 
@@ -14,6 +15,8 @@ export interface PrayerIntention {
   user_id: string
   contenu: string
   is_public: boolean
+  est_anonyme?: boolean
+  nb_prieres?: number
   created_at: string
 }
 
@@ -28,10 +31,10 @@ export interface PrayerIntentionAdmin extends PrayerIntention {
 }
 
 export async function getIntentionsPubliques(): Promise<PrayerIntention[]> {
-  const { data, error } = await supabase
+  const { data, error } = await filtrePublic(supabase
     .from('prayer_intentions')
     .select('*')
-    .eq('is_public', true)
+    .eq('is_public', true))
     .order('created_at', { ascending: false })
     .limit(50)
   if (error) throw error
@@ -41,13 +44,13 @@ export async function getIntentionsPubliques(): Promise<PrayerIntention[]> {
 export async function deposerIntention(userId: string, contenu: string, isPublic: boolean, estAnonyme = false): Promise<void> {
   const { error } = await supabase
     .from('prayer_intentions')
-    .insert({ user_id: userId, contenu, is_public: isPublic, est_anonyme: estAnonyme })
+    .insert({ ...parishPublique(), user_id: userId, contenu, is_public: isPublic, est_anonyme: estAnonyme })
   if (error) throw error
 }
 
 export async function getIntentionsAdmin(): Promise<PrayerIntentionAdmin[]> {
   const [{ data, error }, { data: profils, error: errProfils }] = await Promise.all([
-    supabase.from('prayer_intentions').select('*').order('created_at', { ascending: false }),
+    filtreAdmin(supabase.from('prayer_intentions').select('*')).order('created_at', { ascending: false }),
     supabase.from('profiles').select('id, nom, email'),
   ])
   if (error) throw error
@@ -76,4 +79,18 @@ export async function updateIntention(id: string, patch: Partial<Pick<PrayerInte
 export async function deleteIntention(id: string): Promise<void> {
   const { error } = await supabase.from('prayer_intentions').delete().eq('id', id)
   if (error) throw error
+}
+
+/** « Je prie pour cette intention » — renvoie le nouveau compteur. */
+export async function prierPour(id: string): Promise<number> {
+  const { data, error } = await supabase.rpc('prier_pour', { p_id: id })
+  if (error) throw error
+  return (data as number | null) ?? 0
+}
+
+export async function getMesIntentions(userId: string): Promise<PrayerIntention[]> {
+  const { data, error } = await supabase.from('prayer_intentions').select('*')
+    .eq('user_id', userId).order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
 }

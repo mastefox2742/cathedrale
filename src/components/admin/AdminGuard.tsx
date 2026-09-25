@@ -1,9 +1,9 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
-import { isStaffRole } from '../../services/auth'
+import { useAuth, useDroits } from '../../contexts/AuthContext'
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user, profile, loading } = useAuth()
+  const droits = useDroits()
 
   if (loading) {
     return (
@@ -24,7 +24,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   if (!user || !profile) return <Navigate to="/admin/login" replace />
   if (!profile.actif) return <Navigate to="/admin/login" replace />
-  if (!isStaffRole(profile.role)) return <Navigate to="/admin/login" replace />
+  if (!droits.isStaff) return <Navigate to="/admin/login" replace />
 
   return <>{children}</>
 }

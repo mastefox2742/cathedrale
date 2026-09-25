@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtrePublic, filtreAdmin, parishIdPourCreation } from './scope'
 import { logAudit } from './auditLog'
 
 export interface Homelie {
@@ -43,7 +44,7 @@ function fromRow(r: HomelieRow): Homelie {
 
 export async function getHomelies(publieSeulement = true): Promise<Homelie[]> {
   let query = supabase.from(TABLE).select('*').order('date', { ascending: false })
-  if (publieSeulement) query = query.eq('publie', true)
+  query = publieSeulement ? filtrePublic(query.eq('publie', true)) : filtreAdmin(query)
   const { data, error } = await query
   if (error) throw error
   return (data ?? []).map(fromRow)
@@ -51,6 +52,7 @@ export async function getHomelies(publieSeulement = true): Promise<Homelie[]> {
 
 export async function createHomelie(data: Omit<Homelie, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   const { data: row, error } = await supabase.from(TABLE).insert({
+    parish_id: parishIdPourCreation(),
     titre: data.titre, pretre: data.pretre, date: data.date, texte: data.texte,
     audio_url: data.audioUrl || null, audio_path: data.audioPath || null,
     liturgie_ref: data.liturgieRef || null, publie: data.publie,

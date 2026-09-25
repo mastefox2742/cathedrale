@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtrePublic, filtreAdmin, parishIdPourCreation } from './scope'
 import { logAudit } from './auditLog'
 
 export type TagType = 'Liturgie' | 'Formation' | 'Prière' | 'Événement'
@@ -44,7 +45,7 @@ function fromRow(r: AnnonceRow): Annonce {
 
 export async function getAnnonces(publieSeulement = true): Promise<Annonce[]> {
   let query = supabase.from(TABLE).select('*').order('date', { ascending: false })
-  if (publieSeulement) query = query.eq('publie', true)
+  query = publieSeulement ? filtrePublic(query.eq('publie', true)) : filtreAdmin(query)
   const { data, error } = await query
   if (error) throw error
   return (data ?? []).map(fromRow)
@@ -52,6 +53,7 @@ export async function getAnnonces(publieSeulement = true): Promise<Annonce[]> {
 
 export async function createAnnonce(data: Omit<Annonce, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
   const { data: row, error } = await supabase.from(TABLE).insert({
+    parish_id: parishIdPourCreation(),
     titre: data.titre, description: data.desc, tag: data.tag, date: data.date,
     image_url: data.imageUrl || null, image_path: data.imagePath || null,
     epingle: data.epingle, publie: data.publie,

@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtreAdmin, parishIdPourCreation } from './scope'
 
 export type AuditAction = 'create' | 'update' | 'delete'
 
@@ -31,6 +32,15 @@ export const RESOURCE_LABELS: Record<string, string> = {
   enfant: 'Fiche enfant',
   consentement: 'Consentement parental',
   signalement: 'Signalement',
+  paroisse: 'Paroisse',
+  membre_paroisse: 'Rôle paroissial',
+  parcours: 'Parcours de foi',
+  etape_parcours: 'Étape de parcours',
+  direct: 'Direct programmé',
+  playlist: 'Playlist',
+  don: 'Don',
+  adhesion: 'Adhésion à un groupe',
+  abonne: 'Abonné',
 }
 
 /** Ne doit jamais faire échouer l'action admin qu'elle accompagne. */
@@ -40,7 +50,7 @@ export async function logAudit(action: AuditAction, resource: string, resourceId
   if (!user) return
   try {
     const { error } = await supabase.from('audit_logs').insert({
-      action, resource, resource_id: resourceId, summary: summary ?? null,
+      action, resource, resource_id: resourceId, summary: summary ?? null, parish_id: parishIdPourCreation(),
       user_id: user.id, user_email: user.email ?? 'inconnu',
     })
     if (error) throw error
@@ -50,9 +60,9 @@ export async function logAudit(action: AuditAction, resource: string, resourceId
 }
 
 export async function getAuditLogs(max = 200): Promise<AuditLog[]> {
-  const { data, error } = await supabase
+  const { data, error } = await filtreAdmin(supabase
     .from('audit_logs')
-    .select('*')
+    .select('*'))
     .order('created_at', { ascending: false })
     .limit(max)
   if (error) throw error

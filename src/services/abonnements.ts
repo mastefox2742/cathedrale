@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { filtreAdmin, getParoissePublique } from './scope'
 
 export type CanalType = 'email' | 'whatsapp'
 
@@ -34,7 +35,7 @@ function fromRow(r: AbonnementRow): Abonnement {
 export async function subscribe(data: Omit<Abonnement, 'id' | 'createdAt' | 'confirme'>): Promise<string> {
   // Passe par une fonction SQL : le public n'a plus le droit de lire la table
   const { data: id, error } = await supabase.rpc('s_abonner', {
-    p_canal: data.canal, p_contact: data.contact, p_prefs: data.prefs,
+    p_canal: data.canal, p_contact: data.contact, p_prefs: data.prefs, p_parish: getParoissePublique(),
   })
   if (error) throw error
   return id as string
@@ -46,7 +47,7 @@ export async function unsubscribe(contact: string): Promise<void> {
 }
 
 export async function getAbonnements(): Promise<Abonnement[]> {
-  const { data, error } = await supabase.from(TABLE).select('*')
+  const { data, error } = await filtreAdmin(supabase.from(TABLE).select('*')).order('created_at', { ascending: false })
   if (error) throw error
   return (data ?? []).map(fromRow)
 }

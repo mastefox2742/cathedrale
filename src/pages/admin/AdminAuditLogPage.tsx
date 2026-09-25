@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getAuditLogs, RESOURCE_LABELS, type AuditLog, type AuditAction } from '../../services/auditLog'
-import { useAuth } from '../../contexts/AuthContext'
+import { useDroits } from '../../contexts/AuthContext'
+import { canViewAudit } from '../../services/auth'
 
 const ACTION_STYLE: Record<AuditAction, { label: string; bg: string; color: string; icon: string }> = {
   create: { label: 'Création', bg: '#e8f5e9', color: '#2e7d32', icon: 'add_circle' },
@@ -15,21 +16,22 @@ function formatDate(log: AuditLog): string {
 }
 
 export function AdminAuditLogPage() {
-  const { profile } = useAuth()
+  const droits = useDroits()
+  const autorise = canViewAudit(droits.roles)
   const [logs, setLogs] = useState<AuditLog[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [filter, setFilter] = useState<'tous' | AuditAction>('tous')
 
   useEffect(() => {
-    if (profile?.role !== 'admin') return
+    if (!autorise) return
     getAuditLogs()
       .then(setLogs)
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-  }, [profile?.role])
+  }, [autorise])
 
-  if (profile?.role !== 'admin') {
+  if (!autorise) {
     return (
       <div style={{ padding: '32px 36px', maxWidth: 1100 }}>
         <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--on-surface-variant)' }}>
