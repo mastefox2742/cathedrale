@@ -3,6 +3,9 @@ import { NavLink } from 'react-router-dom'
 const LINKS = [
   { to: '/', label: 'Accueil' },
   { to: '/horaires', label: 'Horaires des Messes' },
+  { to: '/paroisses', label: 'Paroisses' },
+  { to: '/tv', label: 'Médiation / TV' },
+  { to: '/prier', label: 'Prier' },
   { to: '/histoire', label: 'Histoire & Archives' },
   { to: '/catechese', label: 'Catéchèse' },
   { to: '/dons', label: 'Faire un Don', accent: true },

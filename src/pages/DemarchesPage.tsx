@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { creerDemande, TYPE_DEMANDE_LABELS, type TypeDemande } from '../services/demandesPastorales'
 
 export function DemarchesPage() {
-  const [type, setType] = useState<TypeDemande>('info_generale')
+  const [params] = useSearchParams()
+  const typeParam = params.get('type') as TypeDemande | null
+  const [type, setType] = useState<TypeDemande>(typeParam && typeParam in TYPE_DEMANDE_LABELS ? typeParam : 'info_generale')
   const [nom, setNom] = useState('')
   const [contact, setContact] = useState('')
   const [message, setMessage] = useState('')

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Layout2 } from './components/layout/Layout2'
 import { AdminLayout } from './components/admin/AdminLayout'
 import { AdminGuard } from './components/admin/AdminGuard'
@@ -9,7 +9,6 @@ import { AdminGuard } from './components/admin/AdminGuard'
 const HomePage          = lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })))
 const LiturgiePage      = lazy(() => import('./pages/LiturgiePage').then(m => ({ default: m.LiturgiePage })))
 const AnnoncesPage      = lazy(() => import('./pages/AnnoncesPage').then(m => ({ default: m.AnnoncesPage })))
-const EvenementsPage    = lazy(() => import('./pages/EvenementsPage').then(m => ({ default: m.EvenementsPage })))
 const CatechesePage     = lazy(() => import('./pages/CatechesePage').then(m => ({ default: m.CatechesePage })))
 const CoursPage         = lazy(() => import('./pages/CoursPage').then(m => ({ default: m.CoursPage })))
 const VieSpirituellePage = lazy(() => import('./pages/VieSpirituellePage').then(m => ({ default: m.VieSpirituellePage })))
@@ -24,6 +23,13 @@ const ConnexionPage     = lazy(() => import('./pages/ConnexionPage').then(m => (
 const AttestationPage   = lazy(() => import('./pages/AttestationPage').then(m => ({ default: m.AttestationPage })))
 const TemoignagesPage   = lazy(() => import('./pages/TemoignagesPage').then(m => ({ default: m.TemoignagesPage })))
 const SignalerPage      = lazy(() => import('./pages/SignalerPage').then(m => ({ default: m.SignalerPage })))
+const TvPage            = lazy(() => import('./pages/TvPage').then(m => ({ default: m.TvPage })))
+const ParcoursListePage = lazy(() => import('./pages/ParcoursListePage').then(m => ({ default: m.ParcoursListePage })))
+const ParcoursPage      = lazy(() => import('./pages/ParcoursPage').then(m => ({ default: m.ParcoursPage })))
+const ParcoursAttestationPage = lazy(() => import('./pages/ParcoursAttestationPage').then(m => ({ default: m.ParcoursAttestationPage })))
+const PrierPage         = lazy(() => import('./pages/PrierPage').then(m => ({ default: m.PrierPage })))
+const ParoissesPage     = lazy(() => import('./pages/ParoissesPage').then(m => ({ default: m.ParoissesPage })))
+const ParoissePage      = lazy(() => import('./pages/ParoissePage').then(m => ({ default: m.ParoissePage })))
 
 // Pages admin (chunk séparé)
 const LoginPage               = lazy(() => import('./pages/admin/LoginPage').then(m => ({ default: m.LoginPage })))
@@ -79,7 +85,16 @@ export default function App() {
         <Route path="/" element={<Layout2 transparent><Wrap><HomePage /></Wrap></Layout2>} />
         <Route path="/liturgie"           element={<Layout2><Wrap><LiturgiePage /></Wrap></Layout2>} />
         <Route path="/annonces"           element={<Layout2><Wrap><AnnoncesPage /></Wrap></Layout2>} />
-        <Route path="/evenements"         element={<Layout2><Wrap><EvenementsPage /></Wrap></Layout2>} />
+        <Route path="/evenements"         element={<Navigate to="/tv" replace />} />
+        <Route path="/tv"                 element={<Layout2><Wrap><TvPage /></Wrap></Layout2>} />
+        <Route path="/decouvrir-la-foi"   element={<Layout2><Wrap><ParcoursListePage key="decouvrir" type="decouvrir" /></Wrap></Layout2>} />
+        <Route path="/se-convertir"       element={<Layout2><Wrap><ParcoursListePage key="conversion" type="conversion" /></Wrap></Layout2>} />
+        <Route path="/approfondir"        element={<Layout2><Wrap><ParcoursListePage key="approfondir" type="approfondir" /></Wrap></Layout2>} />
+        <Route path="/parcours/:slug"     element={<Layout2><Wrap><ParcoursPage /></Wrap></Layout2>} />
+        <Route path="/parcours/:slug/attestation" element={<Wrap><ParcoursAttestationPage /></Wrap>} />
+        <Route path="/prier"              element={<Layout2><Wrap><PrierPage /></Wrap></Layout2>} />
+        <Route path="/paroisses"          element={<Layout2><Wrap><ParoissesPage /></Wrap></Layout2>} />
+        <Route path="/paroisses/:slug"    element={<Layout2><Wrap><ParoissePage /></Wrap></Layout2>} />
         <Route path="/catechese"          element={<Layout2><Wrap><CatechesePage /></Wrap></Layout2>} />
         <Route path="/catechese/:coursId" element={<Layout2><Wrap><CoursPage /></Wrap></Layout2>} />
         <Route path="/vie-spirituelle"    element={<Layout2><Wrap><VieSpirituellePage /></Wrap></Layout2>} />
@@ -91,6 +106,8 @@ export default function App() {
         <Route path="/histoire"           element={<Layout2><Wrap><HistoirePage /></Wrap></Layout2>} />
         <Route path="/abonnements"        element={<Layout2><Wrap><AbonnementsPage /></Wrap></Layout2>} />
         <Route path="/connexion"          element={<Layout2><Wrap><ConnexionPage /></Wrap></Layout2>} />
+        <Route path="/inscription"        element={<Layout2><Wrap><ConnexionPage modeInitial="register" /></Wrap></Layout2>} />
+        <Route path="/profil"             element={<Layout2><Wrap><ConnexionPage /></Wrap></Layout2>} />
         <Route path="/attestation/:coursId" element={<Wrap><AttestationPage /></Wrap>} />
         <Route path="/temoignages"        element={<Layout2><Wrap><TemoignagesPage /></Wrap></Layout2>} />
         <Route path="/signaler"           element={<Layout2><Wrap><SignalerPage /></Wrap></Layout2>} />

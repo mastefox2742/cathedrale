@@ -1,30 +1,37 @@
 import { useEffect, useState, useRef } from 'react'
 import { NavLink, Link, useNavigate } from 'react-router-dom'
+import { useParoisse } from '../../contexts/ParoisseContext'
 
 const NAV_LINKS = [
-  { to: '/',                label: 'Accueil',            section: 'Spirituel' },
-  { to: '/liturgie',        label: 'Liturgie du jour',   section: 'Spirituel' },
-  { to: '/homelies',        label: 'Homélies',           section: 'Spirituel' },
-  { to: '/histoire',        label: 'Notre Histoire',     section: 'Spirituel' },
-  { to: '/annonces',        label: 'Annonces & Agenda',  section: 'Paroisse' },
-  { to: '/evenements',      label: 'Médias & Lives',     section: 'Paroisse' },
-  { to: '/catechese',       label: 'Catéchèse',          section: 'Paroisse' },
-  { to: '/vie-spirituelle', label: 'Vie spirituelle',    section: 'Paroisse' },
-  { to: '/jeunesse',        label: 'Espace Jeunesse',    section: 'Paroisse' },
-  { to: '/horaires',        label: 'Horaires & Contact', section: 'Paroisse' },
-  { to: '/demarches',       label: 'Démarches pastorales', section: 'Paroisse' },
-  { to: '/temoignages',     label: 'Témoignages',        section: 'Paroisse' },
-  { to: '/dons',            label: 'Don & Offrande',     section: 'Soutien' },
-  { to: '/abonnements',     label: "S'abonner",          section: 'Soutien' },
-  { to: '/connexion',       label: 'Espace Membre',      section: 'Soutien' },
+  { to: '/',                  label: 'Accueil',                 section: 'Évangile' },
+  { to: '/decouvrir-la-foi',  label: 'Je découvre la foi',      section: 'Évangile' },
+  { to: '/se-convertir',      label: 'Je veux me convertir',    section: 'Évangile' },
+  { to: '/approfondir',       label: 'Approfondir ma foi',      section: 'Évangile' },
+  { to: '/tv',                label: 'Médiation / TV',          section: 'Évangile' },
+  { to: '/prier',             label: 'Prier',                   section: 'Spirituel' },
+  { to: '/liturgie',          label: 'Liturgie du jour',        section: 'Spirituel' },
+  { to: '/homelies',          label: 'Homélies',                section: 'Spirituel' },
+  { to: '/vie-spirituelle',   label: 'Vie spirituelle',         section: 'Spirituel' },
+  { to: '/temoignages',       label: 'Témoignages',             section: 'Spirituel' },
+  { to: '/histoire',          label: 'Notre Histoire',          section: 'Spirituel' },
+  { to: '/paroisses',         label: 'Annuaire des paroisses',  section: 'Paroisse' },
+  { to: '/annonces',          label: 'Annonces & Agenda',       section: 'Paroisse' },
+  { to: '/catechese',         label: 'Catéchèse',               section: 'Paroisse' },
+  { to: '/jeunesse',          label: 'Espace Jeunesse',         section: 'Paroisse' },
+  { to: '/horaires',          label: 'Horaires & Contact',      section: 'Paroisse' },
+  { to: '/demarches',         label: 'Démarches pastorales',    section: 'Paroisse' },
+  { to: '/dons',              label: 'Don & Offrande',          section: 'Soutien' },
+  { to: '/abonnements',       label: "S'abonner",               section: 'Soutien' },
+  { to: '/connexion',         label: 'Espace Membre',           section: 'Soutien' },
 ]
 
-const SECTIONS = ['Spirituel', 'Paroisse', 'Soutien']
+const SECTIONS = ['Évangile', 'Spirituel', 'Paroisse', 'Soutien']
 
 const DESKTOP_LINKS = [
   { to: '/liturgie',  label: 'Liturgie & Messes' },
+  { to: '/tv',        label: 'Médiation / TV' },
   { to: '/catechese', label: 'Catéchèse' },
-  { to: '/annonces',  label: 'Actualités' },
+  { to: '/paroisses', label: 'Paroisses' },
   { to: '/horaires',  label: 'Horaires & Contact' },
 ]
 
@@ -34,6 +41,7 @@ export function Header2({ transparent = false }: Header2Props) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const navigate = useNavigate()
+  const { paroisses, courante, choisir } = useParoisse()
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -87,7 +95,7 @@ export function Header2({ transparent = false }: Header2Props) {
               fontWeight: 600, color: textColor, letterSpacing: '.03em',
               transition: 'color .35s', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
-              Cathédrale Sacré-Cœur
+              {courante?.nom ?? 'Cathédrale Sacré-Cœur'}
             </span>
             <span className="v2-logo-sub v2-header-subtitle" style={{
               fontSize: 8, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase',
@@ -184,6 +192,23 @@ export function Header2({ transparent = false }: Header2Props) {
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-mid)' }}
           >✕</button>
         </div>
+
+        {paroisses.length > 1 && (
+          <div style={{ padding: '16px 28px 4px' }}>
+            <label htmlFor="choix-paroisse" style={{ display: 'block', fontSize: 9, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--accent-dark)', marginBottom: 8 }}>
+              Ma paroisse
+            </label>
+            <select
+              id="choix-paroisse"
+              value={courante?.id ?? ''}
+              onChange={e => { choisir(e.target.value); setMenuOpen(false) }}
+              className="dark-input"
+              style={{ width: '100%', cursor: 'pointer' }}
+            >
+              {paroisses.map(p => <option key={p.id} value={p.id}>{p.nom}</option>)}
+            </select>
+          </div>
+        )}
 
         {SECTIONS.map(section => (
           <div key={section} style={{ padding: '16px 28px 4px' }}>

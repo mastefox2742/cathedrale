@@ -12,6 +12,7 @@ export interface Groupe {
   contact?: string
   icon: string
   publie: boolean
+  parishId?: string | null
   createdAt?: string
   updatedAt?: string
 }
@@ -28,6 +29,7 @@ interface GroupeRow {
   contact: string | null
   icon: string
   publie: boolean
+  parish_id?: string | null
   created_at: string
   updated_at: string
 }
@@ -36,7 +38,7 @@ function fromRow(r: GroupeRow): Groupe {
   return {
     id: r.id, titre: r.titre, description: r.description, categorie: r.categorie,
     responsable: r.responsable ?? undefined, horaire: r.horaire ?? undefined,
-    contact: r.contact ?? undefined, icon: r.icon, publie: r.publie,
+    contact: r.contact ?? undefined, icon: r.icon, publie: r.publie, parishId: r.parish_id ?? null,
     createdAt: r.created_at, updatedAt: r.updated_at,
   }
 }

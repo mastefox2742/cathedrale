@@ -1,13 +1,25 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { Clock, HeartHandshake, Radio, ArrowRight, HandHeart } from 'lucide-react'
+import { Clock, HeartHandshake, Radio, ArrowRight, HandHeart, Compass, Droplets, BookOpen, Flame, CalendarClock } from 'lucide-react'
 import { getAnnonces, type Annonce } from '../services/annonces'
 import { getProjetsDons, formatXAF, type ProjetDon } from '../services/dons'
+import { getALaUne, type Evenement } from '../services/evenements'
+import { getDirectsAVenir, type Direct } from '../services/mediation'
+import { useParoisse } from '../contexts/ParoisseContext'
+import { VideoCard } from '../components/VideoCard'
 
 const QUICK_ACCESS = [
   { icon: Clock, titre: 'Horaires & Messes', desc: "Consultez les horaires des offices et l'agenda liturgique de la semaine.", to: '/horaires', bg: 'var(--primary)', fg: '#fff' },
   { icon: HeartHandshake, titre: 'Intentions de prière', desc: 'Confiez vos intentions aux prêtres et à la communauté de la cathédrale.', to: '/vie-spirituelle', bg: 'var(--primary-mid)', fg: '#fff' },
   { icon: Radio, titre: 'Homélies & Enseignements', desc: "Réécoutez les homélies dominicales pour nourrir votre chemin spirituel.", to: '/homelies', bg: 'var(--accent)', fg: 'var(--text)' },
+]
+
+/** Les quatre portes d'entrée de la plateforme (évangélisation). */
+const PORTES = [
+  { icon: Compass, titre: 'Je découvre la foi', desc: 'Pour les curieux et ceux qui cherchent : qui est Jésus, pourquoi prier, que croient les chrétiens ?', to: '/decouvrir-la-foi' },
+  { icon: Droplets, titre: 'Je veux me convertir', desc: 'Devenir chrétien : les étapes du catéchuménat, des témoignages et un accompagnement.', to: '/se-convertir' },
+  { icon: BookOpen, titre: 'Je veux approfondir ma foi', desc: 'Bible, doctrine, vie spirituelle : des parcours pour les baptisés qui veulent grandir.', to: '/approfondir' },
+  { icon: Flame, titre: 'Je veux prier', desc: "Évangile du jour, liturgie des heures, chapelet, mur de prière et neuvaines.", to: '/prier' },
 ]
 
 const HISTOIRE = [
@@ -29,6 +41,9 @@ function getLiturgicalColor() {
 export function HomePage() {
   const [annonces, setAnnonces] = useState<Annonce[]>([])
   const [projets, setProjets] = useState<ProjetDon[]>([])
+  const [aLaUne, setALaUne] = useState<Evenement[]>([])
+  const [prochainDirect, setProchainDirect] = useState<Direct | null>(null)
+  const { courante } = useParoisse()
   const heroBg = useRef<HTMLDivElement>(null)
   const coul = getLiturgicalColor()
   const now = new Date()
@@ -36,6 +51,8 @@ export function HomePage() {
   useEffect(() => {
     getAnnonces().then(d => setAnnonces(d.slice(0, 3))).catch(() => {})
     getProjetsDons().then(d => setProjets(d.slice(0, 3))).catch(() => setProjets([]))
+    getALaUne(2).then(setALaUne).catch(() => setALaUne([]))
+    getDirectsAVenir().then(d => setProchainDirect(d[0] ?? null)).catch(() => setProchainDirect(null))
   }, [])
 
   useEffect(() => {
@@ -96,10 +113,37 @@ export function HomePage() {
             </span>
           </div>
           <Link to="/horaires" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--accent-light)', textDecoration: 'none' }}>
-            Horaires des messes <ArrowRight size={14} />
+            Horaires des messes{courante ? ` · ${courante.nom}` : ''} <ArrowRight size={14} />
           </Link>
         </div>
       </div>
+
+      {/* ══ PAR OÙ COMMENCER ? ══ */}
+      <section style={{ padding: 'var(--space-xl) 0', background: 'var(--surface)' }}>
+        <div className="inner">
+          <div className="reveal" style={{ maxWidth: 600, marginBottom: 40 }}>
+            <span className="section-label">Bienvenue</span>
+            <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 700, color: 'var(--text)' }}>Par où commencer ?</h2>
+            <p style={{ fontSize: 13, color: 'var(--text-mid)', marginTop: 12, lineHeight: 1.75 }}>
+              Croyant, curieux ou en recherche : l'archidiocèse de Brazzaville vous accompagne là où vous en êtes.
+            </p>
+          </div>
+          <div className="grid-4">
+            {PORTES.map(p => (
+              <Link key={p.to} to={p.to} className="dark-card reveal" style={{ padding: 26, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div className="icon-tile" style={{ background: 'var(--primary)', color: 'var(--accent-light)' }}>
+                  <p.icon size={22} />
+                </div>
+                <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 18, fontWeight: 600, color: 'var(--text)' }}>{p.titre}</h3>
+                <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, flex: 1 }}>{p.desc}</p>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--blue)' }}>
+                  Commencer <ArrowRight size={13} />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ══ ACCÈS RAPIDE ══ */}
       <section style={{ padding: 'var(--space-xl) 0', background: 'var(--bg-alt)' }}>
@@ -298,40 +342,39 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ══ MÉDIAS HOME ══ */}
+      {/* ══ À LA UNE (MÉDIATION) ══ */}
       <section style={{ padding: 'var(--space-xl) 0', background: 'var(--bg-alt)' }}>
         <div className="inner">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 36 }} className="reveal">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 36, gap: 16, flexWrap: 'wrap' }} className="reveal">
             <div>
-              <span className="section-label">Médias</span>
-              <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 700, color: 'var(--text)' }}>Messes en Direct & Replays</h2>
+              <span className="section-label">Médiation</span>
+              <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 700, color: 'var(--text)' }}>À la une</h2>
             </div>
-            <Link to="/evenements" className="btn-outline" style={{ fontSize: 10, flexShrink: 0 }}>Voir tout →</Link>
+            <Link to="/tv" className="btn-outline" style={{ fontSize: 10, flexShrink: 0 }}>La chaîne →</Link>
           </div>
-          <div className="reveal grid-med">
-            {[
-              { img: '/cathedrale.jpg', plat: 'YouTube', platCls: '#FF0000', type: 'Replay · Messe', titre: 'Solennité de la Pentecôte — Messe Pontificale', date: 'Dim 25 mai 2026 · 10h30' },
-              { img: '/hero-bg.jpg', plat: 'Facebook', platCls: '#1877F2', type: 'Replay · Événement', titre: 'Grande Veillée Pascale — Nuit Sainte', date: 'Sam 19 avr 2026 · 22h00' },
-            ].map((m, i) => (
-              <Link key={i} to="/evenements" className="dark-card" style={{ overflow: 'hidden', cursor: 'pointer', textDecoration: 'none' }}>
-                <div style={{ aspectRatio: '16/9', overflow: 'hidden', position: 'relative' }}>
-                  <img src={m.img} alt={m.titre} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(.85)', transition: 'transform .5s' }}
-                    onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.04)')}
-                    onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-                  />
-                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 52, height: 52, borderRadius: '50%', background: 'rgba(18,59,93,.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-md)' }}>
-                    <svg viewBox="0 0 20 22" style={{ fill: 'white', width: 14, height: 16, marginLeft: 2 }}><path d="M2 1l16 10L2 21V1z"/></svg>
-                  </div>
-                  <span style={{ position: 'absolute', top: 10, right: 10, padding: '3px 9px', background: m.platCls, color: 'white', fontSize: 8, fontWeight: 700, letterSpacing: '.1em', borderRadius: 3 }}>{m.plat}</span>
-                </div>
-                <div style={{ padding: '16px 18px' }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.18em', color: 'var(--accent-dark)', textTransform: 'uppercase', marginBottom: 7 }}>{m.type}</div>
-                  <div style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 16, fontWeight: 600, color: 'var(--text)', lineHeight: 1.35 }}>{m.titre}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-mid)', marginTop: 7 }}>{m.date}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
+
+          {prochainDirect && (
+            <Link to="/tv" className="reveal" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px', marginBottom: 24, background: 'var(--primary)', textDecoration: 'none', flexWrap: 'wrap' }}>
+              {prochainDirect.statut === 'en_direct'
+                ? <span className="live-badge"><span className="live-dot" />EN DIRECT</span>
+                : <CalendarClock size={20} color="var(--accent-light)" />}
+              <span style={{ flex: 1, minWidth: 200 }}>
+                <span style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--accent-light)' }}>
+                  {prochainDirect.statut === 'en_direct' ? 'Maintenant' : `Prochain direct · ${new Date(prochainDirect.debut).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}`}
+                </span>
+                <span style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 17, color: '#fff' }}>{prochainDirect.titre}</span>
+              </span>
+              <ArrowRight size={16} color="#fff" />
+            </Link>
+          )}
+
+          {aLaUne.length > 0 ? (
+            <div className="reveal grid-med">
+              {aLaUne.map(v => <VideoCard key={v.id} ev={v} />)}
+            </div>
+          ) : (
+            <p style={{ fontSize: 13, color: 'var(--text-light)' }}>Les vidéos de la chaîne seront bientôt disponibles.</p>
+          )}
         </div>
       </section>
 

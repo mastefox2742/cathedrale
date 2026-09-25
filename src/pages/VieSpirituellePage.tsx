@@ -5,6 +5,7 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../services/supabase'
 import { getIntentionsPubliques, deposerIntention, type PrayerIntention } from '../services/prieres'
 import { getGroupes, type Groupe } from '../services/groupes'
+import { AdhesionModal } from '../components/AdhesionModal'
 
 const FORMATIONS = [
   { num: 'I', tag: 'Bible', titre: 'Introduction à la Sainte Écriture', desc: "Découverte des deux Testaments, grandes figures bibliques et méthodes d'interprétation catholique. Accessible à tous, aucun prérequis.", horaire: 'Lundi 18h – 19h30', lieu: 'Salle Saint-Augustin' },
@@ -40,6 +41,7 @@ export function VieSpirituellePage() {
   const [intentions, setIntentions] = useState<PrayerIntention[]>([])
   const [loadingIntentions, setLoadingIntentions] = useState(true)
   const [groupes, setGroupes] = useState<Groupe[]>([])
+  const [adhesion, setAdhesion] = useState<Groupe | null>(null)
   const [loadingGroupes, setLoadingGroupes] = useState(true)
 
   const loadIntentions = useCallback(() => {
@@ -181,6 +183,7 @@ export function VieSpirituellePage() {
                       Contacter le responsable
                     </a>
                   )}
+                  <button onClick={() => setAdhesion(g)} className="btn-outline" style={{ fontSize: 10, alignSelf: 'flex-start', marginTop: 4 }}>Rejoindre ce groupe</button>
                 </div>
               ))}
             </div>
@@ -255,6 +258,8 @@ export function VieSpirituellePage() {
 
         </div>
       </div>
+
+      {adhesion && <AdhesionModal groupe={adhesion} onClose={() => setAdhesion(null)} />}
     </>
   )
 }

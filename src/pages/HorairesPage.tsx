@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getServicesParoissiaux, type ServiceParoissial } from '../services/servicesParoissiaux'
+import { useParoisse } from '../contexts/ParoisseContext'
 
-const MESSES = [
+/** Valeurs de repli (Cathédrale) si la paroisse n'a pas encore renseigné ses horaires. */
+const MESSES_DEFAUT = [
   { jour: 'Lundi – Vendredi', horaires: ['07h00', '18h30'], accent: false },
   { jour: 'Samedi',           horaires: ['07h00', '10h00', '18h30'], accent: false },
   { jour: 'Dimanche',         horaires: ['07h00', '09h00', '11h00', '17h00'], accent: true },
@@ -15,7 +17,7 @@ const SACREMENTS = [
   { icon: '✋', nom: 'Onction des malades', detail: '1er vendredi du mois à 18h30' },
 ]
 
-const CONTACTS = [
+const CONTACTS_DEFAUT = [
   { icon: '📍', label: 'Adresse', value: 'Avenue de la Paix, Centre-ville\nBrazzaville, République du Congo', href: 'https://maps.google.com/?q=Cathedrale+Sacre+Coeur+Brazzaville' },
   { icon: '📞', label: 'Téléphone', value: '+242 06 000 00 00', href: 'tel:+242060000000' },
   { icon: '✉️', label: 'Email', value: 'contact@sacrecoeur-brazza.cg', href: 'mailto:contact@sacrecoeur-brazza.cg' },
@@ -29,6 +31,21 @@ function contactHref(contact: string) {
 export function HorairesPage() {
   const [services, setServices] = useState<ServiceParoissial[]>([])
   const [loadingServices, setLoadingServices] = useState(true)
+  const { courante } = useParoisse()
+
+  const MESSES = courante?.horaires.messes?.length
+    ? courante.horaires.messes.map(m => ({ ...m, accent: /dimanche/i.test(m.jour) }))
+    : MESSES_DEFAUT
+  const aDesContacts = !!(courante && (courante.adresse || courante.telephone || courante.email || courante.whatsapp))
+  const carteUrl = courante?.latitude != null && courante?.longitude != null
+    ? `https://www.openstreetmap.org/?mlat=${courante.latitude}&mlon=${courante.longitude}#map=17/${courante.latitude}/${courante.longitude}`
+    : 'https://maps.google.com/?q=Cathedrale+Sacre+Coeur+Brazzaville'
+  const CONTACTS = aDesContacts ? [
+    courante!.adresse && { icon: '📍', label: 'Adresse', value: `${courante!.adresse}\n${courante!.ville}, République du Congo`, href: carteUrl },
+    courante!.telephone && { icon: '📞', label: 'Téléphone', value: courante!.telephone, href: `tel:${courante!.telephone.replace(/\s/g, '')}` },
+    courante!.email && { icon: '✉️', label: 'Email', value: courante!.email, href: `mailto:${courante!.email}` },
+    courante!.whatsapp && { icon: '💬', label: 'WhatsApp', value: courante!.whatsapp, href: `https://wa.me/${courante!.whatsapp.replace(/\D/g, '')}` },
+  ].filter((c): c is { icon: string; label: string; value: string; href: string } => !!c) : CONTACTS_DEFAUT
 
   useEffect(() => {
     getServicesParoissiaux().then(setServices).catch(() => setServices([])).finally(() => setLoadingServices(false))
@@ -40,6 +57,7 @@ export function HorairesPage() {
         <div className="page-hero-content">
           <p className="page-hero-eyebrow">Informations pratiques</p>
           <h1>Horaires <em style={{ color: 'var(--accent-light)', fontStyle: 'italic' }}>&amp; Contact</em></h1>
+          {courante && <p style={{ fontSize: 13, color: 'rgba(255,255,255,.75)', marginTop: 10 }}>{courante.nom}</p>}
         </div>
       </div>
 
@@ -48,6 +66,7 @@ export function HorairesPage() {
 
           <div className="reveal" style={{ marginBottom: 40 }}>
             <span className="section-label">Horaires des Messes</span>
+            {courante?.horaires.confessions && <p style={{ fontSize: 13, color: 'var(--text-light)', marginTop: 8 }}>Confessions : {courante.horaires.confessions}</p>}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 'var(--space-xl)' }}>
             {MESSES.map((m, i) => (
@@ -142,10 +161,13 @@ export function HorairesPage() {
           </div>
 
           <div className="reveal" style={{ background: 'var(--surface)', border: '1px solid var(--border)', height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 14 }}>
-            <p style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 16, color: 'var(--text-light)', textAlign: 'center' }}>Avenue de la Paix, Centre-ville, Brazzaville</p>
-            <a href="https://maps.google.com/?q=Cathedrale+Sacre+Coeur+Brazzaville" target="_blank" rel="noopener noreferrer" className="btn-outline">
-              ↗ Ouvrir dans Google Maps
+            <p style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 16, color: 'var(--text-light)', textAlign: 'center' }}>
+              {courante?.adresse ? `${courante.adresse}, ${courante.ville}` : 'Avenue de la Paix, Centre-ville, Brazzaville'}
+            </p>
+            <a href={carteUrl} target="_blank" rel="noopener noreferrer" className="btn-outline">
+              ↗ Ouvrir le plan
             </a>
+            <Link to="/paroisses" style={{ fontSize: 12, color: 'var(--blue)', fontWeight: 600 }}>Voir les autres paroisses de l'archidiocèse</Link>
           </div>
 
         </div>

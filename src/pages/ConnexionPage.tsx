@@ -6,6 +6,8 @@ import { supabase } from '../services/supabase'
 import { getMesFormations, type FormationProgress } from '../services/formationProgress'
 import { getCours, getModules, type Cours, type Module } from '../services/catechisme'
 import { getModulesTermines } from '../services/moduleProgress'
+import { useParoisse } from '../contexts/ParoisseContext'
+import { ProfilSections } from '../components/ProfilSections'
 
 type Mode = 'login' | 'register'
 
@@ -22,7 +24,7 @@ function formatMemberSince(iso: string | undefined) {
  * (Twilio/MessageBird/...) côté projet, ce qui n'a pas été mis en place -
  * on le signale explicitement plutôt que de faire semblant que ça marche.
  */
-export function ConnexionPage() {
+export function ConnexionPage({ modeInitial = 'login' }: { modeInitial?: Mode }) {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export function ConnexionPage() {
     return <div style={{ padding: '120px 20px', textAlign: 'center' }}><div className="page-loader-ring" style={{ margin: '0 auto' }} /></div>
   }
 
-  return session ? <ProfilView session={session} /> : <ConnexionForm />
+  return session ? <ProfilView session={session} /> : <ConnexionForm modeInitial={modeInitial} />
 }
 
 function ProfilView({ session }: { session: Session }) {
@@ -177,6 +179,8 @@ function ProfilView({ session }: { session: Session }) {
             </button>
           )}
 
+          <ProfilSections />
+
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-mid)', marginTop: 26, marginBottom: 10 }}>Accès rapide</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <button onClick={() => navigate('/horaires')} style={quickRowStyle}>
@@ -215,15 +219,26 @@ const quickRowStyle: CSSProperties = {
   padding: '12px 14px', cursor: 'pointer', fontFamily: 'var(--v2-font-sans)', fontSize: 13, fontWeight: 600, color: 'var(--text)',
 }
 
-function ConnexionForm() {
+function ConnexionForm({ modeInitial }: { modeInitial: Mode }) {
   const navigate = useNavigate()
-  const [mode, setMode] = useState<Mode>('login')
+  const { paroisses, courante } = useParoisse()
+  const [mode, setMode] = useState<Mode>(modeInitial)
+  const [nom, setNom] = useState('')
+  const [paroisseId, setParoisseId] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+
+  async function motDePasseOublie() {
+    setError(null)
+    if (!EMAIL_RE.test(identifier)) { setError("Saisissez d'abord votre adresse email ci-dessus."); return }
+    const { error: err } = await supabase.auth.resetPasswordForEmail(identifier, { redirectTo: `${window.location.origin}/connexion` })
+    if (err) setError(err.message)
+    else setNotice('Un email de réinitialisation vient de vous être envoyé.')
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -241,7 +256,11 @@ function ConnexionForm() {
         const { error: authError } = await supabase.auth.signInWithPassword({ email: identifier, password })
         if (authError) throw authError
       } else {
-        const { data, error: authError } = await supabase.auth.signUp({ email: identifier, password })
+        // Le profil et l'appartenance à la paroisse sont créés côté base (trigger handle_new_user).
+        const { data, error: authError } = await supabase.auth.signUp({
+          email: identifier, password,
+          options: { data: { nom: nom.trim(), parish_id: paroisseId || courante?.id || null } },
+        })
         if (authError) throw authError
         if (!data.session) {
           setNotice('Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse avant de vous connecter.')
@@ -306,6 +325,26 @@ function ConnexionForm() {
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {mode === 'register' && (
+              <>
+                <div>
+                  <label htmlFor="nom" style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-mid)', marginBottom: 8 }}>
+                    Nom et prénom
+                  </label>
+                  <input id="nom" type="text" autoComplete="name" value={nom} onChange={e => setNom(e.target.value)} required className="dark-input" />
+                </div>
+                {paroisses.length > 0 && (
+                  <div>
+                    <label htmlFor="paroisse" style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-mid)', marginBottom: 8 }}>
+                      Ma paroisse principale
+                    </label>
+                    <select id="paroisse" value={paroisseId || courante?.id || ''} onChange={e => setParoisseId(e.target.value)} className="dark-input" style={{ cursor: 'pointer' }}>
+                      {paroisses.map(p => <option key={p.id} value={p.id}>{p.nom}</option>)}
+                    </select>
+                  </div>
+                )}
+              </>
+            )}
             <div>
               <label htmlFor="identifier" style={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-mid)', marginBottom: 8 }}>
                 Adresse email
@@ -332,7 +371,7 @@ function ConnexionForm() {
                   Mot de passe
                 </label>
                 {mode === 'login' && (
-                  <a href="#" style={{ fontSize: 11, color: 'var(--blue)', textDecoration: 'none' }}>Oublié ?</a>
+                  <button type="button" onClick={motDePasseOublie} style={{ background: 'none', border: 'none', padding: 0, fontSize: 11, color: 'var(--blue)', cursor: 'pointer' }}>Oublié ?</button>
                 )}
               </div>
               <div style={{ position: 'relative' }}>

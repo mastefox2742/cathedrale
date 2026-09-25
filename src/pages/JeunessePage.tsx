@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getCours, type Cours } from '../services/catechisme'
 import { getGroupes, type Groupe } from '../services/groupes'
+import { AdhesionModal } from '../components/AdhesionModal'
 
 const NIVEAU_JEUNESSE = 3 // Confirmation — déjà utilisé comme "Ados" côté mobile
 
@@ -12,6 +13,7 @@ function contactHref(contact: string) {
 export function JeunessePage() {
   const [cours, setCours] = useState<Cours[]>([])
   const [groupes, setGroupes] = useState<Groupe[]>([])
+  const [adhesion, setAdhesion] = useState<Groupe | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -96,6 +98,7 @@ export function JeunessePage() {
                       Contacter le responsable
                     </a>
                   )}
+                  <button onClick={() => setAdhesion(g)} className="btn-outline" style={{ fontSize: 10, alignSelf: 'flex-start', marginTop: 4 }}>Rejoindre ce groupe</button>
                 </div>
               ))}
             </div>
@@ -108,11 +111,13 @@ export function JeunessePage() {
                 Retraites, veillées, événements jeunesse
               </h2>
             </div>
-            <Link to="/evenements" className="btn-gold" style={{ flexShrink: 0 }}>Voir tous les événements</Link>
+            <Link to="/tv" className="btn-gold" style={{ flexShrink: 0 }}>Voir tous les événements</Link>
           </div>
 
         </div>
       </div>
+
+      {adhesion && <AdhesionModal groupe={adhesion} onClose={() => setAdhesion(null)} />}
     </>
   )
 }

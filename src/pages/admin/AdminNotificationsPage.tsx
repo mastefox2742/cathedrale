@@ -171,7 +171,7 @@ export function AdminNotificationsPage() {
               <option value="/">Accueil</option>
               <option value="/liturgie">Liturgie du jour</option>
               <option value="/annonces">Annonces</option>
-              <option value="/evenements">Médias & Lives</option>
+              <option value="/tv">Médiation / TV</option>
               <option value="/catechese">Catéchèse</option>
               <option value="/horaires">Horaires & Contact</option>
             </select>

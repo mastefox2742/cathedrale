@@ -4,6 +4,7 @@ import { Footer2 } from './Footer2'
 import { InstallPrompt } from '../pwa/InstallPrompt'
 import { OfflineBanner } from '../pwa/OfflineBanner'
 import { NotificationPrompt } from '../pwa/NotificationPrompt'
+import { useParoisse } from '../../contexts/ParoisseContext'
 
 interface Layout2Props {
   children: ReactNode
@@ -11,6 +12,7 @@ interface Layout2Props {
 }
 
 export function Layout2({ children, transparent = false }: Layout2Props) {
+  const { courante } = useParoisse()
   useEffect(() => {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e, i) => {
@@ -38,7 +40,8 @@ export function Layout2({ children, transparent = false }: Layout2Props) {
   return (
     <div className="v2-theme" style={{ display: 'flex', flexDirection: 'column' }}>
       <Header2 transparent={transparent} />
-      <main style={{ flex: 1 }}>
+      {/* Remonté quand le visiteur change de paroisse : chaque page recharge ses contenus. */}
+      <main key={courante?.id ?? 'defaut'} style={{ flex: 1 }}>
         {children}
       </main>
       <Footer2 />

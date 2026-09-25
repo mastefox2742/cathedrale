@@ -8,7 +8,14 @@ export default async function handler(request: Request) {
     return new Response('date invalide (format attendu : AAAA-MM-JJ)', { status: 400 })
   }
 
-  const aelfUrl = `https://www.aelf.org/${date}/romain/messe`
+  // Offices proposés (liste fermée : le paramètre n'est jamais injecté tel quel dans l'URL).
+  const OFFICES = ['messe', 'lectures', 'laudes', 'tierce', 'sexte', 'none', 'vepres', 'complies']
+  const office = url.searchParams.get('office') ?? 'messe'
+  if (!OFFICES.includes(office)) {
+    return new Response('office invalide', { status: 400 })
+  }
+
+  const aelfUrl = `https://www.aelf.org/${date}/romain/${office}`
   const res = await fetch(aelfUrl, {
     headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'text/html' },
   })

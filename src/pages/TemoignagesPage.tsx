@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
-import { getTemoignagesApprouves, deposerTemoignage, type Temoignage } from '../services/temoignages'
+import { useSearchParams } from 'react-router-dom'
+import {
+  getTemoignagesApprouves, deposerTemoignage, getCategoriesTemoignage,
+  type Temoignage, type CategorieTemoignage,
+} from '../services/temoignages'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -7,6 +11,10 @@ function formatDate(iso: string) {
 
 export function TemoignagesPage() {
   const [temoignages, setTemoignages] = useState<Temoignage[]>([])
+  const [categories, setCategories] = useState<CategorieTemoignage[]>([])
+  const [categorieId, setCategorieId] = useState('')
+  const [params, setParams] = useSearchParams()
+  const filtre = params.get('categorie') ?? ''
   const [loading, setLoading] = useState(true)
   const [nom, setNom] = useState('')
   const [contenu, setContenu] = useState('')
@@ -20,7 +28,14 @@ export function TemoignagesPage() {
     getTemoignagesApprouves().then(setTemoignages).catch(() => setTemoignages([])).finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    getCategoriesTemoignage().then(setCategories).catch(() => setCategories([]))
+  }, [])
+
+  const catParSlug = new Map(categories.map(c => [c.slug, c]))
+  const catParId = new Map(categories.map(c => [c.id, c]))
+  const visibles = filtre ? temoignages.filter(t => t.categorieId === catParSlug.get(filtre)?.id) : temoignages
 
   async function handleSubmit() {
     if (societe) return
@@ -28,8 +43,8 @@ export function TemoignagesPage() {
     setSubmitting(true)
     setNotice(null)
     try {
-      await deposerTemoignage(contenu.trim(), anonyme ? undefined : (nom.trim() || undefined))
-      setContenu(''); setNom(''); setAnonyme(false)
+      await deposerTemoignage(contenu.trim(), anonyme ? undefined : (nom.trim() || undefined), categorieId || undefined)
+      setContenu(''); setNom(''); setAnonyme(false); setCategorieId('')
       setNotice('Merci ! Votre témoignage sera publié après vérification par l\'équipe pastorale.')
     } catch {
       setNotice('Une erreur est survenue. Merci de réessayer.')
@@ -56,6 +71,13 @@ export function TemoignagesPage() {
               Une grâce reçue, un moment de conversion, une prière exaucée… Partagez ce que Dieu a fait dans votre vie.
               Votre témoignage sera relu par l'équipe pastorale avant publication.
             </p>
+
+            {categories.length > 0 && (
+              <select value={categorieId} onChange={e => setCategorieId(e.target.value)} className="dark-input" style={{ width: '100%', marginBottom: 14, cursor: 'pointer' }} aria-label="Thème du témoignage">
+                <option value="">Thème de mon témoignage (facultatif)</option>
+                {categories.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.libelle}</option>)}
+              </select>
+            )}
 
             <textarea
               value={contenu} onChange={e => setContenu(e.target.value)} rows={5}
@@ -89,18 +111,37 @@ export function TemoignagesPage() {
             </button>
           </div>
 
-          <div className="reveal" style={{ marginBottom: 28 }}>
+          <div className="reveal" style={{ marginBottom: 20 }}>
             <span className="section-label">Témoignages publiés</span>
           </div>
+          {categories.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+              {[{ slug: '', libelle: 'Tous', emoji: '' }, ...categories].map(c => (
+                <button key={c.slug} onClick={() => setParams(c.slug ? { categorie: c.slug } : {}, { replace: true })} style={{
+                  padding: '6px 14px', borderRadius: 'var(--r-full)', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                  border: `1.5px solid ${filtre === c.slug ? 'var(--primary)' : 'var(--border-accent)'}`,
+                  background: filtre === c.slug ? 'var(--primary)' : 'transparent',
+                  color: filtre === c.slug ? '#fff' : 'var(--text-mid)',
+                }}>
+                  {c.emoji} {c.libelle}
+                </button>
+              ))}
+            </div>
+          )}
 
           {loading ? (
             <p style={{ fontSize: 13, color: 'var(--text-light)' }}>Chargement…</p>
-          ) : temoignages.length === 0 ? (
+          ) : visibles.length === 0 ? (
             <p style={{ fontSize: 13, color: 'var(--text-light)' }}>Aucun témoignage publié pour le moment.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {temoignages.map(t => (
-                <div key={t.id} className="reveal" style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: '24px 28px' }}>
+              {visibles.map(t => (
+                <div key={t.id} className="reveal" style={{ background: t.misEnAvant ? 'var(--bg-alt)' : 'var(--surface)', border: `1px solid ${t.misEnAvant ? 'var(--accent)' : 'var(--border)'}`, padding: '24px 28px' }}>
+                  {(t.misEnAvant || (t.categorieId && catParId.get(t.categorieId))) && (
+                    <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent-dark)', marginBottom: 10 }}>
+                      {t.misEnAvant ? '★ À la une' : ''}{t.misEnAvant && t.categorieId ? ' · ' : ''}{t.categorieId ? `${catParId.get(t.categorieId)?.emoji ?? ''} ${catParId.get(t.categorieId)?.libelle ?? ''}` : ''}
+                    </p>
+                  )}
                   <p style={{ fontSize: 14, color: 'var(--text)', fontStyle: 'italic', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{t.contenu}</p>
                   <p style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 12, fontWeight: 600 }}>
                     — {t.auteurNom || 'Anonyme'} · {t.createdAt ? formatDate(t.createdAt) : ''}
