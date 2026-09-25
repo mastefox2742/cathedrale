@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../services/supabase'
 import { NOTIF_LABELS, type NotifPreferences } from '../../services/notifications'
+import { useDroits } from '../../contexts/AuthContext'
+import { filtreAdmin, parishIdPourCreation } from '../../services/scope'
+import { getGroupes, type Groupe } from '../../services/groupes'
+import { PARISH_STAFF_ROLES, PARISH_ROLES, ROLE_LABELS, type ParishRole } from '../../services/auth'
 
 type NotifType = keyof NotifPreferences | 'tous'
 
@@ -13,7 +17,14 @@ const TYPE_OPTIONS: { key: NotifType; label: string; icon: string; color: string
   { key: 'dimanche',   label: 'Abonnés Messe Dom.',    icon: 'church',           color: '#0277BD' },
 ]
 
+type Ciblage = 'abonnes' | 'role' | 'groupe'
+
 export function AdminNotificationsPage() {
+  const droits = useDroits()
+  const [ciblage, setCiblage] = useState<Ciblage>('abonnes')
+  const [role, setRole] = useState<ParishRole>('catechiste')
+  const [groupeId, setGroupeId] = useState('')
+  const [groupes, setGroupes] = useState<Groupe[]>([])
   const [totalAbonnes, setTotalAbonnes] = useState(0)
   const [titre, setTitre] = useState('')
   const [corps, setCorps] = useState('')
@@ -30,15 +41,16 @@ export function AdminNotificationsPage() {
 
   useEffect(() => {
     void loadStats()
+    getGroupes(false).then(setGroupes).catch(() => setGroupes([]))
   }, [])
 
   async function loadStats() {
     try {
-      const { count } = await supabase.from('notification_tokens').select('*', { count: 'exact', head: true })
+      const { count } = await filtreAdmin(supabase.from('notification_tokens').select('*', { count: 'exact', head: true }))
       setTotalAbonnes(count ?? 0)
     } catch (_) { setTotalAbonnes(0) }
     try {
-      const { data } = await supabase.from('notifications_log').select('*').order('created_at', { ascending: false }).limit(20)
+      const { data } = await filtreAdmin(supabase.from('notifications_log').select('*')).order('created_at', { ascending: false }).limit(20)
       setHistorique((data ?? []).map(d => ({
         id: d.id, titre: d.titre, type: d.type,
         date: new Date(d.created_at).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }),
@@ -52,7 +64,13 @@ export function AdminNotificationsPage() {
     setSending(true)
     try {
       const { data, error } = await supabase.functions.invoke('send-notification', {
-        body: { titre, corps, url, type },
+        body: {
+          titre, corps, url, type,
+          // Périmètre admin courant : une paroisse, ou tout l'archidiocèse (null).
+          parish_id: parishIdPourCreation(),
+          role: ciblage === 'role' ? role : null,
+          groupe_id: ciblage === 'groupe' && groupeId ? groupeId : null,
+        },
       })
       if (error) throw error
       showToast(`✓ Notification envoyée à ${data?.sent ?? 0} abonnés`)
@@ -135,6 +153,35 @@ export function AdminNotificationsPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Ciblage fin */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={LABEL}>Ciblage {droits.perimetre ? '(dans le périmètre choisi à gauche)' : ''}</label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+              {([['abonnes', 'Tous les abonnés'], ['role', 'Un rôle'], ['groupe', 'Un groupe']] as const).map(([k, l]) => (
+                <button key={k} onClick={() => setCiblage(k)} style={{
+                  padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                  background: ciblage === k ? 'var(--primary)' : 'var(--surface-container)', color: ciblage === k ? 'white' : 'var(--on-surface-variant)',
+                }}>{l}</button>
+              ))}
+            </div>
+            {ciblage === 'role' && (
+              <select value={role} onChange={e => setRole(e.target.value as ParishRole)} style={INPUT} aria-label="Rôle ciblé">
+                {PARISH_ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}{PARISH_STAFF_ROLES.includes(r) ? '' : ' (fidèles)'}</option>)}
+              </select>
+            )}
+            {ciblage === 'groupe' && (
+              <select value={groupeId} onChange={e => setGroupeId(e.target.value)} style={INPUT} aria-label="Groupe ciblé">
+                <option value="">Choisir un groupe…</option>
+                {groupes.map(g => <option key={g.id} value={g.id}>{g.icon} {g.titre}</option>)}
+              </select>
+            )}
+            {ciblage !== 'abonnes' && (
+              <p style={{ fontSize: 11, color: 'var(--on-surface-variant)', marginTop: 6 }}>
+                Seuls les appareils où la personne est connectée à son Espace Membre peuvent être ciblés par rôle ou par groupe (adhésions acceptées).
+              </p>
+            )}
           </div>
 
           {/* Titre */}

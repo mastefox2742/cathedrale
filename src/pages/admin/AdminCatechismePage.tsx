@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  getCours, addCours, updateCours,
+  getAllCours, addCours, updateCours,
   getAllModules, addModule, updateModule, deleteModule,
   getAllFormationsCatechisme, addFormationCatechisme, updateFormationCatechisme, deleteFormationCatechisme,
   getAllLecons, addLecon, updateLecon, deleteLecon,
@@ -178,7 +178,7 @@ export function AdminCatechismePage() {
   async function loadCours() {
     setLoading(true)
     try {
-      const data = await getCours()
+      const data = await getAllCours()
       // Si aucun cours en base, proposer de créer le cours Éveil à la Foi
       setCours(data)
     } catch (_) { setCours([]) }

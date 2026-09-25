@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  getAllTemoignages, updateStatutTemoignage, deleteTemoignage,
-  STATUT_TEMOIGNAGE_LABELS, type Temoignage, type StatutTemoignage,
+  getAllTemoignages, updateStatutTemoignage, deleteTemoignage, getCategoriesTemoignage,
+  setMiseEnAvant, setCategorieTemoignage,
+  STATUT_TEMOIGNAGE_LABELS, type Temoignage, type StatutTemoignage, type CategorieTemoignage,
 } from '../../services/temoignages'
 
 const STATUT_COLORS: Record<StatutTemoignage, { bg: string; fg: string }> = {
@@ -12,6 +13,7 @@ const STATUT_COLORS: Record<StatutTemoignage, { bg: string; fg: string }> = {
 
 export function AdminTemoignagesPage() {
   const [temoignages, setTemoignages] = useState<Temoignage[]>([])
+  const [categories, setCategories] = useState<CategorieTemoignage[]>([])
   const [loading, setLoading] = useState(true)
   const [filterStatut, setFilterStatut] = useState<StatutTemoignage | 'toutes'>('en_attente')
   const [confirmDelete, setConfirmDelete] = useState<Temoignage | null>(null)
@@ -29,7 +31,23 @@ export function AdminTemoignagesPage() {
     finally { setLoading(false) }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    getCategoriesTemoignage().then(setCategories).catch(() => setCategories([]))
+  }, [])
+
+  async function handleCategorie(t: Temoignage, categorieId: string) {
+    try { await setCategorieTemoignage(t.id!, categorieId || null); await load() }
+    catch { showToast('Erreur', 'err') }
+  }
+
+  async function handleUne(t: Temoignage) {
+    try {
+      await setMiseEnAvant(t.id!, !t.misEnAvant)
+      showToast(t.misEnAvant ? 'Retiré de la une' : 'Mis en avant ✓')
+      await load()
+    } catch { showToast('Erreur', 'err') }
+  }
 
   const filtered = useMemo(() => temoignages.filter(t =>
     filterStatut === 'toutes' || t.statut === filterStatut
@@ -106,7 +124,7 @@ export function AdminTemoignagesPage() {
             return (
               <div key={t.id} className="card" style={{ padding: 20 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--on-surface)' }}>{t.auteurNom || 'Anonyme'}</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--on-surface)' }}>{t.auteurNom || 'Anonyme'}{t.misEnAvant ? ' · ★ À la une' : ''}</p>
                   <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: c.bg, color: c.fg, flexShrink: 0 }}>
                     {STATUT_TEMOIGNAGE_LABELS[t.statut]}
                   </span>
@@ -121,6 +139,16 @@ export function AdminTemoignagesPage() {
                   )}
                   {t.statut !== 'en_attente' && (
                     <button onClick={() => handleStatutChange(t, 'en_attente')} style={actionBtn('#1565C0', 'rgba(21,101,192,.08)')}>Remettre en attente</button>
+                  )}
+                  {categories.length > 0 && (
+                    <select value={t.categorieId ?? ''} onChange={e => handleCategorie(t, e.target.value)} aria-label="Catégorie"
+                      style={{ padding: '6px 10px', borderRadius: 8, border: '1.5px solid var(--outline-variant)', fontSize: 12, background: 'white' }}>
+                      <option value="">Sans catégorie</option>
+                      {categories.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.libelle}</option>)}
+                    </select>
+                  )}
+                  {t.statut === 'approuve' && (
+                    <button onClick={() => handleUne(t)} style={actionBtn('#e65100', 'rgba(245,127,23,.1)')}>{t.misEnAvant ? 'Retirer de la une' : 'Mettre en avant'}</button>
                   )}
                   <button onClick={() => setConfirmDelete(t)} style={actionBtn('#c62828', '#ffebee')}>Supprimer</button>
                 </div>

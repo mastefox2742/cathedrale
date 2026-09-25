@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import {
-  getMedias, addMedia, deleteMedia, uploadMedia, formatSize,
+  getMedias, addMedia, deleteMedia, uploadMedia, formatSize, setMediaPublie,
   type Media, type MediaType,
 } from '../../services/medias'
 
@@ -40,6 +40,14 @@ export function AdminMediasPage() {
   function showToast(msg: string, type: 'ok' | 'err' = 'ok') {
     setToast({ msg, type })
     setTimeout(() => setToast(null), 3000)
+  }
+
+  async function togglePublie(m: Media) {
+    try {
+      await setMediaPublie(m.id!, !m.publie)
+      showToast(m.publie ? 'Retiré de la médiathèque publique' : 'Visible dans la médiathèque publique ✓')
+      await load()
+    } catch { showToast('Erreur', 'err') }
   }
 
   async function load() {
@@ -240,6 +248,12 @@ export function AdminMediasPage() {
                     <p style={{ fontSize: 11, color: 'var(--on-surface-variant)' }}>
                       {m.taille ? formatSize(m.taille) : '—'}
                     </p>
+                    <button onClick={e => { e.stopPropagation(); togglePublie(m) }} title={m.publie ? 'Public — cliquer pour masquer' : 'Privé — cliquer pour publier sur /tv'} style={{
+                      background: 'none', border: 'none', cursor: 'pointer', padding: 2, marginLeft: 'auto',
+                      color: m.publie ? '#2e7d32' : 'var(--outline-variant)',
+                    }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: m.publie ? "'FILL' 1" : undefined }}>{m.publie ? 'public' : 'public_off'}</span>
+                    </button>
                     <button onClick={e => { e.stopPropagation(); setConfirmDelete(m) }} style={{
                       background: 'none', border: 'none', cursor: 'pointer', padding: 2,
                       color: 'var(--outline-variant)',

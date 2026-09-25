@@ -52,6 +52,12 @@ const AdminUtilisateursPage   = lazy(() => import('./pages/admin/AdminUtilisateu
 const AdminTemoignagesPage    = lazy(() => import('./pages/admin/AdminTemoignagesPage').then(m => ({ default: m.AdminTemoignagesPage })))
 const AdminServicesParoissiauxPage = lazy(() => import('./pages/admin/AdminServicesParoissiauxPage').then(m => ({ default: m.AdminServicesParoissiauxPage })))
 const AdminSignalementsPage   = lazy(() => import('./pages/admin/AdminSignalementsPage').then(m => ({ default: m.AdminSignalementsPage })))
+const AdminParoissesPage      = lazy(() => import('./pages/admin/AdminParoissesPage').then(m => ({ default: m.AdminParoissesPage })))
+const AdminParcoursPage       = lazy(() => import('./pages/admin/AdminParcoursPage').then(m => ({ default: m.AdminParcoursPage })))
+const AdminTvPage             = lazy(() => import('./pages/admin/AdminTvPage').then(m => ({ default: m.AdminTvPage })))
+const AdminDonsPage           = lazy(() => import('./pages/admin/AdminDonsPage').then(m => ({ default: m.AdminDonsPage })))
+const AdminAbonnesPage        = lazy(() => import('./pages/admin/AdminAbonnesPage').then(m => ({ default: m.AdminAbonnesPage })))
+const AdminRegistrePage       = lazy(() => import('./pages/admin/AdminRegistrePage').then(m => ({ default: m.AdminRegistrePage })))
 
 // ── Spinner de chargement ──────────────────────────────────────────────────
 function PageLoader() {
@@ -117,6 +123,36 @@ export default function App() {
         <Route path="/admin" element={
           <AdminGuard>
             <AdminLayout><Wrap><DashboardPage /></Wrap></AdminLayout>
+          </AdminGuard>
+        } />
+        <Route path="/admin/paroisses" element={
+          <AdminGuard>
+            <AdminLayout><Wrap><AdminParoissesPage /></Wrap></AdminLayout>
+          </AdminGuard>
+        } />
+        <Route path="/admin/parcours" element={
+          <AdminGuard>
+            <AdminLayout><Wrap><AdminParcoursPage /></Wrap></AdminLayout>
+          </AdminGuard>
+        } />
+        <Route path="/admin/tv" element={
+          <AdminGuard>
+            <AdminLayout><Wrap><AdminTvPage /></Wrap></AdminLayout>
+          </AdminGuard>
+        } />
+        <Route path="/admin/dons" element={
+          <AdminGuard>
+            <AdminLayout><Wrap><AdminDonsPage /></Wrap></AdminLayout>
+          </AdminGuard>
+        } />
+        <Route path="/admin/abonnes" element={
+          <AdminGuard>
+            <AdminLayout><Wrap><AdminAbonnesPage /></Wrap></AdminLayout>
+          </AdminGuard>
+        } />
+        <Route path="/admin/registre" element={
+          <AdminGuard>
+            <AdminLayout><Wrap><AdminRegistrePage /></Wrap></AdminLayout>
           </AdminGuard>
         } />
         <Route path="/admin/annonces" element={

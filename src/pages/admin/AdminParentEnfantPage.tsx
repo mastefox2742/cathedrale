@@ -50,6 +50,8 @@ export function AdminParentEnfantPage() {
 
   useEffect(() => { load() }, [])
 
+  const filtered = useMemo(() => enfants.filter(e => filtreActif === 'tous' || e.actif), [enfants, filtreActif])
+
   if (!canManageEnfants(droits.roles)) {
     return (
       <div style={{ padding: '32px 36px', fontFamily: 'var(--font-sans)' }}>
@@ -61,7 +63,6 @@ export function AdminParentEnfantPage() {
     )
   }
 
-  const filtered = useMemo(() => enfants.filter(e => filtreActif === 'tous' || e.actif), [enfants, filtreActif])
 
   function openNew(demande?: DemandePastorale) {
     setForm(demande

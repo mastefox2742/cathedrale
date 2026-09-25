@@ -37,6 +37,8 @@ export function AdminSignalementsPage() {
 
   useEffect(() => { load() }, [])
 
+  const filtered = useMemo(() => signalements.filter(s => filterStatut === 'tous' || s.statut === filterStatut), [signalements, filterStatut])
+
   if (!canViewSignalements(droits.roles)) {
     return (
       <div style={{ padding: '32px 36px', fontFamily: 'var(--font-sans)' }}>
@@ -48,7 +50,6 @@ export function AdminSignalementsPage() {
     )
   }
 
-  const filtered = useMemo(() => signalements.filter(s => filterStatut === 'tous' || s.statut === filterStatut), [signalements, filterStatut])
 
   function openDetail(s: Signalement) {
     setSelected(s)

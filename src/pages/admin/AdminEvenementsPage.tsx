@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
-  getAllEvenements, addEvenement, updateEvenement, deleteEvenement,
-  type Evenement, type EvenementType, type PlatformType,
+  getAllEvenements, addEvenement, updateEvenement, deleteEvenement, PUBLIC_CIBLE_LABELS,
+  type Evenement, type EvenementType, type PlatformType, type PublicCible,
 } from '../../services/evenements'
 
 const TYPE_LABELS: Record<EvenementType, string> = {
@@ -15,7 +15,7 @@ const PLATFORM_LABELS: Record<PlatformType, { label: string; color: string }> = 
 const EMPTY: Omit<Evenement, 'id' | 'createdAt'> = {
   titre: '', description: '', type: 'live', platform: 'youtube',
   url: '', date: new Date().toISOString().slice(0, 10), heure: '',
-  estEnLive: false, publie: true,
+  estEnLive: false, publie: true, theme: '', intervenant: '', publicCible: undefined, aLaUne: false,
 }
 
 export function AdminEvenementsPage() {
@@ -44,7 +44,8 @@ export function AdminEvenementsPage() {
   function openNew() { setForm(EMPTY); setEditId(null); setShowForm(true) }
   function openEdit(ev: Evenement) {
     setForm({ titre: ev.titre, description: ev.description, type: ev.type, platform: ev.platform,
-      url: ev.url, date: ev.date, heure: ev.heure ?? '', estEnLive: ev.estEnLive ?? false, publie: ev.publie })
+      url: ev.url, date: ev.date, heure: ev.heure ?? '', estEnLive: ev.estEnLive ?? false, publie: ev.publie,
+      theme: ev.theme ?? '', intervenant: ev.intervenant ?? '', publicCible: ev.publicCible, aLaUne: ev.aLaUne ?? false })
     setEditId(ev.id!)
     setShowForm(true)
   }
@@ -182,6 +183,8 @@ export function AdminEvenementsPage() {
                 <p style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>
                   {new Date(ev.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                   {ev.heure && ` · ${ev.heure}`}
+                  {` · ${ev.vues ?? 0} lecture${(ev.vues ?? 0) > 1 ? 's' : ''}`}
+                  {ev.aLaUne && ' · ★ À la une'}
                 </p>
               </div>
 
@@ -246,6 +249,8 @@ export function AdminEvenementsPage() {
               { label: 'URL YouTube ou Facebook *', field: 'url', type: 'url', placeholder: 'https://youtube.com/watch?v=...' },
               { label: 'Date *', field: 'date', type: 'date', placeholder: '' },
               { label: 'Heure', field: 'heure', type: 'text', placeholder: 'Ex: 10h30' },
+              { label: 'Intervenant', field: 'intervenant', type: 'text', placeholder: 'Ex: Mgr …, Abbé …' },
+              { label: 'Thème', field: 'theme', type: 'text', placeholder: 'Ex: Eucharistie, Famille, Carême…' },
             ].map(({ label, field, type, placeholder }) => (
               <div key={field} style={{ marginBottom: 16 }}>
                 <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--on-surface)', display: 'block', marginBottom: 6 }}>{label}</label>
@@ -289,7 +294,20 @@ export function AdminEvenementsPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--on-surface)', display: 'block', marginBottom: 6 }}>Public visé (filtres de la chaîne)</label>
+              <select value={form.publicCible ?? ''} onChange={e => setForm(f => ({ ...f, publicCible: (e.target.value || undefined) as PublicCible | undefined }))}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid rgba(0,35,111,0.15)', fontSize: 14, fontFamily: 'var(--font-sans)', background: 'white' }}>
+                <option value="">Tous publics</option>
+                {(Object.keys(PUBLIC_CIBLE_LABELS) as PublicCible[]).map(p => <option key={p} value={p}>{PUBLIC_CIBLE_LABELS[p]}</option>)}
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
+                <input type="checkbox" checked={form.aLaUne ?? false} onChange={e => setForm(f => ({ ...f, aLaUne: e.target.checked }))} />
+                <span>★ À la une (accueil)</span>
+              </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
                 <input type="checkbox" checked={form.estEnLive} onChange={e => setForm(f => ({ ...f, estEnLive: e.target.checked }))} />
                 <span>🔴 Marquer comme EN DIRECT</span>

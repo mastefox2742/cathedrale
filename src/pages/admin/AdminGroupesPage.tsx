@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import {
   getGroupes, createGroupe, updateGroupe, deleteGroupe, type Groupe,
 } from '../../services/groupes'
+import { getAdhesions, setStatutAdhesion, deleteAdhesion, STATUT_ADHESION_LABELS, type Adhesion, type StatutAdhesion } from '../../services/adhesions'
 
 const CATEGORIES = [
+  { value: 'priere', label: 'Groupe de prière' },
   { value: 'jeunesse', label: 'Jeunesse' },
   { value: 'catechisme', label: 'Catéchisme' },
   { value: 'choeur', label: 'Chœur & musique' },
@@ -27,6 +29,8 @@ export function AdminGroupesPage() {
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<Groupe | null>(null)
   const [toast, setToast] = useState<{ msg: string; type: 'ok' | 'err' } | null>(null)
+  const [adhesions, setAdhesions] = useState<Adhesion[]>([])
+  const [onglet, setOnglet] = useState<'groupes' | 'adhesions'>('groupes')
 
   function showToast(msg: string, type: 'ok' | 'err' = 'ok') {
     setToast({ msg, type })
@@ -35,7 +39,11 @@ export function AdminGroupesPage() {
 
   async function load() {
     setLoading(true)
-    try { setGroupes(await getGroupes(false)) }
+    try {
+      const [g, a] = await Promise.all([getGroupes(false), getAdhesions().catch(() => [])])
+      setGroupes(g)
+      setAdhesions(a)
+    }
     catch { showToast('Erreur de chargement', 'err') }
     finally { setLoading(false) }
   }
@@ -82,6 +90,16 @@ export function AdminGroupesPage() {
     } catch { showToast('Erreur suppression', 'err') }
   }
 
+  async function changerAdhesion(a: Adhesion, statut: StatutAdhesion) {
+    try { await setStatutAdhesion(a.id, statut); showToast('Demande mise à jour ✓'); await load() }
+    catch { showToast('Erreur', 'err') }
+  }
+
+  async function supprimerAdhesion(a: Adhesion) {
+    try { await deleteAdhesion(a.id); await load() }
+    catch { showToast('Erreur', 'err') }
+  }
+
   async function togglePublie(g: Groupe) {
     await updateGroupe(g.id!, { publie: !g.publie })
     await load()
@@ -121,7 +139,48 @@ export function AdminGroupesPage() {
         </button>
       </div>
 
-      {loading ? (
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        {(['groupes', 'adhesions'] as const).map(o => {
+          const nouvelles = adhesions.filter(a => a.statut === 'nouvelle').length
+          return (
+            <button key={o} onClick={() => setOnglet(o)} style={{
+              padding: '6px 14px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600,
+              background: onglet === o ? 'var(--primary)' : 'var(--surface-container)', color: onglet === o ? 'white' : 'var(--on-surface-variant)',
+            }}>{o === 'groupes' ? 'Groupes' : `Demandes d'adhésion${nouvelles ? ` (${nouvelles})` : ''}`}</button>
+          )
+        })}
+      </div>
+
+      {onglet === 'adhesions' ? (
+        adhesions.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--on-surface-variant)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 48, display: 'block', marginBottom: 12 }}>group_add</span>
+            <p>Aucune demande d'adhésion.</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {adhesions.map(a => {
+              const g = groupes.find(x => x.id === a.groupeId)
+              return (
+                <div key={a.id} className="card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: 220 }}>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--on-surface)' }}>{a.nom} <span style={{ fontWeight: 400, color: 'var(--on-surface-variant)', fontSize: 13 }}>· {a.contact}</span></p>
+                    <p style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>{g ? `${g.icon} ${g.titre}` : 'Groupe supprimé'} · {new Date(a.createdAt).toLocaleDateString('fr-FR')}</p>
+                    {a.message && <p style={{ fontSize: 13, color: 'var(--on-surface)', marginTop: 6, fontStyle: 'italic' }}>« {a.message} »</p>}
+                  </div>
+                  <select value={a.statut} onChange={e => changerAdhesion(a, e.target.value as StatutAdhesion)} aria-label="Statut"
+                    style={{ padding: '6px 10px', borderRadius: 8, border: '1.5px solid var(--outline-variant)', fontSize: 13, background: 'white' }}>
+                    {(Object.keys(STATUT_ADHESION_LABELS) as StatutAdhesion[]).map(s => <option key={s} value={s}>{STATUT_ADHESION_LABELS[s]}</option>)}
+                  </select>
+                  <button onClick={() => supprimerAdhesion(a)} title="Supprimer" style={{ width: 34, height: 34, borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffebee', color: '#c62828' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 17 }}>delete</span>
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        )
+      ) : loading ? (
         <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--on-surface-variant)' }}>
           <span className="material-symbols-outlined" style={{ fontSize: 40, display: 'block', marginBottom: 12, animation: 'spin 1s linear infinite' }}>sync</span>
           Chargement…

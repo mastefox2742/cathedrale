@@ -1,89 +1,57 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../../services/supabase'
-import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { useAuth, useDroits } from '../../contexts/AuthContext'
+import { getStatsTableauDeBord, getStatsParParoisse, type StatsTableauDeBord, type StatsParoisse } from '../../services/stats'
+import { formatXAF } from '../../services/dons'
+import { getToutesParoisses } from '../../services/paroisses'
+import { ARCHIDIOCESE } from '../../services/scope'
+import { thStyle, tdStyle } from '../../components/admin/ui'
 
-interface Stats {
-  annonces: number
-  annoncesPinned: number
-  homelies: number
-  formations: number
-  intentionsRecues: number
-}
-
-async function fetchStats(): Promise<Stats> {
-  const [annonces, pinned, homelies, formations, intentions] = await Promise.all([
-    supabase.from('annonces').select('*', { count: 'exact', head: true }).eq('publie', true),
-    supabase.from('annonces').select('*', { count: 'exact', head: true }).eq('epingle', true),
-    supabase.from('homelies').select('*', { count: 'exact', head: true }).eq('publie', true),
-    supabase.from('formations').select('*', { count: 'exact', head: true }),
-    supabase.from('prayer_intentions').select('*', { count: 'exact', head: true }).eq('statut', 'recue'),
-  ])
-  return {
-    annonces: annonces.count ?? 0,
-    annoncesPinned: pinned.count ?? 0,
-    homelies: homelies.count ?? 0,
-    formations: formations.count ?? 0,
-    intentionsRecues: intentions.count ?? 0,
-  }
-}
+interface Kpi { label: string; value: string | number | undefined; sub: string; icon: string; color: string; bg: string; to: string }
 
 export function DashboardPage() {
   const { profile } = useAuth()
+  const droits = useDroits()
   const navigate = useNavigate()
-  const [stats, setStats] = useState<Stats | null>(null)
+  const [stats, setStats] = useState<StatsTableauDeBord | null>(null)
+  const [parParoisse, setParParoisse] = useState<StatsParoisse[]>([])
+  const [perimetreNom, setPerimetreNom] = useState('')
   const [loadingStats, setLoadingStats] = useState(true)
+  const [erreur, setErreur] = useState(false)
+  const toutArchidiocese = droits.perimetre === ARCHIDIOCESE
 
   useEffect(() => {
-    fetchStats()
+    getStatsTableauDeBord()
       .then(setStats)
-      .catch(() => setStats({ annonces: 0, annoncesPinned: 0, homelies: 0, formations: 0, intentionsRecues: 0 }))
+      .catch(() => setErreur(true))
       .finally(() => setLoadingStats(false))
-  }, [])
+    if (toutArchidiocese) {
+      setPerimetreNom("Tout l'archidiocèse")
+      getStatsParParoisse().then(setParParoisse).catch(() => setParParoisse([]))
+    } else if (droits.perimetre) {
+      getToutesParoisses().then(p => setPerimetreNom(p.find(x => x.id === droits.perimetre)?.nom ?? '')).catch(() => {})
+    }
+  }, [toutArchidiocese, droits.perimetre])
 
-  const KPIS = [
-    {
-      label: 'Annonces publiées',
-      value: stats?.annonces,
-      sub: `${stats?.annoncesPinned ?? '—'} épinglées`,
-      icon: 'campaign',
-      color: 'var(--primary)',
-      bg: 'rgba(0,35,111,0.06)',
-      to: '/admin/annonces',
-    },
-    {
-      label: 'Homélies en ligne',
-      value: stats?.homelies,
-      sub: 'Texte & audio',
-      icon: 'record_voice_over',
-      color: '#2e7d32',
-      bg: 'rgba(46,125,50,0.06)',
-      to: '/admin/homelies',
-    },
-    {
-      label: 'Parcours de formation',
-      value: stats?.formations,
-      sub: 'Catéchèse & laïcs',
-      icon: 'school',
-      color: 'var(--secondary)',
-      bg: 'rgba(115,92,0,0.06)',
-      to: '/admin/formations',
-    },
-    {
-      label: 'Intentions de prière',
-      value: stats?.intentionsRecues,
-      sub: 'À traiter',
-      icon: 'volunteer_activism',
-      color: 'var(--liturgy-purple)',
-      bg: 'rgba(123,31,162,0.06)',
-      to: '/admin/intentions',
-    },
+  const KPIS: Kpi[] = [
+    ...(toutArchidiocese ? [{ label: 'Paroisses actives', value: stats?.paroisses, sub: 'Annuaire public', icon: 'church', color: 'var(--primary)', bg: 'rgba(0,35,111,0.06)', to: '/admin/paroisses' }] : []),
+    { label: 'Fidèles inscrits', value: stats?.fideles, sub: `${stats?.abonnes ?? '—'} abonnés aux actualités`, icon: 'groups', color: 'var(--primary)', bg: 'rgba(0,35,111,0.06)', to: '/admin/abonnes' },
+    { label: 'Catéchistes', value: stats?.catechistes, sub: `${stats?.enfants ?? '—'} enfants suivis`, icon: 'school', color: 'var(--secondary)', bg: 'rgba(115,92,0,0.06)', to: '/admin/registre' },
+    { label: 'Dons confirmés', value: stats ? formatXAF(stats.dons_total) : undefined, sub: `${stats?.dons_en_attente ?? '—'} en attente de vérification`, icon: 'payments', color: '#2e7d32', bg: 'rgba(46,125,50,0.06)', to: '/admin/dons' },
+    { label: 'Intentions de prière', value: stats?.intentions_recues, sub: 'À traiter', icon: 'volunteer_activism', color: 'var(--liturgy-purple)', bg: 'rgba(123,31,162,0.06)', to: '/admin/intentions' },
+    { label: 'Démarches pastorales', value: stats?.demandes_recues, sub: 'Nouvelles demandes', icon: 'assignment', color: 'var(--primary)', bg: 'rgba(0,35,111,0.06)', to: '/admin/demarches' },
+    { label: 'Témoignages', value: stats?.temoignages_attente, sub: 'En attente de modération', icon: 'rate_review', color: '#e65100', bg: 'rgba(245,127,23,0.08)', to: '/admin/temoignages' },
+    { label: 'Adhésions aux groupes', value: stats?.adhesions_nouvelles, sub: 'Nouvelles demandes', icon: 'group_add', color: 'var(--primary)', bg: 'rgba(0,35,111,0.06)', to: '/admin/groupes' },
+    { label: 'Vidéos de la chaîne', value: stats?.videos, sub: `${stats?.vues_videos ?? '—'} lectures`, icon: 'smart_display', color: '#c62828', bg: 'rgba(198,40,40,0.06)', to: '/admin/tv' },
+    { label: 'Parcours de foi', value: stats?.parcours_inscrits, sub: 'Participations en cours ou terminées', icon: 'route', color: 'var(--secondary)', bg: 'rgba(115,92,0,0.06)', to: '/admin/parcours' },
+    ...(stats?.signalements_nouveaux != null ? [{ label: 'Signalements', value: stats.signalements_nouveaux, sub: 'Nouveaux — protection des mineurs', icon: 'shield', color: '#c62828', bg: 'rgba(198,40,40,0.06)', to: '/admin/signalements' }] : []),
   ]
 
   const SHORTCUTS = [
-    { label: 'Nouvelle annonce',    icon: 'add_circle',   to: '/admin/annonces',  primary: true },
-    { label: 'Publier une homélie', icon: 'mic',          to: '/admin/homelies',  primary: true },
-    { label: 'Gérer les formations',icon: 'edit_note',    to: '/admin/formations',primary: false },
+    { label: 'Nouvelle annonce',     icon: 'add_circle',  to: '/admin/annonces', primary: true },
+    { label: 'Programmer un direct', icon: 'live_tv',     to: '/admin/tv',       primary: true },
+    { label: 'Envoyer une notification', icon: 'notifications', to: '/admin/notifications', primary: false },
+    { label: 'Parcours de foi',      icon: 'route',       to: '/admin/parcours', primary: false },
   ]
 
   const now = new Date()
@@ -109,10 +77,16 @@ export function DashboardPage() {
             {greeting}, {profile?.nom?.split(' ')[0] || 'Admin'}
           </h1>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>
-            Cathédrale Sacré-Cœur · Archidiocèse de Brazzaville
+            {perimetreNom || 'Archidiocèse de Brazzaville'} · Archidiocèse de Brazzaville
           </p>
         </div>
       </div>
+
+      {erreur && (
+        <p style={{ fontSize: 13, color: '#c62828', marginBottom: 16 }}>
+          Les statistiques n'ont pas pu être chargées (migration « plateforme archidiocésaine » appliquée ?).
+        </p>
+      )}
 
       {/* ── KPIs ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16, marginBottom: 32 }}>
@@ -128,16 +102,16 @@ export function DashboardPage() {
             onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-md)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-sm)' }}
           >
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14, gap: 8 }}>
               <div style={{
-                width: 44, height: 44, borderRadius: 12,
+                width: 44, height: 44, borderRadius: 12, flexShrink: 0,
                 background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <span className="material-symbols-outlined" style={{ color, fontSize: 22, fontVariationSettings: "'FILL' 1" }}>{icon}</span>
               </div>
               <span style={{
-                fontFamily: 'var(--font-serif)', fontSize: 34, fontWeight: 700, color,
-                lineHeight: 1,
+                fontFamily: 'var(--font-serif)', fontSize: typeof value === 'string' ? 20 : 34, fontWeight: 700, color,
+                lineHeight: 1, textAlign: 'right',
               }}>
                 {loadingStats ? '…' : (value ?? '—')}
               </span>
@@ -147,6 +121,37 @@ export function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* ── Par paroisse (vue archidiocésaine) ── */}
+      {toutArchidiocese && parParoisse.length > 0 && (
+        <>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 20, color: 'var(--primary)', marginBottom: 14 }}>
+            Par paroisse
+          </h2>
+          <div className="card" style={{ overflowX: 'auto', marginBottom: 36 }}>
+            <table style={{ width: '100%', minWidth: 760, borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: 'var(--surface-container)' }}>
+                  {['Paroisse', 'Fidèles', 'Catéchistes', 'Enfants', 'Dons confirmés', 'Demandes', 'Catéchèse terminée'].map(h => <th key={h} style={thStyle}>{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {parParoisse.map(p => (
+                  <tr key={p.parish_id}>
+                    <td style={{ ...tdStyle, fontWeight: 600 }}>{p.nom}</td>
+                    <td style={tdStyle}>{p.fideles}</td>
+                    <td style={tdStyle}>{p.catechistes}</td>
+                    <td style={tdStyle}>{p.enfants}</td>
+                    <td style={tdStyle}>{formatXAF(p.dons_total)}</td>
+                    <td style={tdStyle}>{p.demandes_recues}</td>
+                    <td style={tdStyle}>{p.parcours_termines}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       {/* ── Accès rapides ── */}
       <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 20, color: 'var(--primary)', marginBottom: 14 }}>
@@ -166,7 +171,7 @@ export function DashboardPage() {
         ))}
       </div>
 
-      {/* ── Info Firestore ── */}
+      {/* ── État de la base ── */}
       <div style={{
         padding: '16px 20px', borderRadius: 12,
         background: 'rgba(0,35,111,0.04)', border: '1px solid rgba(0,35,111,0.1)',
@@ -178,8 +183,8 @@ export function DashboardPage() {
         </p>
         <span style={{
           marginLeft: 'auto', padding: '3px 10px', borderRadius: 20,
-          background: '#e8f5e9', color: '#2e7d32', fontSize: 12, fontWeight: 700,
-        }}>En ligne</span>
+          background: erreur ? '#ffebee' : '#e8f5e9', color: erreur ? '#c62828' : '#2e7d32', fontSize: 12, fontWeight: 700,
+        }}>{erreur ? 'À vérifier' : 'En ligne'}</span>
       </div>
     </div>
   )

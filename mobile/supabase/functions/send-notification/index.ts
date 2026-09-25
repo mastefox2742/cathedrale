@@ -1,7 +1,12 @@
 // Supabase Edge Function — envoie une notification push à tous les abonnés
 // (ou un sous-groupe) via l'API FCM HTTP v1, à partir des tokens stockés dans
 // public.notification_tokens. Appelée depuis AdminNotificationsPage.tsx via
-// supabase.functions.invoke('send-notification', { body: { titre, corps, url, type } }).
+// supabase.functions.invoke('send-notification', { body: { titre, corps, url, type, parish_id, role, groupe_id } }).
+//
+// Ciblage :
+//   parish_id  — uuid : appareils rattachés à cette paroisse ; null : tout l'archidiocèse
+//   role       — rôle paroissial : appareils des comptes ayant ce rôle (dans la paroisse si parish_id)
+//   groupe_id  — groupe : appareils des comptes dont l'adhésion au groupe est acceptée
 //
 // Secret requis (à définir soi-même, jamais dans ce fichier ni dans le repo) :
 //   FCM_SERVICE_ACCOUNT — le JSON complet d'un compte de service Firebase
@@ -88,32 +93,48 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: 'Non authentifié' }), { status: 401 })
   }
 
-  const { data: isStaff, error: staffErr } = await userClient.rpc('is_staff')
-  if (staffErr || !isStaff) {
-    return new Response(JSON.stringify({ error: 'Accès réservé au personnel autorisé' }), { status: 403 })
-  }
-
-  let body: { titre?: string; corps?: string; url?: string; type?: string }
+  let body: { titre?: string; corps?: string; url?: string; type?: string; parish_id?: string | null; role?: string | null; groupe_id?: string | null }
   try {
     body = await req.json()
   } catch {
     return new Response(JSON.stringify({ error: 'Corps de requête invalide' }), { status: 400 })
   }
   const { titre, corps, url, type } = body
+  const parishId = body.parish_id ?? null
   if (!titre?.trim() || !corps?.trim()) {
     return new Response(JSON.stringify({ error: 'Titre et message requis' }), { status: 400 })
   }
   const cible = type ?? 'tous'
 
+  // Droit d'envoyer dans ce périmètre (une paroisse, ou tout l'archidiocèse si null).
+  const { data: autorise, error: droitErr } = await userClient.rpc('can_manage', { p: parishId })
+  if (droitErr || !autorise) {
+    return new Response(JSON.stringify({ error: 'Accès réservé au personnel autorisé de ce périmètre' }), { status: 403 })
+  }
+
   const admin = createClient(supabaseUrl, serviceRoleKey)
-  const { data: tokenRows, error: tokensErr } = await admin
-    .from('notification_tokens')
-    .select('token, prefs')
+  let query = admin.from('notification_tokens').select('token, prefs, user_id, parish_id')
+  if (parishId) query = query.eq('parish_id', parishId)
+  const { data: tokenRows, error: tokensErr } = await query
   if (tokensErr) {
     return new Response(JSON.stringify({ error: tokensErr.message }), { status: 500 })
   }
 
-  const targets = (tokenRows ?? []).filter(r => cible === 'tous' || r.prefs?.[cible] === true)
+  // Restriction éventuelle à un rôle ou à un groupe (comptes connectés uniquement).
+  let comptes: Set<string> | null = null
+  if (body.role) {
+    let q = admin.from('parish_members').select('user_id').eq('role', body.role)
+    if (parishId) q = q.eq('parish_id', parishId)
+    const { data } = await q
+    comptes = new Set((data ?? []).map(r => r.user_id))
+  } else if (body.groupe_id) {
+    const { data } = await admin.from('groupe_adhesions').select('user_id').eq('groupe_id', body.groupe_id).eq('statut', 'acceptee')
+    comptes = new Set((data ?? []).map(r => r.user_id).filter(Boolean))
+  }
+
+  const targets = (tokenRows ?? [])
+    .filter(r => cible === 'tous' || r.prefs?.[cible] === true)
+    .filter(r => !comptes || (r.user_id && comptes.has(r.user_id)))
   if (targets.length === 0) {
     return new Response(JSON.stringify({ sent: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } })
   }
@@ -152,6 +173,7 @@ Deno.serve(async (req: Request) => {
 
   await admin.from('notifications_log').insert({
     titre, corps, url: url || '/', type: cible, envoye: sent, created_by: userData.user.id,
+    parish_id: parishId, cible: { role: body.role ?? null, groupe_id: body.groupe_id ?? null },
   })
 
   return new Response(JSON.stringify({ sent }), { status: 200, headers: { 'Content-Type': 'application/json' } })
