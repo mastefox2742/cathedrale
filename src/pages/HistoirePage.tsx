@@ -128,6 +128,12 @@ export function HistoirePage() {
                 borderRadius: 'var(--r-md)', padding: 24, display: 'flex', flexDirection: 'column', gap: 14,
               }}>
                 <p style={{ fontSize: 13, color: 'rgba(255,255,255,.75)', lineHeight: 1.8 }}>
+                  L'histoire de la cathédrale est inséparable de celle du cardinal Émile Biayenda, dont la
+                  dépouille y repose depuis 1977. Premier cardinal congolais, il demeure une référence
+                  spirituelle majeure pour toute l'Église du Congo — et un exemple particulièrement parlant
+                  pour la jeunesse d'aujourd'hui.
+                </p>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,.75)', lineHeight: 1.8 }}>
                   Né en 1927 à Mpangala, dans la région du Pool, Émile Biayenda est baptisé en 1938. Il rejoint
                   le petit séminaire Saint-Paul de Mbamou, où il se distingue entre 1944 et 1950, avant de
                   poursuivre sa formation au grand séminaire de Brazzaville jusqu'en 1958. Il est ordonné
@@ -145,7 +151,8 @@ export function HistoirePage() {
                   Son engagement lui coûtera la vie. Après l'assassinat du président Marien Ngouabi le 18 mars
                   1977, le cardinal Biayenda est enlevé à son domicile, situé juste à côté de la cathédrale,
                   dans l'après-midi du 22 mars 1977, puis tué dans la nuit par un groupe de militaires, à
-                  l'âge de cinquante ans. Averti du danger et invité à fuir, il serait resté fidèle à son
+                  l'âge de cinquante ans — les motifs exacts de son assassinat n'ayant jamais été pleinement
+                  établis. Averti du danger et invité à fuir, il serait resté fidèle à son
                   peuple jusqu'au bout. Sa dépouille repose à la Cathédrale Sacré-Cœur de Brazzaville.
                 </p>
                 <p style={{ fontSize: 13, color: 'rgba(255,255,255,.75)', lineHeight: 1.8 }}>
@@ -153,7 +160,13 @@ export function HistoirePage() {
                   ouverte : il reçoit le titre de Serviteur de Dieu. L'enquête diocésaine s'est déroulée de
                   1996 à 2003, et la commission historique a achevé ses travaux en 2014 ; le dossier a été
                   validé par la Congrégation romaine compétente le 29 mai 2015. La cause continue d'être
-                  activement soutenue par l'Église et les autorités congolaises.
+                  activement soutenue par l'Église et les autorités congolaises, en vue d'une reconnaissance
+                  de ses vertus héroïques — première étape avant une éventuelle béatification.
+                </p>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,.75)', lineHeight: 1.8 }}>
+                  Informer, former, accompagner, rassembler : la vie du cardinal Biayenda est une illustration
+                  vivante de la mission que cette plateforme veut servir, et une source d'inspiration naturelle
+                  pour les parcours proposés aux jeunes de la cathédrale.
                 </p>
               </div>
             </div>
