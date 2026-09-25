@@ -786,3 +786,53 @@ create policy "Suppression restreinte signalements" on public.signalements for d
 alter table public.profiles add column if not exists verifie_securite boolean not null default false;
 alter table public.profiles add column if not exists date_verification date;
 alter table public.profiles add column if not exists verifie_par uuid references public.profiles(id);
+
+-- ── Sécurité : fermeture de l'accès public à abonnements et notification_tokens ──
+-- Avant : n'importe qui pouvait lire/supprimer tous les abonnés et modifier/supprimer
+-- tous les jetons push. Désormais seul le staff lit la table ; le public passe par
+-- des fonctions qui n'agissent que sur la ligne dont il connaît le contact / le jeton.
+
+drop policy if exists "Lecture publique abonnements" on public.abonnements;
+drop policy if exists "Suppression publique abonnements" on public.abonnements;
+drop policy if exists "Lecture staff abonnements" on public.abonnements;
+create policy "Lecture staff abonnements" on public.abonnements for select using (public.is_staff());
+drop policy if exists "Suppression staff abonnements" on public.abonnements;
+create policy "Suppression staff abonnements" on public.abonnements for delete using (public.is_staff());
+
+create or replace function public.s_abonner(p_canal text, p_contact text, p_prefs jsonb)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare v_id uuid;
+begin
+  select id into v_id from public.abonnements where contact = p_contact limit 1;
+  if v_id is not null then return v_id; end if;
+  insert into public.abonnements (canal, contact, prefs, confirme)
+  values (p_canal, p_contact, coalesce(p_prefs, '{}'), p_canal = 'whatsapp')
+  returning id into v_id;
+  return v_id;
+end $$;
+
+create or replace function public.se_desabonner(p_contact text)
+returns void language sql security definer set search_path = public as $$
+  delete from public.abonnements where contact = p_contact;
+$$;
+
+drop policy if exists "Maj publique notification_tokens" on public.notification_tokens;
+drop policy if exists "Suppression publique notification_tokens" on public.notification_tokens;
+drop policy if exists "Ecriture publique notification_tokens" on public.notification_tokens;
+
+create or replace function public.enregistrer_jeton(p_token text, p_prefs jsonb, p_platform text default 'web')
+returns void language sql security definer set search_path = public as $$
+  insert into public.notification_tokens (token, prefs, platform, updated_at)
+  values (p_token, coalesce(p_prefs, '{}'), coalesce(p_platform, 'web'), now())
+  on conflict (token) do update set prefs = excluded.prefs, platform = excluded.platform, updated_at = now();
+$$;
+
+create or replace function public.supprimer_jeton(p_token text)
+returns void language sql security definer set search_path = public as $$
+  delete from public.notification_tokens where token = p_token;
+$$;
+
+grant execute on function public.s_abonner(text, text, jsonb) to anon, authenticated;
+grant execute on function public.se_desabonner(text) to anon, authenticated;
+grant execute on function public.enregistrer_jeton(text, jsonb, text) to anon, authenticated;
+grant execute on function public.supprimer_jeton(text) to anon, authenticated;

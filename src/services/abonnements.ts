@@ -32,19 +32,16 @@ function fromRow(r: AbonnementRow): Abonnement {
 }
 
 export async function subscribe(data: Omit<Abonnement, 'id' | 'createdAt' | 'confirme'>): Promise<string> {
-  const { data: existing } = await supabase.from(TABLE).select('id').eq('contact', data.contact).maybeSingle()
-  if (existing) return existing.id
-
-  const { data: row, error } = await supabase.from(TABLE).insert({
-    canal: data.canal, contact: data.contact, prefs: data.prefs,
-    confirme: data.canal === 'whatsapp', // WhatsApp confirmé directement
-  }).select('id').single()
+  // Passe par une fonction SQL : le public n'a plus le droit de lire la table
+  const { data: id, error } = await supabase.rpc('s_abonner', {
+    p_canal: data.canal, p_contact: data.contact, p_prefs: data.prefs,
+  })
   if (error) throw error
-  return row.id
+  return id as string
 }
 
 export async function unsubscribe(contact: string): Promise<void> {
-  const { error } = await supabase.from(TABLE).delete().eq('contact', contact)
+  const { error } = await supabase.rpc('se_desabonner', { p_contact: contact })
   if (error) throw error
 }
 

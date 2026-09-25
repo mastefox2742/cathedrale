@@ -53,8 +53,8 @@ export async function saveNotificationToken(
   token: string,
   prefs: NotifPreferences = DEFAULT_PREFS,
 ): Promise<void> {
-  const { error } = await supabase.from('notification_tokens').upsert({
-    token, prefs, platform: 'web', updated_at: new Date().toISOString(),
+  const { error } = await supabase.rpc('enregistrer_jeton', {
+    p_token: token, p_prefs: prefs, p_platform: 'web',
   })
   if (error) throw error
 }
@@ -64,14 +64,15 @@ export async function updateNotificationPrefs(
   token: string,
   prefs: NotifPreferences,
 ): Promise<void> {
-  const { error } = await supabase.from('notification_tokens')
-    .update({ prefs, updated_at: new Date().toISOString() }).eq('token', token)
+  const { error } = await supabase.rpc('enregistrer_jeton', {
+    p_token: token, p_prefs: prefs, p_platform: 'web',
+  })
   if (error) throw error
 }
 
 // Désabonnement
 export async function unsubscribeNotifications(token: string): Promise<void> {
-  const { error } = await supabase.from('notification_tokens').delete().eq('token', token)
+  const { error } = await supabase.rpc('supprimer_jeton', { p_token: token })
   if (error) throw error
 }
 

@@ -8,20 +8,23 @@ interface Stats {
   annoncesPinned: number
   homelies: number
   formations: number
+  intentionsRecues: number
 }
 
 async function fetchStats(): Promise<Stats> {
-  const [annonces, pinned, homelies, formations] = await Promise.all([
+  const [annonces, pinned, homelies, formations, intentions] = await Promise.all([
     supabase.from('annonces').select('*', { count: 'exact', head: true }).eq('publie', true),
     supabase.from('annonces').select('*', { count: 'exact', head: true }).eq('epingle', true),
     supabase.from('homelies').select('*', { count: 'exact', head: true }).eq('publie', true),
     supabase.from('formations').select('*', { count: 'exact', head: true }),
+    supabase.from('prayer_intentions').select('*', { count: 'exact', head: true }).eq('statut', 'recue'),
   ])
   return {
     annonces: annonces.count ?? 0,
     annoncesPinned: pinned.count ?? 0,
     homelies: homelies.count ?? 0,
     formations: formations.count ?? 0,
+    intentionsRecues: intentions.count ?? 0,
   }
 }
 
@@ -34,7 +37,7 @@ export function DashboardPage() {
   useEffect(() => {
     fetchStats()
       .then(setStats)
-      .catch(() => setStats({ annonces: 0, annoncesPinned: 0, homelies: 0, formations: 0 }))
+      .catch(() => setStats({ annonces: 0, annoncesPinned: 0, homelies: 0, formations: 0, intentionsRecues: 0 }))
       .finally(() => setLoadingStats(false))
   }, [])
 
@@ -68,12 +71,12 @@ export function DashboardPage() {
     },
     {
       label: 'Intentions de prière',
-      value: '—',
-      sub: 'Bientôt disponible',
+      value: stats?.intentionsRecues,
+      sub: 'À traiter',
       icon: 'volunteer_activism',
       color: 'var(--liturgy-purple)',
       bg: 'rgba(123,31,162,0.06)',
-      to: '/admin',
+      to: '/admin/intentions',
     },
   ]
 
