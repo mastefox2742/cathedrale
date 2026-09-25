@@ -1,5 +1,8 @@
+'use client'
+
 import { useEffect, useState, useRef } from 'react'
-import { NavLink, Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { NavLink, useNavigate } from '../../lib/navigation'
 import { useParoisse } from '../../contexts/ParoisseContext'
 
 const NAV_LINKS = [
@@ -131,7 +134,7 @@ export function Header2({ transparent = false }: Header2Props) {
           }}>
             Espace Membre
           </NavLink>
-          <Link to="/dons" className="btn-gold v2-desktop-nav" style={{ padding: '9px 20px', fontSize: 10 }}>
+          <Link href="/dons" className="btn-gold v2-desktop-nav" style={{ padding: '9px 20px', fontSize: 10 }}>
             Faire un don
           </Link>
 

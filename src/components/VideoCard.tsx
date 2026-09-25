@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { Play } from 'lucide-react'
 import { compterVue, type Evenement } from '../services/evenements'

@@ -1,5 +1,7 @@
+'use client'
+
 import { useEffect, useState, type CSSProperties } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { Church, Star, Route, ShieldCheck, History, Pencil } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useParoisse } from '../contexts/ParoisseContext'
@@ -141,23 +143,23 @@ export function ProfilSections() {
             )}
           </div>
         ))}
-        <Link to="/paroisses" style={{ fontSize: 12, color: 'var(--blue)', fontWeight: 600 }}>+ Rejoindre une autre paroisse</Link>
+        <Link href="/paroisses" style={{ fontSize: 12, color: 'var(--blue)', fontWeight: 600 }}>+ Rejoindre une autre paroisse</Link>
       </div>
 
       {/* ── Parcours de foi ── */}
       <p style={titreStyle}><Route size={13} /> Mes parcours de foi</p>
       {parcours.filter(p => p.parcours.type !== 'formation_staff').length === 0 ? (
-        <p style={{ fontSize: 12, color: 'var(--text-light)' }}>Aucun parcours commencé. <Link to="/decouvrir-la-foi" style={{ color: 'var(--blue)' }}>Découvrir les parcours</Link></p>
+        <p style={{ fontSize: 12, color: 'var(--text-light)' }}>Aucun parcours commencé. <Link href="/decouvrir-la-foi" style={{ color: 'var(--blue)' }}>Découvrir les parcours</Link></p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {parcours.filter(p => p.parcours.type !== 'formation_staff').map(p => (
             <div key={p.parcours.id} style={ligneStyle}>
               <span style={{ fontSize: 18 }}>{p.parcours.emoji}</span>
-              <Link to={`/parcours/${p.parcours.slug}`} style={{ flex: 1, minWidth: 0, fontWeight: 600, color: 'var(--text)', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <Link href={`/parcours/${p.parcours.slug}`} style={{ flex: 1, minWidth: 0, fontWeight: 600, color: 'var(--text)', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {p.parcours.titre}
               </Link>
               <span style={badge(!!p.termineLe)}>{p.termineLe ? 'Terminé' : `${p.faites}/${p.total}`}</span>
-              {p.termineLe && <Link to={`/parcours/${p.parcours.slug}/attestation`} style={{ fontSize: 10, fontWeight: 700, color: 'var(--blue)' }}>Attestation</Link>}
+              {p.termineLe && <Link href={`/parcours/${p.parcours.slug}/attestation`} style={{ fontSize: 10, fontWeight: 700, color: 'var(--blue)' }}>Attestation</Link>}
             </div>
           ))}
         </div>
@@ -173,7 +175,7 @@ export function ProfilSections() {
               return (
                 <div key={o.id} style={ligneStyle}>
                   <span style={{ fontSize: 18 }}>{o.emoji}</span>
-                  <Link to={`/parcours/${o.slug}`} style={{ flex: 1, minWidth: 0, fontWeight: 600, color: 'var(--text)', textDecoration: 'none' }}>{o.titre}</Link>
+                  <Link href={`/parcours/${o.slug}`} style={{ flex: 1, minWidth: 0, fontWeight: 600, color: 'var(--text)', textDecoration: 'none' }}>{o.titre}</Link>
                   <span style={badge(!!prog?.termineLe)}>{prog?.termineLe ? 'Validée' : 'À suivre'}</span>
                 </div>
               )

@@ -29,7 +29,7 @@ export const NOTIF_LABELS: Record<keyof NotifPreferences, { label: string; desc:
 
 // Vérifie si les notifications sont supportées
 export function isNotificationSupported(): boolean {
-  return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window
+  return typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window
 }
 
 // Demande la permission et retourne le token FCM
@@ -41,7 +41,7 @@ export async function requestNotificationPermission(): Promise<string | null> {
 
   try {
     const messaging = getMessaging(firebaseApp)
-    const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
+    const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
     const token = await getToken(messaging, { vapidKey })
     return token
   } catch {

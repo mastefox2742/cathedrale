@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, type CSSProperties, type ReactNode } from 'react'
 
 /**

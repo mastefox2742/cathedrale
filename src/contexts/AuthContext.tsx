@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react'
 import type { User } from '@supabase/supabase-js'
 import {
@@ -68,7 +70,7 @@ export interface Droits {
 
 export function useDroits(): Droits {
   const { profile, appartenances } = useAuth()
-  const perimetre = useSyncExternalStore(subscribeScope, getPerimetreAdmin)
+  const perimetre = useSyncExternalStore(subscribeScope, getPerimetreAdmin, () => null)
 
   return useMemo(() => {
     const global = profile?.actif && profile.role ? [profile.role] : []

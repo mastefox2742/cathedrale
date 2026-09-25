@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { Check, X as XIcon } from 'lucide-react'
 import type { QuizQuestion } from '../services/catechisme'

@@ -1,9 +1,13 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 
 export function OfflineBanner() {
-  const [offline, setOffline] = useState(!navigator.onLine)
+  // Lu après le montage : l'état réseau n'existe pas pendant le rendu serveur.
+  const [offline, setOffline] = useState(false)
 
   useEffect(() => {
+    setOffline(!navigator.onLine)
     const goOffline = () => setOffline(true)
     const goOnline  = () => setOffline(false)
     window.addEventListener('offline', goOffline)

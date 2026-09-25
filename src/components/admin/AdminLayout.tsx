@@ -1,5 +1,7 @@
+'use client'
+
 import { useEffect, useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from '../../lib/navigation'
 import {
   logout, ROLE_LABELS, canManageEnfants, canViewSignalements, canManageDons, canManageMembres,
   canViewAudit, canViewRegistre, type Role,

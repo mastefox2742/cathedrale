@@ -1,4 +1,6 @@
-import { Navigate } from 'react-router-dom'
+'use client'
+
+import { Navigate } from '../../lib/navigation'
 import { useAuth, useDroits } from '../../contexts/AuthContext'
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {

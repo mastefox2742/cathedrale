@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { getParoisses, type Paroisse } from '../services/paroisses'
 import { subscribeScope, getParoissePublique, setParoissePublique } from '../services/scope'
@@ -19,7 +21,7 @@ const ParoisseContext = createContext<ParoisseContextValue>({
 export function ParoisseProvider({ children }: { children: ReactNode }) {
   const [paroisses, setParoisses] = useState<Paroisse[]>([])
   const [chargement, setChargement] = useState(true)
-  const courantId = useSyncExternalStore(subscribeScope, getParoissePublique)
+  const courantId = useSyncExternalStore(subscribeScope, getParoissePublique, () => null)
 
   useEffect(() => {
     getParoisses()
