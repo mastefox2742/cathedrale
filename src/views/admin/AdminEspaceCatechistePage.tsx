@@ -6,6 +6,7 @@ import {
   STATUT_SEANCE_LABELS, type SeanceCatechisme, type StatutSeance,
 } from '../../services/seancesCatechisme'
 import { getAllCours, type Cours } from '../../services/catechisme'
+import { PresencesModale } from '../../components/admin/SuiviCatechese'
 
 const STATUT_COLORS: Record<StatutSeance, { bg: string; fg: string }> = {
   planifiee: { bg: 'rgba(21,101,192,.1)', fg: '#1565C0' },
@@ -21,6 +22,7 @@ export function AdminEspaceCatechistePage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<SeanceCatechisme | null>(null)
+  const [presencesDe, setPresencesDe] = useState<SeanceCatechisme | null>(null)
   const [form, setForm] = useState({ ...EMPTY })
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<SeanceCatechisme | null>(null)
@@ -188,7 +190,11 @@ export function AdminEspaceCatechistePage() {
                         ))}
                       </select>
                     </td>
-                    <td style={{ padding: '12px 16px' }}>
+                    <td style={{ padding: '12px 16px', display: 'flex', gap: 6 }}>
+                      <button onClick={e => { e.stopPropagation(); setPresencesDe(s) }} title="Feuille de présence" aria-label="Feuille de présence"
+                        style={{ width: 30, height: 30, borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,35,111,0.06)', color: 'var(--primary)' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>how_to_reg</span>
+                      </button>
                       <button onClick={e => { e.stopPropagation(); setConfirmDelete(s) }}
                         style={{ width: 30, height: 30, borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffebee', color: '#c62828' }}>
                         <span className="material-symbols-outlined" style={{ fontSize: 16 }}>delete</span>
@@ -263,6 +269,10 @@ export function AdminEspaceCatechistePage() {
             </div>
           </div>
         </div>
+      )}
+
+      {presencesDe && (
+        <PresencesModale seance={presencesDe} titre={coursLabel(presencesDe.coursId)} onClose={() => setPresencesDe(null)} notifier={showToast} />
       )}
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

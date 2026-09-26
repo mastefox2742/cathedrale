@@ -44,7 +44,8 @@ export function DashboardPage() {
     { label: 'Démarches pastorales', value: stats?.demandes_recues, sub: 'Nouvelles demandes', icon: 'assignment', color: 'var(--primary)', bg: 'rgba(0,35,111,0.06)', to: '/admin/demarches' },
     { label: 'Témoignages', value: stats?.temoignages_attente, sub: 'En attente de modération', icon: 'rate_review', color: '#e65100', bg: 'rgba(245,127,23,0.08)', to: '/admin/temoignages' },
     { label: 'Adhésions aux groupes', value: stats?.adhesions_nouvelles, sub: 'Nouvelles demandes', icon: 'group_add', color: 'var(--primary)', bg: 'rgba(0,35,111,0.06)', to: '/admin/groupes' },
-    { label: 'Vidéos de la chaîne', value: stats?.videos, sub: `${stats?.vues_videos ?? '—'} lectures`, icon: 'smart_display', color: '#c62828', bg: 'rgba(198,40,40,0.06)', to: '/admin/tv' },
+    { label: 'Vidéos de la chaîne', value: stats?.videos, sub: `${stats?.vues_videos ?? '—'} lectures · ${stats?.heures_visionnage ?? 0} h de visionnage`, icon: 'smart_display', color: '#c62828', bg: 'rgba(198,40,40,0.06)', to: '/admin/tv' },
+    { label: 'Présence en catéchèse', value: stats?.presence_moyenne != null ? `${stats.presence_moyenne} %` : '—', sub: 'Taux de présence aux séances', icon: 'how_to_reg', color: '#2e7d32', bg: 'rgba(46,125,50,0.06)', to: '/admin/catechiste' },
     { label: 'Parcours de foi', value: stats?.parcours_inscrits, sub: 'Participations en cours ou terminées', icon: 'route', color: 'var(--secondary)', bg: 'rgba(115,92,0,0.06)', to: '/admin/parcours' },
     ...(stats?.signalements_nouveaux != null ? [{ label: 'Signalements', value: stats.signalements_nouveaux, sub: 'Nouveaux — protection des mineurs', icon: 'shield', color: '#c62828', bg: 'rgba(198,40,40,0.06)', to: '/admin/signalements' }] : []),
   ]

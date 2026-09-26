@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { filtrePublic, filtreAdmin, parishIdPourCreation } from './scope'
+import { filtrePublic, filtreAdmin, parishIdPourCreation, getPerimetreAdmin, ARCHIDIOCESE } from './scope'
 import { logAudit } from './auditLog'
 import type { PublicCible } from './evenements'
 
@@ -173,3 +173,13 @@ export async function setVideosPlaylist(playlistId: string, evenementIds: string
   await logAudit('update', 'playlist', playlistId, `${evenementIds.length} vidéo(s)`)
 }
 
+
+/** Vidéos proposables dans une playlist : celles du périmètre + celles de l'archidiocèse. */
+export async function getVideosPourPlaylist(): Promise<{ id: string; titre: string; date: string; diocesaine: boolean }[]> {
+  const scope = getPerimetreAdmin()
+  let q = supabase.from('evenements').select('id, titre, date, parish_id').order('date', { ascending: false })
+  if (scope && scope !== ARCHIDIOCESE) q = q.or(`parish_id.is.null,parish_id.eq.${scope}`)
+  const { data, error } = await q
+  if (error) throw error
+  return (data ?? []).map(v => ({ id: v.id, titre: v.titre, date: v.date, diocesaine: v.parish_id === null }))
+}

@@ -9,6 +9,7 @@ import { getALaUne, type Evenement } from '../services/evenements'
 import { getDirectsAVenir, type Direct } from '../services/mediation'
 import { useParoisse } from '../contexts/ParoisseContext'
 import { VideoCard } from '../components/VideoCard'
+import { getArchidiocese, type Archidiocese } from '../services/archidiocese'
 
 const QUICK_ACCESS = [
   { icon: Clock, titre: 'Horaires & Messes', desc: "Consultez les horaires des offices et l'agenda liturgique de la semaine.", to: '/horaires', bg: 'var(--primary)', fg: '#fff' },
@@ -46,6 +47,14 @@ export function HomePage() {
   const [aLaUne, setALaUne] = useState<Evenement[]>([])
   const [prochainDirect, setProchainDirect] = useState<Direct | null>(null)
   const { courante } = useParoisse()
+  const [archidiocese, setArchidiocese] = useState<Archidiocese | null>(null)
+
+  // Horaires des messes de la paroisse choisie : ceux du jour, sinon le dimanche.
+  const jourCourant = new Date().toLocaleDateString('fr-FR', { weekday: 'long' })
+  const messes = courante?.horaires.messes ?? []
+  const messesDuJour = messes.find(m => m.jour.toLowerCase().includes(jourCourant))
+    ?? messes.find(m => /lundi\s*[–-]\s*vendredi/i.test(m.jour) && ![0, 6].includes(new Date().getDay()))
+    ?? messes.find(m => /dimanche/i.test(m.jour))
   const heroBg = useRef<HTMLDivElement>(null)
   const coul = getLiturgicalColor()
   const now = new Date()
@@ -55,6 +64,7 @@ export function HomePage() {
     getProjetsDons().then(d => setProjets(d.slice(0, 3))).catch(() => setProjets([]))
     getALaUne(2).then(setALaUne).catch(() => setALaUne([]))
     getDirectsAVenir().then(d => setProchainDirect(d[0] ?? null)).catch(() => setProchainDirect(null))
+    getArchidiocese().then(setArchidiocese).catch(() => setArchidiocese(null))
   }, [])
 
   useEffect(() => {
@@ -90,10 +100,16 @@ export function HomePage() {
           <p style={{ fontSize: 14, fontWeight: 300, color: 'var(--text-mid)', maxWidth: 460, lineHeight: 1.8, marginBottom: 40 }}>
             Liturgie quotidienne, catéchèse et vie spirituelle au cœur de Brazzaville depuis 1887.
           </p>
-          <div className="hero-btns" style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-            <Link href="/liturgie" className="btn-gold">✝ Liturgie du jour</Link>
-            <Link href="/annonces" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 28px', border: '1.5px solid rgba(255,255,255,.55)', color: '#fff', fontFamily: 'var(--v2-font-sans)', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: 'var(--r-md)', transition: 'all .2s' }}>◉ Annonces</Link>
+          <div className="hero-btns" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', maxWidth: 720 }}>
+            {PORTES.map((p, i) => (
+              <Link key={p.to} href={p.to} className={i === 0 ? 'btn-gold' : undefined} style={i === 0 ? undefined : { display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 22px', border: '1.5px solid rgba(255,255,255,.55)', color: '#fff', fontFamily: 'var(--v2-font-sans)', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: 'var(--r-md)', transition: 'all .2s' }}>
+                <p.icon size={14} /> {p.titre}
+              </Link>
+            ))}
           </div>
+          <p style={{ marginTop: 18 }}>
+            <Link href="/liturgie" style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--accent-light)', textDecoration: 'none' }}>✝ Liturgie du jour →</Link>
+          </p>
         </div>
 
         <div style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, zIndex: 2 }}>
@@ -114,9 +130,16 @@ export function HomePage() {
               ● {coul.label}
             </span>
           </div>
-          <Link href="/horaires" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--accent-light)', textDecoration: 'none' }}>
-            Horaires des messes{courante ? ` · ${courante.nom}` : ''} <ArrowRight size={14} />
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+            {messesDuJour && (
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,.85)' }}>
+                Messes · {messesDuJour.jour} : <strong style={{ color: '#fff' }}>{messesDuJour.horaires.join(' · ')}</strong>
+              </span>
+            )}
+            <Link href="/horaires" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--accent-light)', textDecoration: 'none' }}>
+              Horaires{courante ? ` · ${courante.nom}` : ' des messes'} <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -323,9 +346,9 @@ export function HomePage() {
         <div className="inner grid-2" style={{ alignItems: 'center', gap: 'clamp(28px,5vw,72px)' }}>
           <div className="reveal">
             <span className="section-label" style={{ color: 'var(--accent-light)' }}>Notre Identité</span>
-            <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 700, color: '#fff', marginBottom: 16 }}>Histoire de la Cathédrale</h2>
+            <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 700, color: '#fff', marginBottom: 16 }}>Notre histoire</h2>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,.65)', lineHeight: 1.8, marginBottom: 14 }}>
-              Depuis plus d'un siècle, la Cathédrale Sacré-Cœur est le cœur spirituel de Brazzaville et de l'Archidiocèse du Congo.
+              {archidiocese?.presentation ?? "Depuis plus d'un siècle, la Cathédrale Sacré-Cœur est le cœur spirituel de Brazzaville et de l'Archidiocèse du Congo."}
             </p>
             {HISTOIRE.map(h => (
               <div key={h.annee} style={{ display: 'flex', gap: 18, padding: '14px 0', borderBottom: '1px solid rgba(255,255,255,.1)' }}>
@@ -334,7 +357,8 @@ export function HomePage() {
               </div>
             ))}
             <div style={{ marginTop: 24, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <Link href="/histoire" className="btn-gold">Notre histoire complète</Link>
+              <Link href="/histoire" className="btn-gold">Histoire de la cathédrale</Link>
+              <Link href="/histoire-archidiocese" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 24px', border: '1.5px solid rgba(255,255,255,.4)', color: '#fff', fontFamily: 'var(--v2-font-sans)', fontSize: 10, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: 'var(--r-md)' }}>Histoire de l&apos;archidiocèse</Link>
             </div>
           </div>
           <div className="reveal" style={{ position: 'relative' }}>

@@ -10,6 +10,9 @@ const LINKS = [
   { to: '/catechese', label: 'Catéchèse' },
   { to: '/dons', label: 'Faire un Don', accent: true },
   { to: '/connexion', label: 'Espace Membre' },
+  { to: '/histoire-archidiocese', label: "L'archidiocèse" },
+  { to: '/chartes/media', label: 'Charte média' },
+  { to: '/chartes/protection-mineurs', label: 'Protection des mineurs' },
   { to: '/signaler', label: 'Signaler une préoccupation' },
 ]
 

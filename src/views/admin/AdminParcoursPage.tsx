@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react'
 import {
   getAllParcours, getStatsParcours, createParcours, updateParcours, deleteParcours,
-  getEtapes, createEtape, updateEtape, deleteEtape, TYPE_PARCOURS, APPEL_ACTION,
+  getEtapes, createEtape, updateEtape, deleteEtape, TYPE_PARCOURS, APPEL_ACTION, getParcoursReference, dupliquerParcours,
   type Parcours, type ParcoursInput, type Etape, type EtapeInput, type TypeParcours, type AppelAction,
 } from '../../services/parcours'
 import { slugify } from '../../services/paroisses'
+import { useDroits } from '../../contexts/AuthContext'
+import { ARCHIDIOCESE } from '../../services/scope'
+import { ReferencesDiocesaines } from '../../components/admin/ReferencesDiocesaines'
 import { PARISH_STAFF_ROLES, ROLE_LABELS, type ParishRole } from '../../services/auth'
 import type { QuizQuestion } from '../../services/catechisme'
 import {
@@ -22,6 +25,7 @@ const VIDE: ParcoursInput = {
 
 export function AdminParcoursPage() {
   const toast = useToast()
+  const droits = useDroits()
   const [parcours, setParcours] = useState<Parcours[]>([])
   const [stats, setStats] = useState<Map<string, { inscrits: number; termines: number }>>(new Map())
   const [loading, setLoading] = useState(true)
@@ -101,6 +105,15 @@ export function AdminParcoursPage() {
           }}>{t ? TYPE_PARCOURS[t].label : 'Tous'}</button>
         ))}
       </div>
+
+      {droits.perimetre && droits.perimetre !== ARCHIDIOCESE && (
+        <ReferencesDiocesaines
+          titre="Parcours de l'archidiocèse"
+          charger={async () => (await getParcoursReference()).map(r => ({ id: r.id, titre: r.titre, emoji: r.emoji, detail: TYPE_PARCOURS[r.type].label }))}
+          dupliquer={async id => { await dupliquerParcours(id, droits.perimetre!); await load() }}
+          notifier={toast.show}
+        />
+      )}
 
       {loading ? <Chargement /> : visibles.length === 0 ? <Vide icone="route" texte="Aucun parcours. Créez le premier !" /> : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>

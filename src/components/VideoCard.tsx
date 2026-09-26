@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Play } from 'lucide-react'
 import { compterVue, type Evenement } from '../services/evenements'
+import { LecteurVideo } from './LecteurVideo'
 
 function fmtDate(iso: string, heure?: string) {
   const d = new Date(iso + 'T12:00:00')
@@ -19,13 +20,8 @@ export function VideoCard({ ev }: { ev: Evenement }) {
     <div className="dark-card reveal" style={{ overflow: 'hidden' }}>
       <div style={{ aspectRatio: '16/9', position: 'relative', background: 'var(--surface-mid)', cursor: 'pointer', overflow: 'hidden' }}
         onClick={() => { if (!playing && ev.id) compterVue(ev.id); setPlaying(true) }}>
-        {playing && ev.videoId && isYT ? (
-          <iframe
-            src={`https://www.youtube.com/embed/${ev.videoId}?autoplay=1`}
-            style={{ width: '100%', height: '100%', border: 'none' }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+        {playing && ((isYT && ev.videoId) || !isYT) ? (
+          <LecteurVideo evenementId={ev.id} platform={ev.platform} videoId={ev.videoId} url={ev.url} titre={ev.titre} />
         ) : (
           <>
             {ev.thumbnail && (

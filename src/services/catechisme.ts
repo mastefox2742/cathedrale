@@ -339,3 +339,18 @@ export async function deleteModule(id: string): Promise<void> {
   await logAudit('delete', 'module', id)
 }
 
+
+/** Copie un programme de catéchèse de l'archidiocèse dans une paroisse (brouillon). */
+export async function dupliquerCours(coursId: string, parishId: string): Promise<string> {
+  const { data, error } = await supabase.rpc('dupliquer_cours', { p_cours: coursId, p_parish: parishId })
+  if (error) throw error
+  await logAudit('create', 'cours', data as string, 'copie du programme de référence')
+  return data as string
+}
+
+/** Programmes de catéchèse de référence de l'archidiocèse (publiés, sans paroisse). */
+export async function getCoursReference(): Promise<{ id: string; titre: string; emoji: string; tranche: string }[]> {
+  const { data, error } = await supabase.from(COURS_TABLE).select('id, titre, emoji, tranche').is('parish_id', null).eq('publie', true).order('niveau')
+  if (error) throw error
+  return data ?? []
+}

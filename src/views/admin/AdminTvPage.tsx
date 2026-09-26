@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   getAllDirects, createDirect, updateDirect, deleteDirect, getAllPlaylists, createPlaylist, updatePlaylist,
-  deletePlaylist, setVideosPlaylist, STATUT_DIRECT_LABELS,
+  deletePlaylist, setVideosPlaylist, getVideosPourPlaylist, STATUT_DIRECT_LABELS,
   type Direct, type DirectInput, type StatutDirect, type Playlist, type PlaylistInput,
 } from '../../services/mediation'
 import { getAllEvenements, addEvenement, PUBLIC_CIBLE_LABELS, type Evenement, type PublicCible } from '../../services/evenements'
@@ -242,7 +242,7 @@ export function AdminTvPage() {
       )}
 
       {contenuDe && (
-        <ContenuPlaylist playlist={contenuDe} videos={videos} onClose={async (saved) => { setContenuDe(null); if (saved) { toast.show('Playlist mise à jour ✓'); await load() } }} notifier={toast.show} />
+        <ContenuPlaylist playlist={contenuDe} onClose={async (saved) => { setContenuDe(null); if (saved) { toast.show('Playlist mise à jour ✓'); await load() } }} notifier={toast.show} />
       )}
 
       {suppr && <ConfirmationSuppression texte={`« ${suppr.titre} » sera définitivement supprimé.`} onAnnuler={() => setSuppr(null)} onConfirmer={supprimer} />}
@@ -250,12 +250,15 @@ export function AdminTvPage() {
   )
 }
 
-function ContenuPlaylist({ playlist, videos, onClose, notifier }: {
-  playlist: Playlist; videos: Evenement[]; onClose: (saved: boolean) => void; notifier: (m: string, t?: 'ok' | 'err') => void
+function ContenuPlaylist({ playlist, onClose, notifier }: {
+  playlist: Playlist; onClose: (saved: boolean) => void; notifier: (m: string, t?: 'ok' | 'err') => void
 }) {
   const [ids, setIds] = useState<string[]>(playlist.evenementIds)
   const [saving, setSaving] = useState(false)
-  const parId = new Map(videos.map(v => [v.id!, v]))
+  // Vidéos du périmètre + vidéos de l'archidiocèse (intégrables dans une playlist de paroisse).
+  const [videos, setVideos] = useState<{ id: string; titre: string; date: string; diocesaine: boolean }[]>([])
+  useEffect(() => { getVideosPourPlaylist().then(setVideos).catch(() => setVideos([])) }, [])
+  const parId = new Map(videos.map(v => [v.id, v]))
 
   function deplacer(i: number, delta: number) {
     setIds(l => {
@@ -290,10 +293,11 @@ function ContenuPlaylist({ playlist, videos, onClose, notifier }: {
       </div>
       <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>Bibliothèque vidéo</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 260, overflowY: 'auto', marginBottom: 16 }}>
-        {videos.filter(v => v.id && !ids.includes(v.id)).map(v => (
-          <button key={v.id} onClick={() => setIds(l => [...l, v.id!])} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 10, border: '1px solid var(--outline-variant)', background: 'white', cursor: 'pointer', textAlign: 'left', fontSize: 13 }}>
+        {videos.filter(v => !ids.includes(v.id)).map(v => (
+          <button key={v.id} onClick={() => setIds(l => [...l, v.id])} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 10, border: '1px solid var(--outline-variant)', background: 'white', cursor: 'pointer', textAlign: 'left', fontSize: 13 }}>
             <span className="material-symbols-outlined" style={{ fontSize: 18, color: 'var(--primary)' }}>add</span>
             <span style={{ flex: 1 }}>{v.titre}</span>
+            {v.diocesaine && <Pastille texte="Archidiocèse" ton="orange" />}
             <span style={{ fontSize: 11, color: 'var(--on-surface-variant)' }}>{v.date}</span>
           </button>
         ))}

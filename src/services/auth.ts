@@ -98,6 +98,11 @@ export function canViewAudit(roles: Role[]): boolean {
   return hasAny(roles, [...DIOCESAN_ADMIN_ROLES, 'responsable_securite', 'admin_paroisse'])
 }
 
+/** Histoire de l'archidiocèse et chartes (média : responsable média ; mineurs : responsable sécurité). */
+export function canEditStandards(roles: Role[]): boolean {
+  return hasAny(roles, [...DIOCESAN_ADMIN_ROLES, 'responsable_media_diocesain', 'responsable_securite'])
+}
+
 export function canViewRegistre(roles: Role[]): boolean {
   return hasAny(roles, [...DIOCESAN_ADMIN_ROLES, 'responsable_securite', 'coordinateur_catechese_diocesain', 'admin_paroisse', 'coordinateur_catechese'])
 }

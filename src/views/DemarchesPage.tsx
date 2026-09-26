@@ -3,7 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from '../lib/navigation'
-import { creerDemande, TYPE_DEMANDE_LABELS, type TypeDemande } from '../services/demandesPastorales'
+import {
+  creerDemande, suivreDemande, TYPE_DEMANDE_LABELS, STATUT_DEMANDE_LABELS, CHAMPS_DEMARCHE,
+  type TypeDemande, type SuiviDemande,
+} from '../services/demandesPastorales'
 
 export function DemarchesPage() {
   const [params] = useSearchParams()
@@ -16,6 +19,22 @@ export function DemarchesPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [reference, setReference] = useState('')
+  const [details, setDetails] = useState<Record<string, string>>({})
+  // Suivi d'une demande sans compte (référence + contact)
+  const [suiviRef, setSuiviRef] = useState('')
+  const [suiviContact, setSuiviContact] = useState('')
+  const [suivi, setSuivi] = useState<SuiviDemande | null | 'introuvable'>(null)
+  const [suiviEnCours, setSuiviEnCours] = useState(false)
+
+  const champs = CHAMPS_DEMARCHE[type] ?? []
+
+  async function rechercherSuivi() {
+    if (!suiviRef.trim() || !suiviContact.trim()) return
+    setSuiviEnCours(true)
+    try { setSuivi((await suivreDemande(suiviRef, suiviContact)) ?? 'introuvable') }
+    catch { setSuivi('introuvable') }
+    finally { setSuiviEnCours(false) }
+  }
 
   const valide = nom.trim().length > 1 && contact.trim().length > 3 && message.trim().length > 5
 
@@ -25,7 +44,10 @@ export function DemarchesPage() {
     setError('')
     setLoading(true)
     try {
-      const ref = await creerDemande({ type, nom: nom.trim(), contact: contact.trim(), message: message.trim() })
+      const remplis = Object.fromEntries(
+        champs.map(c => [c.cle, (details[c.cle] ?? '').trim()]).filter(([, v]) => v),
+      )
+      const ref = await creerDemande({ type, nom: nom.trim(), contact: contact.trim(), message: message.trim(), details: remplis })
       setReference(ref)
     } catch {
       setError("Une erreur est survenue. Merci de réessayer dans un instant.")
@@ -54,7 +76,7 @@ export function DemarchesPage() {
               <p style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 20, fontWeight: 700, color: '#388E3C' }}>{reference}</p>
             </div>
             <p style={{ fontSize: 12, color: 'var(--text-light)', marginBottom: 24, lineHeight: 1.6 }}>
-              Un membre de la paroisse vous recontactera au contact indiqué. Conservez cette référence pour tout suivi.
+              Un membre de la paroisse vous recontactera au contact indiqué. Conservez cette référence : elle permet de suivre votre demande sur cette page, avec votre contact.
             </p>
             <Link href="/horaires" className="btn-outline" style={{ width: '100%', justifyContent: 'center' }}>
               Retour aux informations pratiques
@@ -84,7 +106,7 @@ export function DemarchesPage() {
             <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--text-light)', display: 'block', marginBottom: 8 }}>
               Type de demande
             </label>
-            <select value={type} onChange={e => setType(e.target.value as TypeDemande)} className="dark-input">
+            <select value={type} onChange={e => { setType(e.target.value as TypeDemande); setDetails({}) }} className="dark-input">
               {(Object.entries(TYPE_DEMANDE_LABELS) as [TypeDemande, string][]).map(([key, label]) => (
                 <option key={key} value={key}>{label}</option>
               ))}
@@ -104,6 +126,21 @@ export function DemarchesPage() {
             </label>
             <input value={contact} onChange={e => setContact(e.target.value)} placeholder="+242 06 000 00 00" className="dark-input" />
           </div>
+
+          {champs.length > 0 && (
+            <fieldset style={{ border: '1px solid var(--border-accent)', padding: '18px 18px 4px', marginBottom: 20 }}>
+              <legend style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--accent-dark)', padding: '0 6px' }}>
+                {TYPE_DEMANDE_LABELS[type]} — informations utiles
+              </legend>
+              {champs.map(c => (
+                <div key={c.cle} style={{ marginBottom: 14 }}>
+                  <label htmlFor={`champ-${c.cle}`} style={{ fontSize: 12, color: 'var(--text-mid)', display: 'block', marginBottom: 6 }}>{c.label}</label>
+                  <input id={`champ-${c.cle}`} type={c.type ?? 'text'} value={details[c.cle] ?? ''}
+                    onChange={e => setDetails(d => ({ ...d, [c.cle]: e.target.value }))} className="dark-input" />
+                </div>
+              ))}
+            </fieldset>
+          )}
 
           <div style={{ marginBottom: 8 }}>
             <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--text-light)', display: 'block', marginBottom: 8 }}>
@@ -137,6 +174,28 @@ export function DemarchesPage() {
           <p style={{ fontSize: 11, color: 'var(--text-light)', textAlign: 'center', marginTop: 12, lineHeight: 1.5 }}>
             Vos informations sont utilisées uniquement pour traiter votre demande pastorale.
           </p>
+
+          {/* ══ SUIVI D'UNE DEMANDE ══ */}
+          <div id="suivi" style={{ marginTop: 'var(--space-xl)', background: 'var(--bg-alt)', border: '1px solid var(--border-accent)', padding: 24 }}>
+            <span className="section-label">Suivre ma demande</span>
+            <p style={{ fontSize: 13, color: 'var(--text-light)', margin: '8px 0 16px', lineHeight: 1.6 }}>
+              Saisissez la référence reçue et le contact indiqué lors de votre demande. Connecté à votre Espace Membre, vous retrouvez aussi vos demandes dans votre profil.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 12 }}>
+              <input value={suiviRef} onChange={e => setSuiviRef(e.target.value)} placeholder="Référence (SC-…)" className="dark-input" aria-label="Référence de la demande" />
+              <input value={suiviContact} onChange={e => setSuiviContact(e.target.value)} placeholder="Téléphone ou email" className="dark-input" aria-label="Contact indiqué" />
+            </div>
+            <button onClick={rechercherSuivi} disabled={suiviEnCours || !suiviRef.trim() || !suiviContact.trim()} className="btn-outline" style={{ fontSize: 10 }}>
+              {suiviEnCours ? 'Recherche…' : 'Voir le statut'}
+            </button>
+            {suivi === 'introuvable' && <p style={{ fontSize: 13, color: '#c62828', marginTop: 12 }}>Aucune demande ne correspond à cette référence et ce contact.</p>}
+            {suivi && suivi !== 'introuvable' && (
+              <p style={{ fontSize: 14, color: 'var(--text)', marginTop: 12 }}>
+                {TYPE_DEMANDE_LABELS[suivi.type]} : <strong style={{ color: 'var(--primary)' }}>{STATUT_DEMANDE_LABELS[suivi.statut]}</strong>
+                <span style={{ fontSize: 12, color: 'var(--text-light)' }}> · reçue le {new Date(suivi.createdAt).toLocaleDateString('fr-FR')}, mise à jour le {new Date(suivi.updatedAt).toLocaleDateString('fr-FR')}</span>
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </>

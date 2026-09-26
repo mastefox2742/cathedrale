@@ -121,9 +121,11 @@ export async function getParoisseById(id: string): Promise<Paroisse | null> {
 }
 
 export async function createParoisse(d: ParoisseInput): Promise<string> {
-  const { data: arch, error: archErr } = await supabase.from('archdioceses').select('id').eq('slug', 'brazzaville').single()
-  if (archErr) throw archErr
-  const { data: row, error } = await supabase.from('parishes').insert({ ...toRow(d), archdiocese_id: arch.id }).select('id').single()
+  // Archidiocèse de l'administrateur connecté (colonne profiles.archdiocese_id).
+  const { data: auth } = await supabase.auth.getUser()
+  const { data: prof, error: profErr } = await supabase.from('profiles').select('archdiocese_id').eq('id', auth.user?.id ?? '').single()
+  if (profErr) throw profErr
+  const { data: row, error } = await supabase.from('parishes').insert({ ...toRow(d), archdiocese_id: prof.archdiocese_id }).select('id').single()
   if (error) throw error
   cache = null
   await logAudit('create', 'paroisse', row.id, d.nom)

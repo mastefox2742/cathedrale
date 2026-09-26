@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react'
 import { NavLink, useNavigate } from '../../lib/navigation'
 import {
   logout, ROLE_LABELS, canManageEnfants, canViewSignalements, canManageDons, canManageMembres,
-  canViewAudit, canViewRegistre, type Role,
+  canViewAudit, canViewRegistre, canEditStandards, type Role,
 } from '../../services/auth'
 import { useAuth, useDroits } from '../../contexts/AuthContext'
 import { getToutesParoisses, type Paroisse } from '../../services/paroisses'
 import { setPerimetreAdmin, ARCHIDIOCESE } from '../../services/scope'
+import { ClocheAlertes } from './ClocheAlertes'
 
 interface NavItem { to: string; icon: string; label: string; exact?: boolean; visible?: (roles: Role[], d: ReturnType<typeof useDroits>) => boolean }
 
@@ -18,6 +19,7 @@ const SECTIONS: { titre: string; items: NavItem[] }[] = [
     items: [
       { to: '/admin', icon: 'dashboard', label: 'Tableau de bord', exact: true },
       { to: '/admin/paroisses', icon: 'church', label: 'Paroisses', visible: (r, d) => d.isDiocesanAdmin || canManageMembres(r) },
+      { to: '/admin/standards', icon: 'gavel', label: 'Standards & chartes', visible: r => canEditStandards(r) },
       { to: '/admin/notifications', icon: 'notifications', label: 'Notifications' },
     ],
   },
@@ -71,7 +73,7 @@ const SECTIONS: { titre: string; items: NavItem[] }[] = [
 ]
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { profile, appartenances } = useAuth()
+  const { user, profile, appartenances } = useAuth()
   const droits = useDroits()
   const navigate = useNavigate()
   const [paroisses, setParoisses] = useState<Paroisse[]>([])
@@ -149,6 +151,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             {choix.map(p => <option key={p.id} value={p.id} style={{ color: '#222' }}>{p.nom}{p.actif ? '' : ' (inactive)'}</option>)}
           </select>
         </div>
+
+        {/* Alertes aux responsables */}
+        {user && <div style={{ marginTop: 10 }}><ClocheAlertes userId={user.id} perimetre={droits.perimetre} /></div>}
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: '8px 12px 16px' }}>

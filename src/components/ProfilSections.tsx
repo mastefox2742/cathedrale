@@ -12,6 +12,7 @@ import { getMesDemandes, TYPE_DEMANDE_LABELS, STATUT_DEMANDE_LABELS, type Demand
 import { getMesDons, formatXAF, STATUT_DON_LABELS, type Don } from '../services/dons'
 import { getMesIntentions, type PrayerIntention } from '../services/prieres'
 import { getMesTemoignages, STATUT_TEMOIGNAGE_LABELS, type Temoignage } from '../services/temoignages'
+import { MesEnfantsEtDonnees } from './MesEnfantsEtDonnees'
 
 const titreStyle: CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 8,
@@ -217,6 +218,7 @@ export function ProfilSections() {
         </>
       )}
 
+      <MesEnfantsEtDonnees userId={user.id} />
     </>
   )
 }

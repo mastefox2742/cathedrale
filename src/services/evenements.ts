@@ -34,6 +34,7 @@ export interface Evenement {
   intervenant?: string
   publicCible?: PublicCible
   vues?: number
+  secondesVues?: number
   aLaUne?: boolean
   createdAt?: string
 }
@@ -57,6 +58,7 @@ interface EvenementRow {
   intervenant?: string | null
   public_cible?: PublicCible | null
   vues?: number
+  secondes_vues?: number
   a_la_une?: boolean
   created_at: string
 }
@@ -67,7 +69,7 @@ function fromRow(r: EvenementRow): Evenement {
     url: r.url, videoId: r.video_id ?? undefined, thumbnail: r.thumbnail ?? undefined,
     date: r.date, heure: r.heure ?? undefined, estEnLive: r.est_en_live ?? undefined,
     publie: r.publie, theme: r.theme ?? undefined, intervenant: r.intervenant ?? undefined,
-    publicCible: r.public_cible ?? undefined, vues: r.vues ?? 0, aLaUne: r.a_la_une ?? false,
+    publicCible: r.public_cible ?? undefined, vues: r.vues ?? 0, secondesVues: Number(r.secondes_vues ?? 0), aLaUne: r.a_la_une ?? false,
     createdAt: r.created_at,
   }
 }
@@ -178,4 +180,10 @@ export async function getALaUne(max = 3): Promise<Evenement[]> {
 /** Compte une lecture (statistiques de la médiation). */
 export function compterVue(id: string): void {
   supabase.rpc('incrementer_vue', { p_id: id }).then(() => {}, () => {})
+}
+
+/** Ajoute des secondes de visionnage (statistiques de la médiation). */
+export function ajouterVisionnage(id: string, secondes: number): void {
+  if (secondes < 1) return
+  supabase.rpc('ajouter_visionnage', { p_id: id, p_secondes: Math.round(secondes) }).then(() => {}, () => {})
 }

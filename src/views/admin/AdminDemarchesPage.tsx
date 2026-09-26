@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import {
+import { CHAMPS_DEMARCHE,
   getDemandes, updateDemande, deleteDemande,
   TYPE_DEMANDE_LABELS, STATUT_DEMANDE_LABELS,
   type DemandePastorale, type TypeDemande, type StatutDemande,
@@ -208,6 +208,17 @@ export function AdminDemarchesPage() {
             </FField>
             <FField label="Message">
               <p style={{ fontSize: 13, color: 'var(--on-surface-variant)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{selected.message}</p>
+              {selected.details && Object.keys(selected.details).length > 0 && (
+                <dl style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 12px', fontSize: 13 }}>
+                  {Object.entries(selected.details).map(([k, v]) => {
+                    const label = CHAMPS_DEMARCHE[selected.type]?.find(c => c.cle === k)?.label ?? k
+                    return [
+                      <dt key={`${k}-l`} style={{ color: 'var(--on-surface-variant)' }}>{label}</dt>,
+                      <dd key={`${k}-v`} style={{ color: 'var(--on-surface)', fontWeight: 600 }}>{v}</dd>,
+                    ]
+                  })}
+                </dl>
+              )}
             </FField>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>

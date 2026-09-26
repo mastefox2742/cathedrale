@@ -8,9 +8,12 @@ import { useAuth } from '../contexts/AuthContext'
 import { useParoisse } from '../contexts/ParoisseContext'
 import { getParoisseBySlug, rejoindreParoisse, type Paroisse } from '../services/paroisses'
 import { supabase } from '../services/supabase'
+import { VideoCard } from '../components/VideoCard'
+import type { Evenement } from '../services/evenements'
 
 interface AnnonceParoisse { id: string; titre: string; description: string; date: string; tag: string }
 interface GroupeParoisse { id: string; titre: string; icon: string; horaire: string | null }
+interface HomelieParoisse { id: string; titre: string; pretre: string; date: string }
 
 export function ParoissePage() {
   const { slug } = useParams<{ slug: string }>()
@@ -19,6 +22,8 @@ export function ParoissePage() {
   const [paroisse, setParoisse] = useState<Paroisse | null>(null)
   const [annonces, setAnnonces] = useState<AnnonceParoisse[]>([])
   const [groupes, setGroupes] = useState<GroupeParoisse[]>([])
+  const [videos, setVideos] = useState<Evenement[]>([])
+  const [homelies, setHomelies] = useState<HomelieParoisse[]>([])
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState<string | null>(null)
 
@@ -28,12 +33,20 @@ export function ParoissePage() {
       setParoisse(p)
       if (!p) return
       // Contenus propres à cette paroisse (indépendamment de la paroisse choisie dans l'en-tête).
-      const [a, g] = await Promise.all([
+      const [a, g, v, h] = await Promise.all([
         supabase.from('annonces').select('id, titre, description, date, tag').eq('parish_id', p.id).eq('publie', true).order('date', { ascending: false }).limit(4),
         supabase.from('groupes').select('id, titre, icon, horaire').eq('parish_id', p.id).eq('publie', true).order('titre'),
+        supabase.from('evenements').select('*').eq('parish_id', p.id).eq('publie', true).order('date', { ascending: false }).limit(3),
+        supabase.from('homelies').select('id, titre, pretre, date').eq('parish_id', p.id).eq('publie', true).order('date', { ascending: false }).limit(4),
       ])
       setAnnonces(a.data ?? [])
       setGroupes(g.data ?? [])
+      setVideos((v.data ?? []).map(r => ({
+        id: r.id, titre: r.titre, description: r.description, type: r.type, platform: r.platform, url: r.url,
+        videoId: r.video_id ?? undefined, thumbnail: r.thumbnail ?? undefined, date: r.date, heure: r.heure ?? undefined,
+        publie: r.publie, theme: r.theme ?? undefined, intervenant: r.intervenant ?? undefined,
+      })))
+      setHomelies(h.data ?? [])
     }).catch(() => setParoisse(null)).finally(() => setLoading(false))
   }, [slug])
 
@@ -155,6 +168,27 @@ export function ParoissePage() {
                     <p style={{ fontSize: 12, color: 'var(--text-mid)' }}>{a.description}</p>
                   </div>
                 </div>
+              ))}
+            </section>
+          )}
+
+          {videos.length > 0 && (
+            <section style={{ marginTop: 'var(--space-lg)' }}>
+              <span className="section-label">Vidéos de la paroisse</span>
+              <div className="grid-3" style={{ marginTop: 12 }}>
+                {videos.map(v => <VideoCard key={v.id} ev={v} />)}
+              </div>
+            </section>
+          )}
+
+          {homelies.length > 0 && (
+            <section style={{ marginTop: 'var(--space-lg)' }}>
+              <span className="section-label">Homélies</span>
+              {homelies.map(h => (
+                <Link key={h.id} href="/homelies" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid var(--border)', textDecoration: 'none' }}>
+                  <span style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 15, color: 'var(--text)' }}>{h.titre}</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{h.pretre} · {new Date(h.date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                </Link>
               ))}
             </section>
           )}

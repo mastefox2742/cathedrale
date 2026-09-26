@@ -16,6 +16,8 @@ export interface StatsTableauDeBord {
   signalements_nouveaux: number | null
   videos: number
   vues_videos: number
+  heures_visionnage?: number
+  presence_moyenne?: number | null
   parcours_inscrits: number
   abonnes: number
 }

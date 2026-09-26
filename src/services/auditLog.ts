@@ -41,6 +41,8 @@ export const RESOURCE_LABELS: Record<string, string> = {
   don: 'Don',
   adhesion: 'Adhésion à un groupe',
   abonne: 'Abonné',
+  archidiocese: 'Archidiocèse',
+  charte: 'Charte',
 }
 
 /** Ne doit jamais faire échouer l'action admin qu'elle accompagne. */

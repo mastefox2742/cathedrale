@@ -6,7 +6,8 @@ import { CalendarClock, Search } from 'lucide-react'
 import { getEvenements, PUBLIC_CIBLE_LABELS, type Evenement, type PublicCible } from '../services/evenements'
 import { getDirectsAVenir, getPlaylistsPubliques, type Direct, type Playlist } from '../services/mediation'
 import { getMediasPublics, formatSize, type Media } from '../services/medias'
-import { youtubeEmbed } from '../services/parcours'
+import { LecteurVideo } from '../components/LecteurVideo'
+import { CalendrierDirects } from '../components/CalendrierDirects'
 import { VideoCard } from '../components/VideoCard'
 
 type Onglet = 'chaine' | 'replays' | 'mediatheque'
@@ -45,6 +46,7 @@ export function TvPage() {
   const [medias, setMedias] = useState<Media[]>([])
   const [loading, setLoading] = useState(true)
   const [recherche, setRecherche] = useState('')
+  const [vueProgramme, setVueProgramme] = useState<'liste' | 'calendrier'>('liste')
   const [theme, setTheme] = useState('')
 
   const onglet = (params.get('onglet') as Onglet) || 'chaine'
@@ -100,9 +102,10 @@ export function TvPage() {
         <div className="inner">
 
           {/* ══ EN DIRECT ══ */}
-          {[...enDirect.map(d => ({ key: d.id, titre: d.titre, url: d.url, desc: d.description })),
-            ...liveVideos.map(v => ({ key: v.id ?? v.url, titre: v.titre, url: v.url, desc: v.description }))].map(l => {
-            const embed = youtubeEmbed(l.url)
+          {[...enDirect.map(d => ({ key: d.id, evId: undefined as string | undefined, titre: d.titre, url: d.url, desc: d.description })),
+            ...liveVideos.map(v => ({ key: v.id ?? v.url, evId: v.id, titre: v.titre, url: v.url, desc: v.description }))].map(l => {
+            const yt = /(?:v=|youtu\.be\/|live\/|embed\/)([\w-]+)/.exec(l.url)?.[1]
+            const fb = /facebook\.com|fb\.watch/.test(l.url)
             return (
               <div key={l.key} className="reveal" style={{ marginBottom: 32, padding: 24, border: '1px solid rgba(200,40,40,.3)', background: 'rgba(139,26,26,.1)' }}>
                 <div className="live-badge" style={{ marginBottom: 14 }}>
@@ -110,9 +113,9 @@ export function TvPage() {
                 </div>
                 <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 22, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>{l.titre}</h3>
                 {l.desc && <p style={{ fontSize: 13, color: 'var(--text-light)' }}>{l.desc}</p>}
-                {embed ? (
+                {yt || fb ? (
                   <div style={{ aspectRatio: '16/9', marginTop: 16 }}>
-                    <iframe src={`${embed}?autoplay=1`} title={l.titre} style={{ width: '100%', height: '100%', border: 'none' }} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+                    <LecteurVideo evenementId={l.evId} platform={fb ? 'facebook' : 'youtube'} videoId={yt} url={l.url} titre={l.titre} />
                   </div>
                 ) : (
                   <a href={l.url} target="_blank" rel="noopener noreferrer" className="btn-gold" style={{ marginTop: 16 }}>Regarder le direct ↗</a>
@@ -151,11 +154,19 @@ export function TvPage() {
           {!loading && onglet === 'chaine' && (
             <>
               <section style={{ marginBottom: 'var(--space-lg)' }}>
-                <div className="reveal" style={{ marginBottom: 18 }}>
-                  <span className="section-label">Programme</span>
-                  <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(22px,2.6vw,30px)', fontWeight: 700, color: 'var(--text)' }}>Prochains directs</h2>
+                <div className="reveal" style={{ marginBottom: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
+                  <div>
+                    <span className="section-label">Programme</span>
+                    <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(22px,2.6vw,30px)', fontWeight: 700, color: 'var(--text)' }}>Prochains directs</h2>
+                  </div>
+                  <div style={{ display: 'flex', gap: 2 }}>
+                    <button onClick={() => setVueProgramme('liste')} style={tabStyle(vueProgramme === 'liste')}>Liste</button>
+                    <button onClick={() => setVueProgramme('calendrier')} style={tabStyle(vueProgramme === 'calendrier')}>Calendrier</button>
+                  </div>
                 </div>
-                {aVenir.length === 0 ? (
+                {vueProgramme === 'calendrier' ? (
+                  <CalendrierDirects directs={directs} />
+                ) : aVenir.length === 0 ? (
                   <p style={{ fontSize: 13, color: 'var(--text-light)' }}>Aucun direct programmé pour le moment.</p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

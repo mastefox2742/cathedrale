@@ -9,6 +9,7 @@ import {
 import { getDemandes, type DemandePastorale } from '../../services/demandesPastorales'
 import { canManageEnfants } from '../../services/auth'
 import { useDroits } from '../../contexts/AuthContext'
+import { SuiviEnfant } from '../../components/admin/SuiviCatechese'
 
 const EMPTY_ENFANT: Omit<Enfant, 'id' | 'createdAt' | 'updatedAt'> = {
   prenom: '', nom: '', dateNaissance: '', parentNom: '', parentContact: '', demandeId: '', notes: '', actif: true,
@@ -292,6 +293,8 @@ export function AdminParentEnfantPage() {
             <button onClick={() => toggleActif(selected)} style={{ marginBottom: 20, padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, border: 'none', cursor: 'pointer', background: selected.actif ? 'rgba(46,125,50,.12)' : 'rgba(0,0,0,.06)', color: selected.actif ? '#2e7d32' : 'var(--on-surface-variant)' }}>
               {selected.actif ? 'Active — désactiver' : 'Désactivée — réactiver'}
             </button>
+
+            <SuiviEnfant enfant={selected} notifier={showToast} onChange={async () => { await load(); }} />
 
             <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--on-surface)', marginBottom: 10 }}>Consentements</h3>
             {loadingConsentements ? (

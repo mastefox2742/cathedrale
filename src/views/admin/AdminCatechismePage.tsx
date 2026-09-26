@@ -3,13 +3,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from '../../lib/navigation'
 import {
-  getAllCours, addCours, updateCours,
+  getAllCours, addCours, updateCours, getCoursReference, dupliquerCours,
   getAllModules, addModule, updateModule, deleteModule,
   getAllFormationsCatechisme, addFormationCatechisme, updateFormationCatechisme, deleteFormationCatechisme,
   getAllLecons, addLecon, updateLecon, deleteLecon,
   type Cours, type Module, type Lecon, type TypeLecon, type QuizQuestion, type NiveauType, type FormationCatechisme,
   TYPE_LECON_LABELS,
 } from '../../services/catechisme'
+import { useDroits } from '../../contexts/AuthContext'
+import { ARCHIDIOCESE } from '../../services/scope'
+import { ReferencesDiocesaines } from '../../components/admin/ReferencesDiocesaines'
 
 // ── Couleurs par niveau ────────────────────────────────────────────────────────
 const NIVEAU_CONFIG: Record<number, { label: string; emoji: string; color: string }> = {
@@ -136,6 +139,7 @@ const TEXTAREA_STYLE: React.CSSProperties = {
 
 // ── Page principale ────────────────────────────────────────────────────────────
 export function AdminCatechismePage() {
+  const droits = useDroits()
   const navigate = useNavigate()
   const [cours, setCours] = useState<Cours[]>([])
   const [loading, setLoading] = useState(true)
@@ -413,6 +417,15 @@ export function AdminCatechismePage() {
           Nouveau cours
         </button>
       </div>
+
+      {droits.perimetre && droits.perimetre !== ARCHIDIOCESE && (
+        <ReferencesDiocesaines
+          titre="Programmes de catéchèse de l'archidiocèse"
+          charger={async () => (await getCoursReference()).map(c => ({ id: c.id, titre: c.titre, emoji: c.emoji, detail: c.tranche }))}
+          dupliquer={async id => { await dupliquerCours(id, droits.perimetre!); await loadCours() }}
+          notifier={(m, t) => showToast(m, t !== 'err')}
+        />
+      )}
 
       {/* ── Formations (regroupent plusieurs parcours) ── */}
       <div style={{ marginBottom: 28 }}>

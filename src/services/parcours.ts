@@ -239,3 +239,18 @@ export function youtubeEmbed(url: string | null): string | null {
   const m = /(?:youtube\.com\/(?:watch\?v=|live\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/.exec(url)
   return m ? `https://www.youtube.com/embed/${m[1]}` : null
 }
+
+/** Copie un parcours de l'archidiocèse dans une paroisse (brouillon modifiable). */
+export async function dupliquerParcours(pathId: string, parishId: string): Promise<string> {
+  const { data, error } = await supabase.rpc('dupliquer_parcours', { p_path: pathId, p_parish: parishId })
+  if (error) throw error
+  await logAudit('create', 'parcours', data as string, 'copie du parcours de référence')
+  return data as string
+}
+
+/** Parcours de référence de l'archidiocèse (publiés, sans paroisse). */
+export async function getParcoursReference(): Promise<Parcours[]> {
+  const { data, error } = await supabase.from('evangelization_paths').select('*').is('parish_id', null).eq('publie', true).order('type').order('ordre')
+  if (error) throw error
+  return (data ?? []).map(fromRow)
+}
