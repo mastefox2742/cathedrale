@@ -113,3 +113,42 @@ Il affiche les chiffres clés du périmètre choisi :
 - inscriptions aux parcours.
 
 En périmètre **Tout l'archidiocèse**, un tableau compare les paroisses entre elles.
+
+## 11. Alertes
+
+À chaque nouvelle démarche, intention, adhésion, témoignage, don ou signalement, une **alerte** apparaît dans la cloche **Alertes**, en haut du menu d'administration. Chacun ne reçoit que les alertes qu'il a le droit de traiter : les signalements vont aux seuls responsables de la protection des mineurs, les dons à la trésorerie.
+
+Cliquez sur une alerte pour ouvrir la page concernée.
+
+## 12. Présences et suivi des enfants
+
+- **Faire l'appel** : dans **Espace catéchiste**, cliquez sur l'icône de présence d'une séance, puis marquez chaque enfant *Présent*, *Absent* ou *Excusé*.
+- **Valider les modules** : dans **Suivi Parent-Enfant**, ouvrez la fiche de l'enfant et cochez les modules acquis.
+- **Relier le compte du parent** : dans la même fiche, saisissez l'email du compte du parent. Il voit alors la progression et les présences de son enfant dans son Espace Membre.
+
+## 13. Standards & chartes
+
+Dans le menu **Standards & chartes** :
+
+- **Histoire de l'archidiocèse** et phrase de présentation (reprise sur l'accueil).
+- **Charte média** (responsable média diocésain) et **charte de protection des mineurs** (responsable sécurité). Chaque modification du texte crée une nouvelle version. Ne cochez « Publiée » qu'après l'adoption officielle.
+- Des raccourcis pour travailler au niveau « Tout l'archidiocèse » : programmes de référence, parcours, annonces globales.
+
+## 14. Programmes de référence
+
+Ce qui est créé au niveau **Tout l'archidiocèse** (cours de catéchèse, parcours de foi) sert de modèle.
+
+Dans le périmètre d'une paroisse, les pages **Catéchisme** et **Parcours de foi** affichent ces modèles avec un bouton **Copier**. La paroisse obtient ainsi une copie en brouillon qu'elle peut adapter.
+
+## 15. Application mobile
+
+- Les fidèles reçoivent les **notifications** sur leur téléphone, ciblées selon la paroisse choisie, leur rôle ou leurs groupes.
+- Le staff dispose d'un **Espace staff** (Profil → Espace staff). On y voit ses rôles et ses alertes, avec un lien vers l'administration du site.
+
+## 16. Données personnelles
+
+Chaque fidèle peut, depuis son profil :
+- **télécharger ses données** ;
+- **supprimer son compte**.
+
+Les dons et les démarches restent enregistrés par la paroisse, sans lien avec le compte supprimé.
