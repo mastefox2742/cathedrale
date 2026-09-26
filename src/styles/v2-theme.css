@@ -82,13 +82,20 @@
 @keyframes v2spin   { to { transform: rotate(360deg) } }
 @keyframes scrollLine { 0%,100%{opacity:1;transform:scaleY(1)} 50%{opacity:.4;transform:scaleY(.4)} }
 
-.v2-theme .reveal {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity .65s ease, transform .65s ease;
+/* Apparition au défilement, en CSS pur (aucune modification du DOM par JS,
+   donc pas de conflit avec l'hydratation de Next.js). Navigateurs sans
+   animations liées au défilement : les blocs sont simplement visibles. */
+@keyframes reveal-in { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+.v2-theme .reveal { opacity: 1; transform: translateY(0); }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .v2-theme .reveal {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
 }
-.v2-theme .reveal.anim { opacity: 0; transform: translateY(28px); }
-.v2-theme .reveal.anim.visible { opacity: 1; transform: translateY(0); }
 
 .v2-theme .inner { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--pad-x); }
 
