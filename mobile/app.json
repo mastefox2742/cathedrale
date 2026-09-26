@@ -32,6 +32,12 @@
         {
           "color": "#123B5D"
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Votre position sert uniquement à trouver la paroisse la plus proche de vous."
+        }
       ]
     ],
     "extra": {

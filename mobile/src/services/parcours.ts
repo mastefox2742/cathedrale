@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { supabase } from './supabase'
 import { filtreParoisse } from './paroisses'
 
@@ -63,4 +64,44 @@ export async function terminerEtape(userId: string, etape: Etape, score?: number
     { onConflict: 'user_id,step_id', ignoreDuplicates: true },
   )
   if (error) throw error
+}
+
+/* ── Progression sans compte (maquette : « Sans compte requis ») ──
+ * Toujours mémorisée sur l'appareil ; recopiée dans user_path_progress
+ * quand la personne est connectée. */
+
+const CLE_PROGRES = 'parcours-progres-'
+const CLE_ENREGISTRES = 'parcours-enregistres'
+
+async function progresLocal(pathId: string): Promise<Set<string>> {
+  try { return new Set(JSON.parse((await AsyncStorage.getItem(CLE_PROGRES + pathId)) ?? '[]')) } catch { return new Set() }
+}
+
+export async function getProgression(pathId: string): Promise<Set<string>> {
+  const faites = await progresLocal(pathId)
+  const { data } = await supabase.auth.getSession()
+  if (data.session) {
+    try { (await getEtapesTerminees(data.session.user.id, pathId)).forEach(id => faites.add(id)) } catch { /* hors ligne */ }
+  }
+  return faites
+}
+
+export async function marquerEtape(etape: Etape): Promise<void> {
+  const faites = await progresLocal(etape.pathId)
+  faites.add(etape.id)
+  try { await AsyncStorage.setItem(CLE_PROGRES + etape.pathId, JSON.stringify([...faites])) } catch { /* facultatif */ }
+  const { data } = await supabase.auth.getSession()
+  if (data.session) await terminerEtape(data.session.user.id, etape)
+}
+
+export async function getParcoursEnregistres(): Promise<string[]> {
+  try { return JSON.parse((await AsyncStorage.getItem(CLE_ENREGISTRES)) ?? '[]') } catch { return [] }
+}
+
+export async function basculerEnregistrement(pathId: string): Promise<boolean> {
+  const liste = await getParcoursEnregistres()
+  const enregistre = !liste.includes(pathId)
+  const suivante = enregistre ? [...liste, pathId] : liste.filter(id => id !== pathId)
+  try { await AsyncStorage.setItem(CLE_ENREGISTRES, JSON.stringify(suivante)) } catch { /* facultatif */ }
+  return enregistre
 }

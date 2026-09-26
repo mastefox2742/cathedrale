@@ -28,7 +28,7 @@ export function ParcoursListeScreen() {
         {loading ? <SkeletonList count={3} /> : parcours.length === 0 ? (
           <Text style={[styles.muted, { textAlign: 'center', paddingVertical: 30 }]}>Les parcours seront disponibles prochainement.</Text>
         ) : parcours.map(p => (
-          <Pressable key={p.id} onPress={() => navigation.navigate('Parcours', { parcours: p })} style={({ pressed }) => [styles.card, { opacity: pressed ? 0.85 : 1 }]}>
+          <Pressable key={p.id} onPress={() => navigation.navigate('ParcoursEtape', { parcours: p })} style={({ pressed }) => [styles.card, { opacity: pressed ? 0.85 : 1 }]}>
             <View style={styles.iconTile}><Text style={{ fontSize: 24 }}>{p.emoji}</Text></View>
             <View style={{ flex: 1 }}>
               {p.duree && <Text style={styles.eyebrow}>{p.duree.toUpperCase()}</Text>}

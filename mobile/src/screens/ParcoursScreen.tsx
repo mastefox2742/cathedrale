@@ -8,7 +8,7 @@ import { Icon } from '../components/Icon'
 import { SkeletonList } from '../components/Skeleton'
 import { colors, fonts, radius } from '../theme/colors'
 import { supabase } from '../services/supabase'
-import { getEtapes, getEtapesTerminees, terminerEtape, type Etape, type Parcours, type QuizQuestion } from '../services/parcours'
+import { getEtapes, getProgression, marquerEtape, type Etape, type Parcours, type QuizQuestion } from '../services/parcours'
 
 /** Rendu texte simple : titres, citations, listes et gras (** **) retirés proprement. */
 function Contenu({ texte }: { texte: string }) {
@@ -61,24 +61,21 @@ export function ParcoursScreen() {
   }, [parcours.id])
 
   useEffect(() => {
-    if (!session || etapes.length === 0) return
-    getEtapesTerminees(session.user.id, parcours.id).then(t => {
+    if (etapes.length === 0) return
+    getProgression(parcours.id).then(t => {
       setFaites(t)
+      const demandee = route.params.etapeIndex as number | undefined
       const idx = etapes.findIndex(e => !t.has(e.id))
-      setActive(idx === -1 ? 0 : idx)
+      setActive(demandee ?? (idx === -1 ? 0 : idx))
     }).catch(() => {})
-  }, [session, etapes, parcours.id])
+  }, [session, etapes, parcours.id, route.params.etapeIndex])
 
   const etape = etapes[active]
 
   async function suivant() {
     if (!etape) return
-    if (session) {
-      try {
-        await terminerEtape(session.user.id, etape)
-        setFaites(f => new Set(f).add(etape.id))
-      } catch { /* réessayé à l'étape suivante */ }
-    }
+    setFaites(f => new Set(f).add(etape.id))
+    try { await marquerEtape(etape) } catch { /* réessayé à l'étape suivante */ }
     if (active + 1 < etapes.length) setActive(active + 1)
   }
 
@@ -86,7 +83,7 @@ export function ParcoursScreen() {
     if (!etape) return
     if (etape.appelAction === 'parler_pretre' || etape.appelAction === 'demarche') navigation.navigate('Prier', { screen: 'Demarches' })
     else if (etape.appelAction === 'prier') navigation.navigate('Prier', { screen: 'Intentions' })
-    else if (etape.appelAction === 'commencer_parcours') navigation.navigate('ParcoursListe', { types: ['approfondir'] })
+    else if (etape.appelAction === 'commencer_parcours') navigation.navigate('Parcours', { screen: 'ParcoursArchidiocese', params: { type: 'approfondir' } })
   }
 
   return (
@@ -108,7 +105,7 @@ export function ParcoursScreen() {
             {!session && (
               <View style={styles.info}>
                 <Icon name="lock" size={14} color={colors.primary} />
-                <Text style={[styles.muted, { flex: 1 }]}>Connectez-vous (onglet Profil) pour enregistrer votre progression.</Text>
+                <Text style={[styles.muted, { flex: 1 }]}>Progression enregistrée sur cet appareil. Connectez-vous (onglet Plus) pour la retrouver partout.</Text>
               </View>
             )}
 

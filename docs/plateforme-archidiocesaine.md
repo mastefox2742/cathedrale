@@ -107,12 +107,13 @@ Légende : ✅ fait · 🔌 dépend d'un service ou d'un contrat externe · 📝
 1. **Supabase → SQL Editor** : exécuter, dans l'ordre :
    1. la dernière section de `mobile/supabase/schema.sql` (« Sécurité : fermeture de l'accès public… ») ;
    2. `mobile/supabase/migrations/20260926000000_plateforme_archidiocesaine.sql` ;
-   3. `mobile/supabase/migrations/20260927000000_cahier_des_charges_complet.sql`.
+   3. `mobile/supabase/migrations/20260927000000_cahier_des_charges_complet.sql` ;
+   4. `mobile/supabase/migrations/20260928000000_temoignages_gloire.sql` (compteur « Gloire à Dieu » des témoignages).
 2. **Redéployer la fonction** `send-notification`.
 3. **Pousser le code** sur GitHub : Vercel reconstruit le site en Next.js.
    - Les variables `VITE_*` existantes restent acceptées.
    - Chaque personne devra se reconnecter une fois, car la session est désormais stockée dans des cookies.
-4. **App mobile** : `eas build`. Les notifications Android nécessitent les identifiants FCM dans EAS (`eas credentials`).
+4. **App mobile** : `eas build`. Les onglets suivent les maquettes Archidiocèse : Accueil · TV / Média · Parcours · Prier · Plus. Les notifications Android nécessitent les identifiants FCM dans EAS (`eas credentials`).
 5. **Relire, puis publier** les contenus en brouillon (parcours, chartes, histoire, témoignages d'exemple à remplacer).
 6. **Remplacer** les numéros de dons fictifs.
 

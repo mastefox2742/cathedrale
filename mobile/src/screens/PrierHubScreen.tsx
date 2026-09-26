@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react'
 import { View, Text, StyleSheet, Pressable } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { Screen } from '../components/Screen'
 import { Icon, type IconName } from '../components/Icon'
 import { colors, fonts, radius } from '../theme/colors'
+import { getEvangileDuJour, type EvangileDuJour } from '../services/evangile'
 
 interface Rubrique {
   icon: IconName
@@ -36,6 +38,8 @@ const PRIERES: { icon: IconName; titre: string; sous: string }[] = [
 
 export function PrierHubScreen() {
   const navigation = useNavigation<any>()
+  const [evangile, setEvangile] = useState<EvangileDuJour | null>(null)
+  useEffect(() => { getEvangileDuJour().then(setEvangile).catch(() => {}) }, [])
 
   return (
     <Screen>
@@ -48,9 +52,9 @@ export function PrierHubScreen() {
         <View style={styles.heroCard}>
           <View style={styles.rowBetween}>
             <View style={styles.badgeAccent}><Text style={styles.badgeAccentText}>Parole du jour</Text></View>
-            <Text style={styles.heroMeta}>Matthieu 5, 33-37</Text>
+            <Text style={styles.heroMeta}>{evangile?.reference ?? 'Évangile'}</Text>
           </View>
-          <Text style={styles.heroQuote}>« Que votre parole soit "oui" si c'est "oui", "non" si c'est "non". »</Text>
+          <Text style={styles.heroQuote}>{evangile ? `« ${evangile.accroche} »` : "L'Évangile du jour et les lectures de la messe."}</Text>
           <View style={styles.heroDivider} />
           <Pressable onPress={() => navigation.navigate('Liturgie')}>
             <Text style={styles.heroLink}>Lire la suite</Text>

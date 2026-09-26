@@ -106,7 +106,7 @@ export function IntentionsScreen() {
           <View style={styles.loginPrompt}>
             <Icon name="lock" size={20} color={colors.mutedForeground} />
             <Text style={[styles.mutedSm, { flex: 1 }]}>Connecte-toi pour déposer une intention de prière.</Text>
-            <Pressable onPress={() => navigation.navigate('Profil')} style={styles.loginBtn}>
+            <Pressable onPress={() => navigation.navigate('Plus', { screen: 'Connexion' })} style={styles.loginBtn}>
               <Text style={styles.loginBtnText}>Se connecter</Text>
             </Pressable>
           </View>

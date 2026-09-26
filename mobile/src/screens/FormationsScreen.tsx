@@ -42,7 +42,7 @@ export function FormationsScreen() {
     if (!userId) {
       Alert.alert('Connexion requise', 'Connecte-toi pour suivre ta progression sur ce parcours.', [
         { text: 'Annuler', style: 'cancel' },
-        { text: 'Se connecter', onPress: () => navigation.navigate('Profil') },
+        { text: 'Se connecter', onPress: () => navigation.navigate('Plus', { screen: 'Connexion' }) },
       ])
       return
     }
@@ -68,7 +68,7 @@ export function FormationsScreen() {
           </View>
           <View style={styles.iconTile}><Icon name="graduation-cap" size={20} color={colors.primary} /></View>
         </View>
-        <Pressable onPress={() => navigation.navigate('Accueil', { screen: 'Jeunesse' })} style={styles.jeunesseLink}>
+        <Pressable onPress={() => navigation.navigate('Plus', { screen: 'Jeunesse' })} style={styles.jeunesseLink}>
           <Icon name="users-three" size={14} color={colors.accent} />
           <Text style={styles.jeunesseLinkText}>Découvrir l'Espace Jeunesse</Text>
           <Icon name="caret-right" size={13} color={colors.accent} />

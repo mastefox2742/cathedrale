@@ -79,7 +79,7 @@ export function JeunesseScreen() {
           </View>
         )}
 
-        <Pressable onPress={() => navigation.navigate('Participer')} style={styles.ctaCard}>
+        <Pressable onPress={() => navigation.navigate('Plus', { screen: 'Evenements' })} style={styles.ctaCard}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.cardTitre, { color: colors.primaryForeground }]}>Retraites, veillées, événements</Text>
             <Text style={[styles.mutedSm, { color: 'rgba(255,255,255,0.75)', marginTop: 2 }]}>Voir tous les événements de la paroisse</Text>

@@ -178,5 +178,24 @@ select public.supprimer_mon_compte();
 reset role;
 select pg_temp.verifier(not exists (select 1 from public.profiles where id = '10000000-0000-0000-0000-000000000008'), 'Fidèle : supprime son compte (profil effacé)');
 
+-- ── Témoignages : « Gloire à Dieu » ─────────────────────────────────────────
+insert into public.temoignages (id, auteur_nom, contenu, statut) values
+  ('70000000-0000-0000-0000-000000000001', 'Test', 'Témoignage approuvé', 'approuve'),
+  ('70000000-0000-0000-0000-000000000002', 'Test', 'Témoignage en attente', 'en_attente');
+set local role anon;
+select pg_temp.verifier(public.rendre_gloire('70000000-0000-0000-0000-000000000001') = 1, 'Visiteur : rend gloire pour un témoignage publié');
+select pg_temp.verifier(public.rendre_gloire('70000000-0000-0000-0000-000000000002') is null, 'Visiteur : aucun effet sur un témoignage non publié');
+do $$ begin
+  begin
+    update public.temoignages set nb_gloire = 999 where id = '70000000-0000-0000-0000-000000000001';
+  exception when insufficient_privilege then null;
+  end;
+  if (select nb_gloire from public.temoignages where id = '70000000-0000-0000-0000-000000000001') = 999 then
+    raise exception 'ÉCHEC : un visiteur modifie directement le compteur';
+  end if;
+  raise notice 'OK   Visiteur : ne peut pas modifier le compteur directement';
+end $$;
+reset role;
+
 \echo '── Tous les tests des compléments sont passés ──'
 rollback;

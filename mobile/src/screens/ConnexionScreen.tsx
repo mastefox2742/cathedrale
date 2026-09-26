@@ -159,7 +159,7 @@ function ProfilView({ session }: { session: Session }) {
         )}
 
         {prochaineLecon && (
-          <Pressable onPress={() => navigation.navigate('Se former')} style={styles.prochaineLeconCard}>
+          <Pressable onPress={() => navigation.navigate('Plus', { screen: 'Formations' })} style={styles.prochaineLeconCard}>
             <Text style={{ fontSize: 24 }}>{prochaineLecon.module.emoji}</Text>
             <View style={{ flex: 1 }}>
               <Text style={styles.prochaineLeconLabel}>Prochaine leçon · {prochaineLecon.cours.titre}</Text>
@@ -176,7 +176,7 @@ function ProfilView({ session }: { session: Session }) {
             <Text style={styles.quickRowText}>Horaires des messes</Text>
             <Icon name="caret-right" size={16} color={colors.mutedForeground} />
           </Pressable>
-          <Pressable onPress={() => navigation.navigate('Se former')} style={styles.quickRow}>
+          <Pressable onPress={() => navigation.navigate('Plus', { screen: 'Formations' })} style={styles.quickRow}>
             <Icon name="book-open" size={18} color={colors.primary} />
             <Text style={styles.quickRowText}>Mes formations</Text>
             <Icon name="caret-right" size={16} color={colors.mutedForeground} />

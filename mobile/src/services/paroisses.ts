@@ -63,3 +63,17 @@ export async function getParoisses(): Promise<Paroisse[]> {
     latitude: r.latitude, longitude: r.longitude, horaires: r.horaires ?? {},
   }))
 }
+
+/** Paroisse la plus proche d'une position (distance à vol d'oiseau, en km). */
+export function laPlusProche(paroisses: Paroisse[], lat: number, lon: number): { paroisse: Paroisse; km: number } | null {
+  let best: { paroisse: Paroisse; km: number } | null = null
+  for (const p of paroisses) {
+    if (p.latitude == null || p.longitude == null) continue
+    const dLat = (p.latitude - lat) * Math.PI / 180
+    const dLon = (p.longitude - lon) * Math.PI / 180
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat * Math.PI / 180) * Math.cos(p.latitude * Math.PI / 180) * Math.sin(dLon / 2) ** 2
+    const km = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    if (!best || km < best.km) best = { paroisse: p, km }
+  }
+  return best
+}
