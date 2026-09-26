@@ -26,7 +26,13 @@
     },
     "plugins": [
       "expo-font",
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-notifications",
+        {
+          "color": "#123B5D"
+        }
+      ]
     ],
     "extra": {
       "eas": {

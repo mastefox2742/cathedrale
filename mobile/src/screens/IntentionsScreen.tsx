@@ -8,7 +8,7 @@ import { Icon } from '../components/Icon'
 import { SkeletonList } from '../components/Skeleton'
 import { colors, fonts, radius } from '../theme/colors'
 import { supabase } from '../services/supabase'
-import { getIntentionsPubliques, deposerIntention, type PrayerIntention } from '../services/prieres'
+import { getIntentionsPubliques, deposerIntention, prierPour, type PrayerIntention } from '../services/prieres'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
@@ -22,6 +22,15 @@ export function IntentionsScreen() {
   const [estAnonyme, setEstAnonyme] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [intentions, setIntentions] = useState<PrayerIntention[]>([])
+  const [dejaPrie, setDejaPrie] = useState<Set<string>>(new Set())
+
+  async function prier(it: PrayerIntention) {
+    setDejaPrie(s => new Set(s).add(it.id))
+    try {
+      const n = await prierPour(it.id)
+      setIntentions(l => l.map(x => x.id === it.id ? { ...x, nb_prieres: n } : x))
+    } catch { /* compteur indicatif */ }
+  }
   const [loading, setLoading] = useState(true)
 
   const loadIntentions = useCallback(() => {
@@ -113,7 +122,16 @@ export function IntentionsScreen() {
             {intentions.map((it) => (
               <View key={it.id} style={styles.intentionCard}>
                 <Text style={styles.intentionText}>{it.contenu}</Text>
-                <Text style={styles.intentionDate}>{formatDate(it.created_at)}</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+                  <Text style={styles.intentionDate}>{formatDate(it.created_at)}</Text>
+                  <Pressable onPress={() => prier(it)} disabled={dejaPrie.has(it.id)}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.full, backgroundColor: dejaPrie.has(it.id) ? colors.primary : colors.secondary }}>
+                    <Icon name="hands-praying" size={13} color={dejaPrie.has(it.id) ? colors.primaryForeground : colors.primary} />
+                    <Text style={{ fontFamily: fonts.sansBold, fontSize: 11, color: dejaPrie.has(it.id) ? colors.primaryForeground : colors.primary }}>
+                      {dejaPrie.has(it.id) ? 'Je prie' : 'Je prie pour'}{it.nb_prieres ? ` · ${it.nb_prieres}` : ''}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
             ))}
           </View>

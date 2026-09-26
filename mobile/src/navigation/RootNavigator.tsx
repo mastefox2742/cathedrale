@@ -26,6 +26,8 @@ import { TvScreen } from '../screens/TvScreen'
 import { ParcoursListeScreen } from '../screens/ParcoursListeScreen'
 import { ParcoursScreen } from '../screens/ParcoursScreen'
 import { ParoissesScreen } from '../screens/ParoissesScreen'
+import { EspaceStaffScreen } from '../screens/EspaceStaffScreen'
+import { ChapeletScreen } from '../screens/ChapeletScreen'
 
 const Tab = createBottomTabNavigator()
 const AccueilStack = createNativeStackNavigator()
@@ -62,6 +64,7 @@ function PrierNavigator() {
       <PrierStack.Screen name="Intentions" component={IntentionsScreen} />
       <PrierStack.Screen name="Demarches" component={DemarchesScreen} />
       <PrierStack.Screen name="ParcoursListe" component={ParcoursListeScreen} />
+      <PrierStack.Screen name="Chapelet" component={ChapeletScreen} />
       <PrierStack.Screen name="Parcours" component={ParcoursScreen} />
     </PrierStack.Navigator>
   )
@@ -90,6 +93,7 @@ function ProfilNavigator() {
   return (
     <ProfilStack.Navigator screenOptions={screenOptions}>
       <ProfilStack.Screen name="Connexion" component={ConnexionScreen} />
+      <ProfilStack.Screen name="EspaceStaff" component={EspaceStaffScreen} />
     </ProfilStack.Navigator>
   )
 }

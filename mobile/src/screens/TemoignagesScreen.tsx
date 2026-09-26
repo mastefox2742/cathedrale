@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, TextInput, Pressable, Switch, ActivityIndicator } from 'react-native'
+import { View, Text, StyleSheet, TextInput, Pressable, Switch, ActivityIndicator, ScrollView } from 'react-native'
 import { Screen } from '../components/Screen'
-import { BackHeader } from '../components/ui'
 import { Icon } from '../components/Icon'
 import { SkeletonList } from '../components/Skeleton'
 import { colors, fonts, radius } from '../theme/colors'
-import { getTemoignagesApprouves, deposerTemoignage, type Temoignage } from '../services/temoignages'
+import { getTemoignagesApprouves, deposerTemoignage, getCategories, type Temoignage, type Categorie } from '../services/temoignages'
+import { BackHeader, Chip } from '../components/ui'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
@@ -19,21 +19,30 @@ export function TemoignagesScreen() {
   const [notice, setNotice] = useState<string | null>(null)
   const [temoignages, setTemoignages] = useState<Temoignage[]>([])
   const [loading, setLoading] = useState(true)
+  const [categories, setCategories] = useState<Categorie[]>([])
+  const [categorieId, setCategorieId] = useState<string | null>(null)
+  const [filtre, setFiltre] = useState<string | null>(null)
 
   function load() {
     setLoading(true)
     getTemoignagesApprouves().then(setTemoignages).catch(() => setTemoignages([])).finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    getCategories().then(setCategories).catch(() => setCategories([]))
+  }, [])
+
+  const parId = new Map(categories.map(c => [c.id, c]))
+  const visibles = filtre ? temoignages.filter(t => t.category_id === filtre) : temoignages
 
   async function submit() {
     if (contenu.trim().length < 10) { setNotice('Écris au moins quelques mots (10 caractères minimum).'); return }
     setSubmitting(true)
     setNotice(null)
     try {
-      await deposerTemoignage(contenu.trim(), anonyme ? undefined : (nom.trim() || undefined))
-      setContenu(''); setNom(''); setAnonyme(false)
+      await deposerTemoignage(contenu.trim(), anonyme ? undefined : (nom.trim() || undefined), categorieId ?? undefined)
+      setContenu(''); setNom(''); setAnonyme(false); setCategorieId(null)
       setNotice("Merci ! Ton témoignage sera publié après vérification par l'équipe pastorale.")
     } catch {
       setNotice('Une erreur est survenue.')
@@ -51,6 +60,13 @@ export function TemoignagesScreen() {
           <Text style={[styles.mutedSm, { marginBottom: 12, lineHeight: 17 }]}>
             Une grâce reçue, une prière exaucée… Partage ce que Dieu a fait dans ta vie. Ton témoignage sera relu avant publication.
           </Text>
+          {categories.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, marginBottom: 10 }}>
+              {categories.map(c => (
+                <Chip key={c.id} label={`${c.emoji} ${c.libelle}`} active={categorieId === c.id} onPress={() => setCategorieId(categorieId === c.id ? null : c.id)} />
+              ))}
+            </ScrollView>
+          )}
           <TextInput
             value={contenu} onChangeText={setContenu} placeholder="Écris ton témoignage..."
             placeholderTextColor={colors.mutedForeground} multiline numberOfLines={4} maxLength={2000}
@@ -80,14 +96,25 @@ export function TemoignagesScreen() {
         </View>
 
         <Text style={[styles.h3, { marginTop: 26, marginBottom: 12 }]}>Témoignages publiés</Text>
+        {categories.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, marginBottom: 12 }}>
+            <Chip label="Tous" active={filtre === null} onPress={() => setFiltre(null)} />
+            {categories.map(c => <Chip key={c.id} label={`${c.emoji} ${c.libelle}`} active={filtre === c.id} onPress={() => setFiltre(c.id)} />)}
+          </ScrollView>
+        )}
         {loading ? (
           <SkeletonList count={3} />
-        ) : temoignages.length === 0 ? (
+        ) : visibles.length === 0 ? (
           <Text style={[styles.mutedSm, { textAlign: 'center', paddingVertical: 20 }]}>Aucun témoignage publié pour le moment.</Text>
         ) : (
           <View style={{ gap: 10, paddingBottom: 30 }}>
-            {temoignages.map((t) => (
-              <View key={t.id} style={styles.card}>
+            {visibles.map((t) => (
+              <View key={t.id} style={[styles.card, t.mis_en_avant && { borderColor: colors.accent }]}>
+                {(t.mis_en_avant || (t.category_id && parId.get(t.category_id))) && (
+                  <Text style={[styles.auteurText, { marginBottom: 6, color: colors.accent }]}>
+                    {t.mis_en_avant ? '★ À la une ' : ''}{t.category_id && parId.get(t.category_id) ? `${parId.get(t.category_id)!.emoji} ${parId.get(t.category_id)!.libelle}` : ''}
+                  </Text>
+                )}
                 <Text style={styles.contenuText}>{t.contenu}</Text>
                 <Text style={styles.auteurText}>— {t.auteur_nom || 'Anonyme'} · {formatDate(t.created_at)}</Text>
               </View>

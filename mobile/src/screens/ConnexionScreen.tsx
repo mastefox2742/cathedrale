@@ -6,6 +6,7 @@ import { Screen } from '../components/Screen'
 import { Icon } from '../components/Icon'
 import { colors, fonts, radius } from '../theme/colors'
 import { supabase } from '../services/supabase'
+import { getMesRoles } from '../services/staff'
 import { getMesFormations, type FormationProgress } from '../services/formations'
 import { getCours, getModules, type Cours, type Module } from '../services/catechisme'
 import { getModulesTermines } from '../services/moduleProgress'
@@ -44,6 +45,8 @@ export function ConnexionScreen() {
 
 function ProfilView({ session }: { session: Session }) {
   const navigation = useNavigation<any>()
+  const [estStaff, setEstStaff] = useState(false)
+  useEffect(() => { getMesRoles(session.user.id).then(r => setEstStaff(r.estStaff)).catch(() => {}) }, [session.user.id])
   const [signingOut, setSigningOut] = useState(false)
   const [mesFormations, setMesFormations] = useState<FormationProgress[]>([])
   const [coursMap, setCoursMap] = useState<Record<string, Cours>>({})
@@ -178,6 +181,13 @@ function ProfilView({ session }: { session: Session }) {
             <Text style={styles.quickRowText}>Mes formations</Text>
             <Icon name="caret-right" size={16} color={colors.mutedForeground} />
           </Pressable>
+          {estStaff && (
+            <Pressable onPress={() => navigation.navigate('EspaceStaff')} style={styles.quickRow}>
+              <Icon name="shield-check" size={18} color={colors.primary} />
+              <Text style={styles.quickRowText}>Espace staff</Text>
+              <Icon name="caret-right" size={16} color={colors.mutedForeground} />
+            </Pressable>
+          )}
         </View>
 
         <Pressable onPress={handleSignOut} disabled={signingOut} style={[styles.signOutBtn, signingOut && { opacity: 0.7 }]}>

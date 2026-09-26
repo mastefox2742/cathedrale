@@ -8,6 +8,9 @@
 //   role       — rôle paroissial : appareils des comptes ayant ce rôle (dans la paroisse si parish_id)
 //   groupe_id  — groupe : appareils des comptes dont l'adhésion au groupe est acceptée
 //
+// Les jetons « expo » (application mobile) passent par le service de notifications d'Expo ;
+// les autres (navigateurs) par Firebase Cloud Messaging.
+//
 // Secret requis (à définir soi-même, jamais dans ce fichier ni dans le repo) :
 //   FCM_SERVICE_ACCOUNT — le JSON complet d'un compte de service Firebase
 //   (Firebase Console → Paramètres du projet → Comptes de service → Générer
@@ -113,7 +116,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const admin = createClient(supabaseUrl, serviceRoleKey)
-  let query = admin.from('notification_tokens').select('token, prefs, user_id, parish_id')
+  let query = admin.from('notification_tokens').select('token, prefs, user_id, parish_id, platform')
   if (parishId) query = query.eq('parish_id', parishId)
   const { data: tokenRows, error: tokensErr } = await query
   if (tokensErr) {
@@ -139,31 +142,55 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ sent: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } })
   }
 
-  const serviceAccountRaw = Deno.env.get('FCM_SERVICE_ACCOUNT')
-  if (!serviceAccountRaw) {
-    return new Response(JSON.stringify({ error: 'FCM_SERVICE_ACCOUNT non configuré côté Edge Function' }), { status: 500 })
-  }
-  const serviceAccount: ServiceAccount = JSON.parse(serviceAccountRaw)
-  const accessToken = await getAccessToken(serviceAccount)
+  // Navigateurs (FCM) et téléphones de l'application mobile (service Expo).
+  const cibleWeb = targets.filter(r => r.platform !== 'expo')
+  const cibleExpo = targets.filter(r => r.platform === 'expo')
+  const results: { ok: boolean; token: string; invalid?: boolean }[] = []
 
-  const results = await Promise.all(targets.map(async (row) => {
-    const res = await fetch(`https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`, {
+  if (cibleWeb.length > 0) {
+    const serviceAccountRaw = Deno.env.get('FCM_SERVICE_ACCOUNT')
+    if (!serviceAccountRaw && cibleExpo.length === 0) {
+      return new Response(JSON.stringify({ error: 'FCM_SERVICE_ACCOUNT non configuré côté Edge Function' }), { status: 500 })
+    }
+    if (serviceAccountRaw) {
+      const serviceAccount: ServiceAccount = JSON.parse(serviceAccountRaw)
+      const accessToken = await getAccessToken(serviceAccount)
+      results.push(...await Promise.all(cibleWeb.map(async (row) => {
+        const res = await fetch(`https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: {
+              token: row.token,
+              notification: { title: titre, body: corps },
+              webpush: { fcm_options: { link: url || '/' } },
+            },
+          }),
+        })
+        if (res.ok) return { ok: true, token: row.token }
+        const errBody = await res.json().catch(() => null)
+        const errorCode = errBody?.error?.details?.find((d: { errorCode?: string }) => d.errorCode)?.errorCode
+        const invalid = res.status === 404 || errorCode === 'UNREGISTERED' || errorCode === 'INVALID_ARGUMENT'
+        return { ok: false, token: row.token, invalid }
+      })))
+    }
+  }
+
+  // Service Expo : 100 messages maximum par requête.
+  for (let i = 0; i < cibleExpo.length; i += 100) {
+    const lot = cibleExpo.slice(i, i + 100)
+    const res = await fetch('https://exp.host/--/api/v2/push/send', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: {
-          token: row.token,
-          notification: { title: titre, body: corps },
-          webpush: { fcm_options: { link: url || '/' } },
-        },
-      }),
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(lot.map(row => ({ to: row.token, title: titre, body: corps, sound: 'default', data: { url: url || '/' } }))),
     })
-    if (res.ok) return { ok: true, token: row.token }
-    const errBody = await res.json().catch(() => null)
-    const errorCode = errBody?.error?.details?.find((d: { errorCode?: string }) => d.errorCode)?.errorCode
-    const invalid = res.status === 404 || errorCode === 'UNREGISTERED' || errorCode === 'INVALID_ARGUMENT'
-    return { ok: false, token: row.token, invalid }
-  }))
+    const body = await res.json().catch(() => null)
+    const tickets: { status: string; details?: { error?: string } }[] = body?.data ?? []
+    lot.forEach((row, j) => {
+      const t = tickets[j]
+      results.push({ ok: t?.status === 'ok', token: row.token, invalid: t?.details?.error === 'DeviceNotRegistered' })
+    })
+  }
 
   const sent = results.filter(r => r.ok).length
   const invalidTokens = results.filter(r => !r.ok && r.invalid).map(r => r.token)
