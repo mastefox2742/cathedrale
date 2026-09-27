@@ -24,25 +24,33 @@ const RESSOURCES = {
 
 type Ressource = keyof typeof RESSOURCES
 
-const ENTETES = {
-  'Content-Type': 'application/json; charset=utf-8',
-  'Access-Control-Allow-Origin': '*',
-  'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-}
+/**
+ * CORS : seuls les sites listés dans API_CORS_ORIGINS (séparés par des virgules)
+ * peuvent lire l'API depuis un navigateur. Les appels serveur à serveur ne
+ * sont pas concernés par CORS.
+ */
+const ORIGINES = (process.env.API_CORS_ORIGINS ?? '').split(',').map(o => o.trim()).filter(Boolean)
 
-function reponse(corps: unknown, status = 200) {
-  return new Response(JSON.stringify(corps), { status, headers: ENTETES })
+function reponse(corps: unknown, status = 200, origine: string | null = null) {
+  const entetes: Record<string, string> = {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+    Vary: 'Origin',
+  }
+  if (origine && ORIGINES.includes(origine)) entetes['Access-Control-Allow-Origin'] = origine
+  return new Response(JSON.stringify(corps), { status, headers: entetes })
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ ressource: string }> }) {
   const { ressource } = await params
+  const origine = request.headers.get('Origin')
   if (!(ressource in RESSOURCES)) {
-    return reponse({ erreur: 'Ressource inconnue', ressources: Object.keys(RESSOURCES) }, 404)
+    return reponse({ erreur: 'Ressource inconnue', ressources: Object.keys(RESSOURCES) }, 404, origine)
   }
   const def = RESSOURCES[ressource as Ressource]
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  if (!url || !key) return reponse({ erreur: 'Service indisponible' }, 503)
+  if (!url || !key) return reponse({ erreur: 'Service indisponible' }, 503, origine)
   const supabase = createClient(url, key, { auth: { persistSession: false } })
 
   const { searchParams } = new URL(request.url)
@@ -55,19 +63,19 @@ export async function GET(request: Request, { params }: { params: Promise<{ ress
   // Filtre paroisse : contenus de la paroisse + contenus de l'archidiocèse.
   const slug = searchParams.get('paroisse')
   if (def.parParoisse && slug) {
-    if (!/^[a-z0-9-]+$/.test(slug)) return reponse({ erreur: 'paroisse invalide' }, 400)
+    if (!/^[a-z0-9-]+$/.test(slug)) return reponse({ erreur: 'paroisse invalide' }, 400, origine)
     const { data: p } = await supabase.from('parishes').select('id').eq('slug', slug).maybeSingle()
-    if (!p) return reponse({ erreur: 'Paroisse introuvable' }, 404)
+    if (!p) return reponse({ erreur: 'Paroisse introuvable' }, 404, origine)
     query = query.or(`parish_id.is.null,parish_id.eq.${p.id}`)
   }
   const type = searchParams.get('type')
   if (ressource === 'parcours' && type) {
-    if (!['decouvrir', 'conversion', 'approfondir', 'neuvaine', 'retraite'].includes(type)) return reponse({ erreur: 'type invalide' }, 400)
+    if (!['decouvrir', 'conversion', 'approfondir', 'neuvaine', 'retraite'].includes(type)) return reponse({ erreur: 'type invalide' }, 400, origine)
     query = query.eq('type', type)
   }
   if (ressource === 'directs') query = query.neq('statut', 'termine')
 
   const { data, error } = await query.order(def.ordre, { ascending: ['nom', 'ordre', 'debut'].includes(def.ordre) }).limit(limite)
-  if (error) return reponse({ erreur: 'Lecture impossible' }, 502)
-  return reponse({ donnees: data ?? [], nombre: data?.length ?? 0 })
+  if (error) return reponse({ erreur: 'Lecture impossible' }, 502, origine)
+  return reponse({ donnees: data ?? [], nombre: data?.length ?? 0 }, 200, origine)
 }

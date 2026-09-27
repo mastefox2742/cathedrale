@@ -24,6 +24,25 @@ const PREFS = { liturgie: true, annonces: true, formations: true, meditation: fa
 
 let jeton: string | null = null
 
+/**
+ * Au démarrage : réactive les notifications SI la personne les a déjà
+ * autorisées. Ne demande jamais l'autorisation (elle est demandée seulement
+ * quand la personne choisit « Recevoir les notifications »).
+ */
+export async function reprendreNotifications(): Promise<void> {
+  if (Platform.OS === 'web') return
+  try {
+    const { status } = await Notifications.getPermissionsAsync()
+    if (status === 'granted') await activerNotifications()
+  } catch { /* facultatif */ }
+}
+
+/** Autorisation déjà accordée ? */
+export async function notificationsAutorisees(): Promise<boolean> {
+  if (Platform.OS === 'web') return false
+  try { return (await Notifications.getPermissionsAsync()).status === 'granted' } catch { return false }
+}
+
 /** Demande l'autorisation, récupère le jeton Expo et l'enregistre (sans bloquer l'app en cas d'échec). */
 export async function activerNotifications(): Promise<string | null> {
   if (Platform.OS === 'web') return null

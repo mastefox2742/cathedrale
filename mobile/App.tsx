@@ -7,8 +7,9 @@ import { useFonts as useInter, Inter_400Regular, Inter_500Medium, Inter_600SemiB
 import { RootNavigator } from './src/navigation/RootNavigator'
 import { colors } from './src/theme/colors'
 import { chargerParoisseCourante, surChangementParoisse } from './src/services/paroisses'
-import { activerNotifications, enregistrerJeton } from './src/services/notifications'
+import { reprendreNotifications, enregistrerJeton } from './src/services/notifications'
 import { supabase } from './src/services/supabase'
+import { VerrouApp } from './src/components/securite/VerrouApp'
 
 export default function App() {
   const [playfairLoaded] = usePlayfair({ PlayfairDisplay_600SemiBold, PlayfairDisplay_700Bold, PlayfairDisplay_800ExtraBold })
@@ -18,7 +19,8 @@ export default function App() {
   useEffect(() => {
     chargerParoisseCourante().finally(() => {
       setParoissePrete(true)
-      activerNotifications()
+      // Pas de demande d'autorisation au lancement : seulement si déjà accordée.
+      reprendreNotifications()
     })
     // Le jeton suit la paroisse choisie et le compte connecté (ciblage des envois).
     const arretParoisse = surChangementParoisse(() => { enregistrerJeton() })
@@ -36,7 +38,9 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <RootNavigator />
+      <VerrouApp>
+        <RootNavigator />
+      </VerrouApp>
       <StatusBar style="dark" />
     </SafeAreaProvider>
   )

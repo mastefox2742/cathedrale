@@ -3,6 +3,8 @@
 import { useState, type FormEvent } from 'react'
 import { useSearchParams } from '../../lib/navigation'
 import { login, resetPassword } from '../../services/auth'
+import { Captcha, CLE_TURNSTILE } from '../../components/securite/Captcha'
+import { messageAuth } from '../../lib/securite/messagesAuth'
 
 export function LoginPage() {
   const [params] = useSearchParams()
@@ -16,31 +18,30 @@ export function LoginPage() {
   const [error, setError] = useState('')
   const [resetSent, setResetSent] = useState(false)
   const [mode, setMode] = useState<'login' | 'reset'>('login')
+  const [captcha, setCaptcha] = useState<string | null>(null)
+  const [cycleCaptcha, setCycleCaptcha] = useState(0)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError('')
+    if (CLE_TURNSTILE && !captcha) { setError('Cochez la case de vérification anti-robot.'); return }
     setLoading(true)
     try {
       if (mode === 'login') {
-        await login(email, password)
+        await login(email, password, captcha ?? undefined)
         // Rechargement complet : le middleware relit les cookies de session.
         window.location.assign(destination)
       } else {
-        await resetPassword(email)
+        await resetPassword(email, captcha ?? undefined)
         setResetSent(true)
       }
     } catch (err: unknown) {
       const msg = (err as Error).message || ''
-      if (msg.toLowerCase().includes('invalid login credentials')) {
-        setError('Email ou mot de passe incorrect.')
-      } else if (msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('too many requests')) {
-        setError('Trop de tentatives. Réessayez dans quelques minutes.')
-      } else {
-        setError(msg || 'Une erreur est survenue.')
-      }
+      // Messages propres à l'administration (compte désactivé, sans accès) conservés ; le reste est générique.
+      setError(/^(Profil introuvable|Compte désactivé|Ce compte n'a pas accès)/.test(msg) ? msg : messageAuth(err))
     } finally {
       setLoading(false)
+      setCycleCaptcha(c => c + 1)
     }
   }
 
@@ -189,6 +190,8 @@ export function LoginPage() {
             )}
 
             {/* Erreur */}
+            <Captcha onJeton={setCaptcha} cycle={cycleCaptcha} />
+
             {error && (
               <div style={{
                 padding: '10px 14px', borderRadius: 8, marginBottom: 16,

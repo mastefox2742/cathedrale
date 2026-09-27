@@ -23,6 +23,15 @@ create or replace function auth.uid() returns uuid language sql stable as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
 $$;
 
+-- auth.jwt() : jeton simulé. Niveau d'assurance lu dans request.jwt.claim.aal
+-- (« aal2 » par défaut : les tests de droits supposent un staff passé par la
+-- double authentification ; les tests MFA posent « aal1 » explicitement).
+create or replace function auth.jwt() returns jsonb language sql stable as $$
+  select jsonb_build_object(
+    'sub', nullif(current_setting('request.jwt.claim.sub', true), ''),
+    'aal', coalesce(nullif(current_setting('request.jwt.claim.aal', true), ''), 'aal2'))
+$$;
+
 create schema if not exists storage;
 create table if not exists storage.buckets (id text primary key, name text, public boolean default false);
 create table if not exists storage.objects (
@@ -36,6 +45,7 @@ alter table storage.objects enable row level security;
 
 grant usage on schema public, auth, storage to anon, authenticated, service_role;
 grant execute on function auth.uid() to anon, authenticated;
+grant execute on function auth.jwt() to anon, authenticated;
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
 alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;

@@ -28,3 +28,12 @@ dist-ssr
 .next
 next-env.d.ts
 *.tsbuildinfo
+
+# Secrets : jamais dans le dépôt (seuls les modèles .env.example sont suivis)
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+service-account*.json

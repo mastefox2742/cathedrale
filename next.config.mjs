@@ -7,30 +7,6 @@
  */
 const pub = (name) => process.env[`NEXT_PUBLIC_${name}`] ?? process.env[`VITE_${name}`] ?? ''
 
-/**
- * Content-Security-Policy, en mode « observation » (Report-Only) : rien n'est
- * bloqué, les écarts sont remontés à /api/csp-report (journaux Vercel). Une
- * fois la liste validée, renommer l'en-tête en Content-Security-Policy.
- */
-const CSP = [
-  "default-src 'self'",
-  // Next.js injecte des scripts en ligne ; Firebase charge son SDK depuis gstatic (service worker).
-  "script-src 'self' 'unsafe-inline' https://www.gstatic.com",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' data: https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://*.supabase.co https://img.youtube.com https://i.ytimg.com https://upload.wikimedia.org",
-  "media-src 'self' blob: https://*.supabase.co",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.googleapis.com https://www.gstatic.com",
-  "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.openstreetmap.org https://maps.google.com https://www.google.com",
-  "worker-src 'self'",
-  "manifest-src 'self'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'self'",
-  'report-uri /api/csp-report',
-].join('; ')
-
 /** Fonctions du navigateur : géolocalisation pour « la paroisse la plus proche », le reste coupé. */
 const PERMISSIONS = 'camera=(), microphone=(), geolocation=(self), payment=(), usb=(), serial=(), bluetooth=(), magnetometer=(), gyroscope=(), accelerometer=(), browsing-topics=()'
 
@@ -64,9 +40,10 @@ const nextConfig = {
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          // La Content-Security-Policy (avec nonce) est posée par src/proxy.ts.
+          { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'Permissions-Policy', value: PERMISSIONS },
-          { key: 'Content-Security-Policy-Report-Only', value: CSP },
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
         ],
       },
       {

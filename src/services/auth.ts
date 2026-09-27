@@ -118,8 +118,8 @@ export interface UserProfile {
   dateVerification?: string | null
 }
 
-export async function login(email: string, password: string): Promise<UserProfile> {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+export async function login(email: string, password: string, captchaToken?: string): Promise<UserProfile> {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } })
   if (error) throw error
 
   const profile = await getUserProfile(data.user.id)
@@ -144,8 +144,8 @@ export async function logout(): Promise<void> {
   await supabase.auth.signOut()
 }
 
-export async function resetPassword(email: string): Promise<void> {
-  const { error } = await supabase.auth.resetPasswordForEmail(email)
+export async function resetPassword(email: string, captchaToken?: string): Promise<void> {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { captchaToken })
   if (error) throw error
 }
 

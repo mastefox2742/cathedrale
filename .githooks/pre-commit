@@ -1,0 +1,3 @@
+#!/bin/sh
+# Bloque le commit si un secret est détecté (scripts/securite/scan-secrets.mjs).
+node scripts/securite/scan-secrets.mjs || exit 1

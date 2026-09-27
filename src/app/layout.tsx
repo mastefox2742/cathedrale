@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
+import { headers } from 'next/headers'
 import { Providers } from './providers'
 import '../index.css'
 
@@ -33,7 +34,10 @@ export const viewport: Viewport = {
   themeColor: '#1565C0',
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // Lire les en-têtes rend chaque page dynamique : Next.js peut alors apposer
+  // le nonce de la Content-Security-Policy (src/proxy.ts) sur ses scripts.
+  await headers()
   return (
     <html lang="fr">
       <head>

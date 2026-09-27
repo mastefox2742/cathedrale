@@ -10,6 +10,9 @@ import { getCours, getModules, type Cours, type Module } from '../services/catec
 import { getModulesTermines } from '../services/moduleProgress'
 import { useParoisse } from '../contexts/ParoisseContext'
 import { ProfilSections } from '../components/ProfilSections'
+import { DoubleAuthentification } from '../components/securite/DoubleAuthentification'
+import { Captcha, CLE_TURNSTILE } from '../components/securite/Captcha'
+import { messageAuth, MESSAGE_GENERIQUE } from '../lib/securite/messagesAuth'
 
 type Mode = 'login' | 'register'
 
@@ -30,6 +33,15 @@ export function ConnexionPage({ modeInitial = 'login' }: { modeInitial?: Mode })
   const [session, setSession] = useState<Session | null | undefined>(undefined)
   // Arrivée par le lien « mot de passe oublié » : on demande d'abord un nouveau mot de passe.
   const [recuperation, setRecuperation] = useState(false)
+  // Compte protégé par la double authentification : code demandé après le mot de passe.
+  const [codeRequis, setCodeRequis] = useState(false)
+
+  useEffect(() => {
+    if (!session) { setCodeRequis(false); return }
+    supabase.auth.mfa.getAuthenticatorAssuranceLevel().then(({ data }) => {
+      setCodeRequis(data?.nextLevel === 'aal2' && data.currentLevel !== 'aal2')
+    })
+  }, [session])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
@@ -45,7 +57,21 @@ export function ConnexionPage({ modeInitial = 'login' }: { modeInitial?: Mode })
   }
 
   if (session && recuperation) return <NouveauMotDePasse onFini={() => setRecuperation(false)} />
+  if (session && codeRequis) return <CodeConnexion onFini={() => setCodeRequis(false)} />
   return session ? <ProfilView session={session} /> : <ConnexionForm modeInitial={modeInitial} />
+}
+
+function CodeConnexion({ onFini }: { onFini: () => void }) {
+  async function annuler() { await supabase.auth.signOut() }
+  return (
+    <div style={{ padding: '120px var(--pad-x) var(--space-xl)' }}>
+      <div style={{ maxWidth: 440, margin: '0 auto', background: 'var(--surface)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-lg)', padding: 36 }}>
+        <h1 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 24, color: 'var(--primary)', marginBottom: 16 }}>Code de sécurité</h1>
+        <DoubleAuthentification onSucces={onFini} texteBouton="Se connecter" />
+        <button type="button" onClick={annuler} style={{ marginTop: 14, background: 'none', border: 'none', color: 'var(--text-light)', fontSize: 12, textDecoration: 'underline', cursor: 'pointer' }}>Annuler</button>
+      </div>
+    </div>
+  )
 }
 
 function NouveauMotDePasse({ onFini }: { onFini: () => void }) {
@@ -292,13 +318,21 @@ function ConnexionForm({ modeInitial }: { modeInitial: Mode }) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [captcha, setCaptcha] = useState<string | null>(null)
+  const [cycleCaptcha, setCycleCaptcha] = useState(0)
+  const [consentement, setConsentement] = useState(false)
+  const captchaManquant = !!CLE_TURNSTILE && !captcha
+  const nouveauCaptcha = () => setCycleCaptcha(c => c + 1)
 
   async function motDePasseOublie() {
     setError(null)
     if (!EMAIL_RE.test(identifier)) { setError("Saisissez d'abord votre adresse email ci-dessus."); return }
-    const { error: err } = await supabase.auth.resetPasswordForEmail(identifier, { redirectTo: `${window.location.origin}/connexion` })
-    if (err) setError(err.message)
-    else setNotice('Un email de réinitialisation vient de vous être envoyé.')
+    if (captchaManquant) { setError("Cochez d'abord la case de vérification anti-robot."); return }
+    const { error: err } = await supabase.auth.resetPasswordForEmail(identifier, { redirectTo: `${window.location.origin}/connexion`, captchaToken: captcha ?? undefined })
+    nouveauCaptcha()
+    // Même message que l'adresse ait un compte ou non (pas d'énumération des comptes).
+    if (err && messageAuth(err) !== MESSAGE_GENERIQUE) setError(messageAuth(err))
+    else setNotice("Si un compte existe pour cette adresse, un email de réinitialisation vient d'être envoyé.")
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -311,16 +345,19 @@ function ConnexionForm({ modeInitial }: { modeInitial: Mode }) {
       return
     }
 
+    if (captchaManquant) { setError('Cochez la case de vérification anti-robot.'); return }
+    if (mode === 'register' && !consentement) { setError("Merci d'accepter la politique de confidentialité pour créer un compte."); return }
+
     setSubmitting(true)
     try {
       if (mode === 'login') {
-        const { error: authError } = await supabase.auth.signInWithPassword({ email: identifier, password })
+        const { error: authError } = await supabase.auth.signInWithPassword({ email: identifier, password, options: { captchaToken: captcha ?? undefined } })
         if (authError) throw authError
       } else {
         // Le profil et l'appartenance à la paroisse sont créés côté base (trigger handle_new_user).
         const { data, error: authError } = await supabase.auth.signUp({
           email: identifier, password,
-          options: { data: { nom: nom.trim(), parish_id: paroisseId || courante?.id || null } },
+          options: { captchaToken: captcha ?? undefined, data: { nom: nom.trim(), parish_id: paroisseId || courante?.id || null } },
         })
         if (authError) throw authError
         if (!data.session) {
@@ -329,9 +366,10 @@ function ConnexionForm({ modeInitial }: { modeInitial: Mode }) {
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue.')
+      setError(messageAuth(err))
     } finally {
       setSubmitting(false)
+      nouveauCaptcha()
     }
   }
 
@@ -459,6 +497,14 @@ function ConnexionForm({ modeInitial }: { modeInitial: Mode }) {
                 </button>
               </div>
             </div>
+
+            {mode === 'register' && (
+              <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.5, cursor: 'pointer' }}>
+                <input type="checkbox" checked={consentement} onChange={e => setConsentement(e.target.checked)} style={{ marginTop: 3 }} />
+                <span>J'accepte la <a href="/confidentialite" target="_blank" rel="noopener" style={{ color: 'var(--blue)' }}>politique de confidentialité</a> : mes données servent uniquement à la vie de ma paroisse.</span>
+              </label>
+            )}
+            <Captcha onJeton={setCaptcha} cycle={cycleCaptcha} />
 
             {error && (
               <p style={{ fontSize: 12, color: '#C0392B', background: 'rgba(220,53,69,.08)', borderRadius: 'var(--r-sm)', padding: '10px 12px' }}>{error}</p>

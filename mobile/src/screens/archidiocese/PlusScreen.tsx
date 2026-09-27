@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native'
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert, Platform } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Icon } from '../../components/Icon'
 import { DesignIcon } from '../../components/DesignIcon'
 import { d, r, f, ombre } from '../../theme/design'
+import { activerNotifications, notificationsAutorisees } from '../../services/notifications'
 
 /**
  * Onglet « Plus » : regroupe les rubriques existantes de l'application
@@ -12,6 +13,23 @@ import { d, r, f, ombre } from '../../theme/design'
  */
 
 interface Lien { icon: string; titre: string; sous: string; aller: (nav: any) => void }
+
+/** L'autorisation n'est demandée qu'ici, à la demande de la personne, avec une explication. */
+async function proposerNotifications() {
+  if (Platform.OS === 'web') { Alert.alert('Notifications', "Disponibles dans l'application installée sur le téléphone."); return }
+  if (await notificationsAutorisees()) { Alert.alert('Notifications', 'Les notifications sont déjà activées. Vous pouvez les couper dans les réglages du téléphone.'); return }
+  Alert.alert(
+    'Recevoir les notifications ?',
+    "Liturgie du jour, annonces de votre paroisse et directs de la chaîne. Rien d'autre, et vous pouvez les couper à tout moment.",
+    [
+      { text: 'Plus tard', style: 'cancel' },
+      { text: 'Activer', onPress: async () => {
+        const jeton = await activerNotifications()
+        Alert.alert('Notifications', jeton ? 'Notifications activées.' : "Autorisation refusée : vous pourrez l'accorder dans les réglages du téléphone.")
+      } },
+    ],
+  )
+}
 
 const SECTIONS: { titre: string; liens: Lien[] }[] = [
   {
@@ -50,6 +68,7 @@ const SECTIONS: { titre: string; liens: Lien[] }[] = [
     titre: 'Mon compte',
     liens: [
       { icon: 'user-circle', titre: 'Mon espace', sous: 'Connexion, progression, espace staff', aller: n => n.navigate('Connexion') },
+      { icon: 'bell', titre: 'Recevoir les notifications', sous: 'Liturgie, annonces, directs — sur demande uniquement', aller: () => { proposerNotifications() } },
     ],
   },
 ]

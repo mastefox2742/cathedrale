@@ -15,6 +15,7 @@ const LINKS = [
   { to: '/chartes/media', label: 'Charte média' },
   { to: '/chartes/protection-mineurs', label: 'Protection des mineurs' },
   { to: '/signaler', label: 'Signaler une préoccupation' },
+  { to: '/confidentialite', label: 'Confidentialité' },
 ]
 
 export function Footer2() {

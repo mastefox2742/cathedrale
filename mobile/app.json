@@ -38,6 +38,13 @@
         {
           "locationWhenInUsePermission": "Votre position sert uniquement à trouver la paroisse la plus proche de vous."
         }
+      ],
+      "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Face ID sert uniquement à déverrouiller l'application après une période d'inactivité."
+        }
       ]
     ],
     "extra": {

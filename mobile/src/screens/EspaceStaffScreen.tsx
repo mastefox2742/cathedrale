@@ -8,6 +8,7 @@ import { SkeletonList } from '../components/Skeleton'
 import { colors, fonts, radius } from '../theme/colors'
 import { supabase } from '../services/supabase'
 import { getMesRoles, getAlertes, marquerLue, ROLE_LABELS, type MesRoles, type Alerte } from '../services/staff'
+import { CodeMfa } from '../components/securite/CodeMfa'
 
 /**
  * Espace staff : rôles de la personne et alertes à traiter (démarches,
@@ -20,17 +21,23 @@ export function EspaceStaffScreen() {
   const [roles, setRoles] = useState<MesRoles | null>(null)
   const [alertes, setAlertes] = useState<Alerte[]>([])
   const [loading, setLoading] = useState(true)
+  // Les droits de staff n'existent qu'après la double authentification (niveau aal2).
+  const [mfaOk, setMfaOk] = useState(false)
 
-  useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
-      setSession(data.session)
-      if (!data.session) { setLoading(false); return }
-      const r = await getMesRoles(data.session.user.id).catch(() => null)
-      setRoles(r)
-      if (r?.estStaff) setAlertes(await getAlertes(data.session.user.id).catch(() => []))
-      setLoading(false)
-    })
-  }, [])
+  async function charger() {
+    const { data } = await supabase.auth.getSession()
+    setSession(data.session)
+    if (!data.session) { setLoading(false); return }
+    const r = await getMesRoles(data.session.user.id).catch(() => null)
+    setRoles(r)
+    const { data: niveau } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    const ok = niveau?.currentLevel === 'aal2'
+    setMfaOk(ok)
+    if (r?.estStaff && ok) setAlertes(await getAlertes(data.session.user.id).catch(() => []))
+    setLoading(false)
+  }
+
+  useEffect(() => { charger() }, [])
 
   function ouvrir(a: Alerte) {
     if (session) marquerLue(session.user.id, a.id).catch(() => {})
@@ -39,6 +46,15 @@ export function EspaceStaffScreen() {
   }
 
   const nonLues = alertes.filter(a => !a.lue).length
+
+  if (!loading && roles?.estStaff && !mfaOk) {
+    return (
+      <Screen>
+        <BackHeader title="Espace staff" subtitle="Double authentification" />
+        <CodeMfa obligatoire onSucces={() => { setLoading(true); charger() }} />
+      </Screen>
+    )
+  }
 
   return (
     <Screen>

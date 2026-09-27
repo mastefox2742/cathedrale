@@ -13,6 +13,7 @@ import { getMesDons, formatXAF, STATUT_DON_LABELS, type Don } from '../services/
 import { getMesIntentions, type PrayerIntention } from '../services/prieres'
 import { getMesTemoignages, STATUT_TEMOIGNAGE_LABELS, type Temoignage } from '../services/temoignages'
 import { MesEnfantsEtDonnees } from './MesEnfantsEtDonnees'
+import { SecuriteCompte } from './securite/SecuriteCompte'
 
 const titreStyle: CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 8,
@@ -122,6 +123,8 @@ export function ProfilSections() {
           <button onClick={() => setEdition(true)} style={{ background: 'none', border: 'none', color: 'var(--blue)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>Modifier</button>
         </div>
       )}
+
+      <SecuriteCompte titreStyle={titreStyle} ligneStyle={ligneStyle} />
 
       {/* ── Paroisses ── */}
       <p style={titreStyle}><Church size={13} /> Mes paroisses</p>

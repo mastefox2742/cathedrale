@@ -77,7 +77,7 @@ async function getAccessToken(serviceAccount: ServiceAccount): Promise<string> {
   return data.access_token as string
 }
 
-Deno.serve(async (req: Request) => {
+async function traiter(req: Request): Promise<Response> {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Méthode non autorisée' }), { status: 405 })
   }
@@ -120,7 +120,8 @@ Deno.serve(async (req: Request) => {
   if (parishId) query = query.eq('parish_id', parishId)
   const { data: tokenRows, error: tokensErr } = await query
   if (tokensErr) {
-    return new Response(JSON.stringify({ error: tokensErr.message }), { status: 500 })
+    console.error('send-notification: lecture des jetons', tokensErr.code)
+    return new Response(JSON.stringify({ error: 'Erreur interne' }), { status: 500 })
   }
 
   // Restriction éventuelle à un rôle ou à un groupe (comptes connectés uniquement).
@@ -204,4 +205,38 @@ Deno.serve(async (req: Request) => {
   })
 
   return new Response(JSON.stringify({ sent }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+}
+
+/**
+ * CORS : seuls les domaines du site peuvent appeler la fonction depuis un
+ * navigateur (variable ALLOWED_ORIGINS, séparée par des virgules).
+ */
+const ORIGINES = (Deno.env.get('ALLOWED_ORIGINS') ?? 'https://cathedrale.vercel.app')
+  .split(',').map(o => o.trim()).filter(Boolean)
+
+function entetesCors(origine: string | null): Record<string, string> {
+  if (!origine || !ORIGINES.includes(origine)) return { Vary: 'Origin' }
+  return {
+    'Access-Control-Allow-Origin': origine,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Max-Age': '600',
+    Vary: 'Origin',
+  }
+}
+
+Deno.serve(async (req: Request) => {
+  const cors = entetesCors(req.headers.get('Origin'))
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors })
+  let reponse: Response
+  try {
+    reponse = await traiter(req)
+  } catch (e) {
+    console.error('send-notification', e instanceof Error ? e.name : 'erreur')
+    reponse = new Response(JSON.stringify({ error: 'Erreur interne' }), { status: 500 })
+  }
+  const entetes = new Headers(reponse.headers)
+  entetes.set('Content-Type', 'application/json')
+  Object.entries(cors).forEach(([k, v]) => entetes.set(k, v))
+  return new Response(reponse.body, { status: reponse.status, headers: entetes })
 })

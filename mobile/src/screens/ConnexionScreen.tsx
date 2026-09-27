@@ -10,6 +10,9 @@ import { getMesRoles } from '../services/staff'
 import { getMesFormations, type FormationProgress } from '../services/formations'
 import { getCours, getModules, type Cours, type Module } from '../services/catechisme'
 import { getModulesTermines } from '../services/moduleProgress'
+import { CodeMfa } from '../components/securite/CodeMfa'
+import { CaptchaMobile, CAPTCHA_ACTIF } from '../components/securite/CaptchaMobile'
+import { messageAuth } from '../lib/messagesAuth'
 
 type Mode = 'login' | 'register'
 
@@ -24,11 +27,21 @@ export function ConnexionScreen() {
   const navigation = useNavigation<any>()
   const [session, setSession] = useState<Session | null | undefined>(undefined)
 
+  // Compte équipé de la double authentification : code demandé après le mot de passe.
+  const [codeRequis, setCodeRequis] = useState(false)
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
     return () => sub.subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    if (!session) { setCodeRequis(false); return }
+    supabase.auth.mfa.getAuthenticatorAssuranceLevel().then(({ data }) => {
+      setCodeRequis(data?.nextLevel === 'aal2' && data.currentLevel !== 'aal2')
+    })
+  }, [session])
 
   if (session === undefined) {
     return (
@@ -40,6 +53,13 @@ export function ConnexionScreen() {
     )
   }
 
+  if (session && codeRequis) {
+    return (
+      <Screen>
+        <CodeMfa onSucces={() => setCodeRequis(false)} onAnnuler={() => { supabase.auth.signOut() }} />
+      </Screen>
+    )
+  }
   return session ? <ProfilView session={session} /> : <ConnexionForm />
 }
 
@@ -212,19 +232,24 @@ function ConnexionForm() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [captcha, setCaptcha] = useState<string | null>(null)
+  const [cycleCaptcha, setCycleCaptcha] = useState(0)
+  const [consentement, setConsentement] = useState(false)
 
   async function submit() {
     if (!EMAIL_RE.test(email)) {
       Alert.alert('Adresse invalide', 'Merci de saisir une adresse email valide.')
       return
     }
+    if (CAPTCHA_ACTIF && !captcha) { Alert.alert('Vérification', 'Patientez pendant la vérification anti-robot, puis réessayez.'); return }
+    if (mode === 'register' && !consentement) { Alert.alert('Confidentialité', "Merci d'accepter la politique de confidentialité pour créer un compte."); return }
     setSubmitting(true)
     try {
       if (mode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captcha ?? undefined } })
         if (error) throw error
       } else {
-        const { data, error } = await supabase.auth.signUp({ email, password })
+        const { data, error } = await supabase.auth.signUp({ email, password, options: { captchaToken: captcha ?? undefined } })
         if (error) throw error
         if (!data.session) {
           Alert.alert('Compte créé !', 'Vérifiez votre boîte mail pour confirmer votre adresse avant de vous connecter.')
@@ -232,9 +257,10 @@ function ConnexionForm() {
         }
       }
     } catch (err) {
-      Alert.alert('Erreur', err instanceof Error ? err.message : 'Une erreur est survenue.')
+      Alert.alert('Erreur', messageAuth(err))
     } finally {
       setSubmitting(false)
+      setCycleCaptcha(c => c + 1)
     }
   }
 
@@ -296,6 +322,18 @@ function ConnexionForm() {
               </Pressable>
             </View>
           </View>
+
+          {mode === 'register' && (
+            <Pressable onPress={() => setConsentement(v => !v)} style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
+              <Icon name={consentement ? 'check-circle' : 'lock'} size={16} color={consentement ? colors.chart3 : colors.mutedForeground} />
+              <Text style={[styles.mutedSm, { flex: 1, lineHeight: 17 }]}>
+                J&apos;accepte la{' '}
+                <Text style={{ color: colors.primary, textDecorationLine: 'underline' }} onPress={() => Linking.openURL(`${process.env.EXPO_PUBLIC_SITE_URL ?? 'https://cathedrale.vercel.app'}/confidentialite`)}>politique de confidentialité</Text>
+                {' '}: mes données servent uniquement à la vie de ma paroisse.
+              </Text>
+            </Pressable>
+          )}
+          <CaptchaMobile onJeton={setCaptcha} cycle={cycleCaptcha} />
 
           <Pressable onPress={submit} disabled={submitting} style={[styles.submitBtn, submitting && { opacity: 0.7 }]}>
             {submitting ? (

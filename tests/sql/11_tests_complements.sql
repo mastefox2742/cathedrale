@@ -197,5 +197,26 @@ do $$ begin
 end $$;
 reset role;
 
+-- ── Double authentification obligatoire pour le staff ───────────────────────
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000005', true);
+select set_config('request.jwt.claim.aal', 'aal1', true);
+select pg_temp.verifier(not public.is_staff(), 'Admin sans double authentification (aal1) : pas de droits de staff');
+select pg_temp.verifier(public.staff_sans_mfa(), 'Admin sans double authentification : reconnu comme staff à enrôler');
+select pg_temp.verifier(not public.is_admin(), 'Admin sans double authentification : is_admin() refusé');
+do $$ begin
+  begin
+    perform public.stats_tableau_de_bord(null);
+    raise exception 'ÉCHEC : statistiques lues sans double authentification';
+  exception when raise_exception then
+    if sqlerrm like 'ÉCHEC%' then raise; end if;
+    raise notice 'OK   Admin sans double authentification : tableau de bord refusé';
+  end;
+end $$;
+select set_config('request.jwt.claim.aal', 'aal2', true);
+select pg_temp.verifier(public.is_staff() and public.is_admin(), 'Admin avec double authentification (aal2) : droits rétablis');
+select set_config('request.jwt.claim.aal', '', true);
+reset role;
+
 \echo '── Tous les tests des compléments sont passés ──'
 rollback;
