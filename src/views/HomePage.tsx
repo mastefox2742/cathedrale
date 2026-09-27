@@ -24,12 +24,6 @@ const QUICK_ACCESS = [
     credit: { auteur: 'Nibeza', licence: 'CC0', source: 'https://commons.wikimedia.org/wiki/File:Bible_Reading.jpg' } },
 ]
 
-const ARCHEVEQUE = {
-  nom: 'Mgr Bienvenu Manamika Bafouakouahou',
-  image: '/images/archeveque-manamika.jpg',
-  credit: { auteur: 'François-Etienne', licence: 'CC BY-SA 4.0', source: 'https://commons.wikimedia.org/wiki/File:Bienvenu_Manamika_Bafouakouahou.jpg' },
-}
-
 /** Les quatre portes d'entrée de la plateforme (évangélisation). */
 const PORTES = [
   { icon: Compass, titre: 'Je découvre la foi', desc: 'Pour les curieux et ceux qui cherchent : qui est Jésus, pourquoi prier, que croient les chrétiens ?', to: '/decouvrir-la-foi',
@@ -176,44 +170,6 @@ export function HomePage() {
           </div>
         </div>
       </div>
-
-      {/* ══ L'ARCHEVÊQUE ══ */}
-      <section style={{ padding: 'var(--space-xl) 0', background: 'var(--bg-alt)' }}>
-        <div className="inner archeveque-grille">
-          <figure className="reveal" style={{ margin: 0 }}>
-            <div style={{ borderRadius: 'var(--r-md)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', aspectRatio: '4 / 5', background: 'var(--primary)' }}>
-              <img src={ARCHEVEQUE.image} alt={`${ARCHEVEQUE.nom}, archevêque de Brazzaville`} loading="lazy"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', display: 'block' }} />
-            </div>
-            <figcaption style={{ fontSize: 10, color: 'var(--text-light)', marginTop: 8 }}>
-              Photo : <a href={ARCHEVEQUE.credit.source} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>{ARCHEVEQUE.credit.auteur}</a> ({ARCHEVEQUE.credit.licence}), via Wikimedia Commons
-            </figcaption>
-          </figure>
-          <div className="reveal">
-            <span className="section-label">Le pasteur de l'archidiocèse</span>
-            <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3.2vw,40px)', fontWeight: 700, color: 'var(--text)', lineHeight: 1.15 }}>
-              {ARCHEVEQUE.nom}
-            </h2>
-            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent-dark)', marginTop: 10 }}>
-              Archevêque de Brazzaville
-            </p>
-            <p style={{ fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.85, marginTop: 20 }}>
-              Né à Brazzaville, évêque de Dolisie de 2013 à 2020 puis évêque coadjuteur de Brazzaville,
-              Mgr Bienvenu Manamika Bafouakouahou est archevêque de Brazzaville depuis novembre 2021.
-              Il conduit l'archidiocèse, ses paroisses, ses prêtres et ses fidèles, autour de la Cathédrale
-              Sacré-Cœur, église mère du diocèse.
-            </p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 28 }}>
-              <Link href="/histoire-archidiocese" className="btn-gold">Histoire de l'archidiocèse</Link>
-              <Link href="/paroisses" className="btn-outline">Les paroisses</Link>
-            </div>
-          </div>
-        </div>
-        <style>{`
-          .archeveque-grille { display: grid; grid-template-columns: minmax(220px, 360px) 1fr; gap: clamp(28px, 5vw, 72px); align-items: center; }
-          @media (max-width: 760px) { .archeveque-grille { grid-template-columns: 1fr; } .archeveque-grille figure { max-width: 320px; } }
-        `}</style>
-      </section>
 
       {/* ══ PAR OÙ COMMENCER ? ══ */}
       <section style={{ padding: 'var(--space-xl) 0', background: 'var(--surface)' }}>
