@@ -2,7 +2,7 @@
  * configuration Workbox). Enregistré par src/app/providers.tsx en production.
  * Les notifications push sont gérées à part par firebase-messaging-sw.js. */
 
-const VERSION = 'v1'
+const VERSION = 'v2'
 const PAGES = `pages-${VERSION}`
 const IMAGES = `images-${VERSION}`
 const AELF = `aelf-${VERSION}`
