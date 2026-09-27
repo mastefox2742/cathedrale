@@ -1,4 +1,5 @@
 import { NavLink } from '../../lib/navigation'
+import { SITE } from '../../config/site'
 
 const LINKS = [
   { to: '/', label: 'Accueil' },
@@ -28,13 +29,13 @@ export function Footer2() {
           <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
         <span style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 22, fontWeight: 700, color: 'var(--primary)' }}>
-          Sacré-Cœur Brazzaville
+          {SITE.nom}
         </span>
       </div>
 
       <p style={{ fontSize: 13, color: 'var(--text-mid)', maxWidth: 560, lineHeight: 1.8, marginBottom: 32 }}>
-        Cathédrale Primatiale de l'Archidiocèse de Brazzaville — érigée en 1887. Siège de
-        l'archevêché métropolitain, lieu de prière, de mémoire et de vie spirituelle.
+        Évangélisation, médiation, catéchèse et vie des paroisses de l'Archidiocèse de
+        Brazzaville, autour de la Cathédrale Sacré-Cœur, son église mère depuis 1887.
       </p>
 
       <ul style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '10px 32px', listStyle: 'none', margin: '0 0 36px', padding: 0 }}>
@@ -55,8 +56,8 @@ export function Footer2() {
       </ul>
 
       <div style={{ fontSize: 11, color: 'var(--text-light)', lineHeight: 1.7 }}>
-        <div>Avenue de la Paix, Centre-ville, Brazzaville, République du Congo</div>
-        <div>© {new Date().getFullYear()} Cathédrale Sacré-Cœur de Brazzaville. Tous droits réservés.</div>
+        <div>Archevêché · Avenue de la Paix, Centre-ville, Brazzaville, République du Congo</div>
+        <div>© {new Date().getFullYear()} {SITE.nom}. Tous droits réservés.</div>
       </div>
     </footer>
   )

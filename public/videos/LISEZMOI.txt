@@ -1,0 +1,8 @@
+Déposer ici la vidéo de présentation de l'archidiocèse sous le nom :
+
+    archidiocese.mp4
+
+Format conseillé : MP4 (H.264), sans son, 1920x1080 ou 1280x720,
+20 à 60 secondes, moins de 15 Mo. Elle tourne en boucle dans le bandeau
+de la page d'accueil. Tant qu'elle est absente, la photo de la cathédrale
+est affichée.

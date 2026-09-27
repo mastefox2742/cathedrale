@@ -10,6 +10,7 @@ import { getDirectsAVenir, type Direct } from '../services/mediation'
 import { useParoisse } from '../contexts/ParoisseContext'
 import { VideoCard } from '../components/VideoCard'
 import { getArchidiocese, type Archidiocese } from '../services/archidiocese'
+import { SITE } from '../config/site'
 
 const QUICK_ACCESS = [
   { icon: Clock, titre: 'Horaires & Messes', desc: "Consultez les horaires des offices et l'agenda liturgique de la semaine.", to: '/horaires', bg: 'var(--primary)', fg: '#fff' },
@@ -58,6 +59,7 @@ export function HomePage() {
   const heroBg = useRef<HTMLDivElement>(null)
   const coul = getLiturgicalColor()
   const now = new Date()
+  const heroVideo = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     getAnnonces().then(d => setAnnonces(d.slice(0, 3))).catch(() => {})
@@ -65,6 +67,11 @@ export function HomePage() {
     getALaUne(2).then(setALaUne).catch(() => setALaUne([]))
     getDirectsAVenir().then(d => setProchainDirect(d[0] ?? null)).catch(() => setProchainDirect(null))
     getArchidiocese().then(setArchidiocese).catch(() => setArchidiocese(null))
+  }, [])
+
+  // Pas de vidéo animée pour les personnes qui ont demandé moins d'animations.
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) heroVideo.current?.pause()
   }, [])
 
   useEffect(() => {
@@ -79,11 +86,18 @@ export function HomePage() {
       <section style={{ position: 'relative', height: '100svh', minHeight: 600, display: 'flex', alignItems: 'center', overflow: 'hidden', width: '100%' }}>
         <div ref={heroBg} style={{
           position: 'absolute', inset: 0,
-          backgroundImage: `url('/cathedrale.jpg')`,
-          backgroundSize: 'cover', backgroundPosition: 'center',
           transform: 'scale(1.06)',
           willChange: 'transform',
+          background: `#123B5D url('${SITE.imageAccueil}') center / cover`,
         }}>
+          <video
+            ref={heroVideo}
+            src={SITE.videoAccueil}
+            poster={SITE.imageAccueil}
+            autoPlay muted loop playsInline preload="auto"
+            aria-hidden="true"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(18,59,93,.88) 0%, rgba(18,59,93,.6) 55%, rgba(62,124,177,.3) 100%)' }} />
         </div>
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 80% at 10% 70%, rgba(201,162,39,.15) 0%, transparent 70%)' }} />
@@ -91,14 +105,14 @@ export function HomePage() {
         <div style={{ position: 'relative', zIndex: 2, maxWidth: 'var(--max-w)', width: '100%', margin: '0 auto', padding: '0 var(--pad-x)' }}>
           <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.28em', textTransform: 'uppercase', color: 'var(--accent-light)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ width: 28, height: 1, background: 'var(--accent-light)', display: 'inline-block' }} />
-            Archidiocèse de Brazzaville · Congo
+            Église catholique · République du Congo
           </p>
           <h1 className="hero-title" style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(48px,8vw,90px)', fontWeight: 700, lineHeight: 1.05, color: '#fff', marginBottom: 8 }}>
-            Cathédrale<br />
-            <em style={{ color: 'var(--accent-light)', fontStyle: 'italic' }}>Sacré-Cœur</em>
+            Archidiocèse<br />
+            <em style={{ color: 'var(--accent-light)', fontStyle: 'italic' }}>de Brazzaville</em>
           </h1>
-          <p style={{ fontSize: 14, fontWeight: 300, color: 'var(--text-mid)', maxWidth: 460, lineHeight: 1.8, marginBottom: 40 }}>
-            Liturgie quotidienne, catéchèse et vie spirituelle au cœur de Brazzaville depuis 1887.
+          <p style={{ fontSize: 15, fontWeight: 400, color: 'rgba(255,255,255,.88)', maxWidth: 480, lineHeight: 1.8, marginBottom: 40, textShadow: '0 1px 12px rgba(0,0,0,.35)' }}>
+            {SITE.devise}
           </p>
           <div className="hero-btns" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', maxWidth: 720 }}>
             {PORTES.map((p, i) => (

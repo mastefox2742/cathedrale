@@ -6,19 +6,19 @@ import '../index.css'
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cathedrale.vercel.app'),
   title: {
-    default: 'Archidiocèse de Brazzaville — Cathédrale Sacré-Cœur',
+    default: 'Archidiocèse de Brazzaville',
     template: '%s · Archidiocèse de Brazzaville',
   },
   description: "Plateforme de l'Archidiocèse de Brazzaville : évangélisation, médiation vidéo, catéchèse, prière et vie des paroisses.",
   keywords: ['archidiocèse', 'brazzaville', 'congo', 'cathédrale', 'sacré-cœur', 'liturgie', 'catéchèse', 'évangélisation', 'église catholique'],
-  applicationName: 'Sacré-Cœur',
-  appleWebApp: { capable: true, title: 'Sacré-Cœur', statusBarStyle: 'black-translucent' },
+  applicationName: 'Archidiocèse de Brazzaville',
+  appleWebApp: { capable: true, title: 'Archidiocèse', statusBarStyle: 'black-translucent' },
   icons: {
     icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }, { url: '/icons/icon-192.png', sizes: '192x192' }],
     apple: '/icons/icon-192.png',
   },
   openGraph: {
-    title: 'Archidiocèse de Brazzaville — Cathédrale Sacré-Cœur',
+    title: 'Archidiocèse de Brazzaville',
     description: 'Évangélisation, médiation, catéchèse et vie paroissiale — Archidiocèse de Brazzaville',
     images: ['/cathedrale.jpg'],
     type: 'website',

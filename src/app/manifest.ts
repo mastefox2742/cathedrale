@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Archidiocèse de Brazzaville — Cathédrale Sacré-Cœur',
-    short_name: 'Sacré-Cœur',
+    name: 'Archidiocèse de Brazzaville',
+    short_name: 'Archidiocèse',
     description: "Évangélisation, médiation, catéchèse et vie spirituelle de l'Archidiocèse de Brazzaville",
     theme_color: '#1565C0',
     background_color: '#F5F6FA',

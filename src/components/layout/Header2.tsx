@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { NavLink, useNavigate } from '../../lib/navigation'
 import { useParoisse } from '../../contexts/ParoisseContext'
+import { SITE } from '../../config/site'
 
 const NAV_LINKS = [
   { to: '/',                  label: 'Accueil',                 section: 'Évangile' },
@@ -98,13 +99,13 @@ export function Header2({ transparent = false }: Header2Props) {
               fontWeight: 600, color: textColor, letterSpacing: '.03em',
               transition: 'color .35s', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
-              {courante?.nom ?? 'Cathédrale Sacré-Cœur'}
+              {SITE.nom}
             </span>
             <span className="v2-logo-sub v2-header-subtitle" style={{
               fontSize: 8, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase',
               color: subColor, transition: 'color .35s',
             }}>
-              Archidiocèse de Brazzaville
+              {courante?.nom ?? 'Médiation & Évangélisation'}
             </span>
           </div>
         </NavLink>
