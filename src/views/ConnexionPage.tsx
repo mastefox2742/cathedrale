@@ -28,10 +28,15 @@ function formatMemberSince(iso: string | undefined) {
  */
 export function ConnexionPage({ modeInitial = 'login' }: { modeInitial?: Mode }) {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
+  // Arrivée par le lien « mot de passe oublié » : on demande d'abord un nouveau mot de passe.
+  const [recuperation, setRecuperation] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === 'PASSWORD_RECOVERY') setRecuperation(true)
+      setSession(s)
+    })
     return () => sub.subscription.unsubscribe()
   }, [])
 
@@ -39,7 +44,61 @@ export function ConnexionPage({ modeInitial = 'login' }: { modeInitial?: Mode })
     return <div style={{ padding: '120px 20px', textAlign: 'center' }}><div className="page-loader-ring" style={{ margin: '0 auto' }} /></div>
   }
 
+  if (session && recuperation) return <NouveauMotDePasse onFini={() => setRecuperation(false)} />
   return session ? <ProfilView session={session} /> : <ConnexionForm modeInitial={modeInitial} />
+}
+
+function NouveauMotDePasse({ onFini }: { onFini: () => void }) {
+  const [password, setPassword] = useState('')
+  const [confirmation, setConfirmation] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const labelStyle: CSSProperties = { display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-mid)', marginBottom: 8 }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    setError(null)
+    if (password.length < 8) { setError('Le mot de passe doit contenir au moins 8 caractères.'); return }
+    if (password !== confirmation) { setError('Les deux mots de passe ne sont pas identiques.'); return }
+    setSubmitting(true)
+    const { error: err } = await supabase.auth.updateUser({ password })
+    setSubmitting(false)
+    if (err) setError(err.message)
+    else onFini()
+  }
+
+  return (
+    <div style={{ padding: '120px var(--pad-x) var(--space-xl)' }}>
+      <div style={{ maxWidth: 440, margin: '0 auto', background: 'var(--surface)', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-lg)', padding: 36 }}>
+        <h1 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 24, color: 'var(--primary)', marginBottom: 8 }}>Nouveau mot de passe</h1>
+        <p style={{ fontSize: 13, color: 'var(--text-light)', marginBottom: 24 }}>Choisissez le mot de passe que vous utiliserez désormais pour vous connecter.</p>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label htmlFor="nouveau" style={labelStyle}>Nouveau mot de passe</label>
+            <div style={{ position: 'relative' }}>
+              <Lock size={15} color="var(--text-light)" style={{ position: 'absolute', left: 14, top: 14 }} />
+              <input id="nouveau" type={showPassword ? 'text' : 'password'} autoComplete="new-password" value={password}
+                onChange={e => setPassword(e.target.value)} required minLength={8} className="dark-input" style={{ paddingLeft: 40, paddingRight: 40 }} />
+              <button type="button" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                style={{ position: 'absolute', right: 12, top: 12, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)' }}>
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="confirmation" style={labelStyle}>Confirmer le mot de passe</label>
+            <input id="confirmation" type={showPassword ? 'text' : 'password'} autoComplete="new-password" value={confirmation}
+              onChange={e => setConfirmation(e.target.value)} required minLength={8} className="dark-input" />
+          </div>
+          {error && <p style={{ fontSize: 12, color: '#C0392B', background: 'rgba(220,53,69,.08)', borderRadius: 'var(--r-sm)', padding: '10px 12px' }}>{error}</p>}
+          <button type="submit" disabled={submitting} className="btn-gold" style={{ justifyContent: 'center', marginTop: 8, opacity: submitting ? .7 : 1 }}>
+            {submitting ? 'Veuillez patienter…' : 'Enregistrer le mot de passe'}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
 }
 
 function ProfilView({ session }: { session: Session }) {
