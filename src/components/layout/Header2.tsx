@@ -91,7 +91,7 @@ export function Header2({ transparent = false }: Header2Props) {
               boxShadow: isScrolled ? 'var(--shadow-sm)' : 'none',
             }}
           >
-            <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src="/logo.png" alt={SITE.nom} style={{ width: '100%', height: '100%', objectFit: 'cover', background: '#fff' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
             <span className="v2-logo-name" style={{

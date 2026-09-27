@@ -24,13 +24,8 @@ export function Footer2() {
       display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
       background: 'var(--bg-alt)', borderTop: '1px solid var(--border-accent)',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
-        <div style={{ width: 36, height: 36, borderRadius: '50%', border: '1.5px solid var(--accent)', overflow: 'hidden' }}>
-          <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-        <span style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 22, fontWeight: 700, color: 'var(--primary)' }}>
-          {SITE.nom}
-        </span>
+      <div style={{ marginBottom: 22, padding: '14px 18px', background: '#fff', borderRadius: 'var(--r-md)', boxShadow: 'var(--shadow-sm)' }}>
+        <img src="/logo-archidiocese.png" alt={SITE.nom} width={140} height={134} style={{ display: 'block', width: 140, height: 'auto' }} />
       </div>
 
       <p style={{ fontSize: 13, color: 'var(--text-mid)', maxWidth: 560, lineHeight: 1.8, marginBottom: 32 }}>

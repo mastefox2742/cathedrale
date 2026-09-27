@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   applicationName: 'Archidiocèse de Brazzaville',
   appleWebApp: { capable: true, title: 'Archidiocèse', statusBarStyle: 'black-translucent' },
   icons: {
-    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }, { url: '/icons/icon-192.png', sizes: '192x192' }],
+    icon: [{ url: '/favicon.png', sizes: '64x64', type: 'image/png' }, { url: '/icons/icon-192.png', sizes: '192x192' }],
     apple: '/icons/icon-192.png',
   },
   openGraph: {

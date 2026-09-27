@@ -228,11 +228,6 @@ export function HomePage() {
                   <div className="icon-tile" style={{ position: 'absolute', left: 18, bottom: 16, background: q.bg, color: q.fg, boxShadow: '0 6px 18px rgba(0,0,0,.25)' }}>
                     <q.icon size={22} />
                   </div>
-          <p style={{ fontSize: 10, color: 'var(--text-light)', marginTop: 16, lineHeight: 1.6 }}>
-            Photos : {QUICK_ACCESS.map((q, i) => (
-              <span key={q.to}>{i > 0 && ' · '}<a href={q.credit.source} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>{q.credit.auteur}</a> ({q.credit.licence})</span>
-            ))}, via Wikimedia Commons.
-          </p>
                 </div>
                 <div style={{ padding: '20px 22px 22px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
                   <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>{q.titre}</h3>
@@ -244,6 +239,11 @@ export function HomePage() {
               </Link>
             ))}
           </div>
+          <p style={{ fontSize: 10, color: 'var(--text-light)', marginTop: 16, lineHeight: 1.6 }}>
+            Photos : {QUICK_ACCESS.map((q, i) => (
+              <span key={q.to}>{i > 0 && ' · '}<a href={q.credit.source} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>{q.credit.auteur}</a> ({q.credit.licence})</span>
+            ))}, via Wikimedia Commons.
+          </p>
         </div>
       </section>
 
