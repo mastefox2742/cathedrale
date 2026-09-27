@@ -20,10 +20,18 @@ const QUICK_ACCESS = [
 
 /** Les quatre portes d'entrée de la plateforme (évangélisation). */
 const PORTES = [
-  { icon: Compass, titre: 'Je découvre la foi', desc: 'Pour les curieux et ceux qui cherchent : qui est Jésus, pourquoi prier, que croient les chrétiens ?', to: '/decouvrir-la-foi' },
-  { icon: Droplets, titre: 'Je veux me convertir', desc: 'Devenir chrétien : les étapes du catéchuménat, des témoignages et un accompagnement.', to: '/se-convertir' },
-  { icon: BookOpen, titre: 'Je veux approfondir ma foi', desc: 'Bible, doctrine, vie spirituelle : des parcours pour les baptisés qui veulent grandir.', to: '/approfondir' },
-  { icon: Flame, titre: 'Je veux prier', desc: "Évangile du jour, liturgie des heures, chapelet, mur de prière et neuvaines.", to: '/prier' },
+  { icon: Compass, titre: 'Je découvre la foi', desc: 'Pour les curieux et ceux qui cherchent : qui est Jésus, pourquoi prier, que croient les chrétiens ?', to: '/decouvrir-la-foi',
+    image: '/images/portes/decouvrir.jpg', alt: 'La basilique Sainte-Anne du Congo, à Brazzaville',
+    credit: { auteur: 'Henri van der Noot', licence: 'CC BY-SA 4.0', source: 'https://commons.wikimedia.org/wiki/File:Brazzaville_-_Basilique_Sainte-Anne-du-Congo.jpg' } },
+  { icon: Droplets, titre: 'Je veux me convertir', desc: 'Devenir chrétien : les étapes du catéchuménat, des témoignages et un accompagnement.', to: '/se-convertir',
+    image: '/images/portes/convertir.jpg', alt: "Un prêtre célèbre un baptême dans une église catholique d'Afrique centrale",
+    credit: { auteur: 'IGANZE', licence: 'CC0', source: 'https://commons.wikimedia.org/wiki/File:Baptism_in_catholic.jpg' } },
+  { icon: BookOpen, titre: 'Je veux approfondir ma foi', desc: 'Bible, doctrine, vie spirituelle : des parcours pour les baptisés qui veulent grandir.', to: '/approfondir',
+    image: '/images/portes/approfondir.jpg', alt: "Une fidèle lit la Bible pendant une célébration",
+    credit: { auteur: 'Tonny Mpagi', licence: 'CC BY-SA 4.0', source: 'https://commons.wikimedia.org/wiki/File:Woman_Reading_the_Bible_1.jpg' } },
+  { icon: Flame, titre: 'Je veux prier', desc: "Évangile du jour, liturgie des heures, chapelet, mur de prière et neuvaines.", to: '/prier',
+    image: '/images/portes/prier.jpg', alt: 'Une bougie allumée pendant une veillée de prière dans une église',
+    credit: { auteur: 'Sayvhior', licence: 'CC BY-SA 4.0', source: 'https://commons.wikimedia.org/wiki/File:Renewal_of_Baptismal_vows_in_the_Catholic_faith.jpg' } },
 ]
 
 const HISTOIRE = [
@@ -169,18 +177,31 @@ export function HomePage() {
           </div>
           <div className="grid-4">
             {PORTES.map(p => (
-              <Link key={p.to} href={p.to} className="dark-card reveal" style={{ padding: 26, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div className="icon-tile" style={{ background: 'var(--primary)', color: 'var(--accent-light)' }}>
-                  <p.icon size={22} />
+              <Link key={p.to} href={p.to} className="dark-card reveal porte-carte" style={{ padding: 0, overflow: 'hidden', textDecoration: 'none', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ position: 'relative', aspectRatio: '4 / 3', overflow: 'hidden', background: 'var(--primary)' }}>
+                  <img src={p.image} alt={p.alt} loading="lazy" className="porte-image"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform .6s ease' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(18,59,93,.75) 0%, rgba(18,59,93,.1) 55%, transparent 100%)' }} />
+                  <div className="icon-tile" style={{ position: 'absolute', left: 18, bottom: 16, background: 'var(--primary)', color: 'var(--accent-light)', boxShadow: '0 6px 18px rgba(0,0,0,.25)' }}>
+                    <p.icon size={22} />
+                  </div>
                 </div>
-                <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 18, fontWeight: 600, color: 'var(--text)' }}>{p.titre}</h3>
-                <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, flex: 1 }}>{p.desc}</p>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--blue)' }}>
-                  Commencer <ArrowRight size={13} />
-                </span>
+                <div style={{ padding: '20px 22px 22px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+                  <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 18, fontWeight: 600, color: 'var(--text)' }}>{p.titre}</h3>
+                  <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, flex: 1 }}>{p.desc}</p>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--blue)' }}>
+                    Commencer <ArrowRight size={13} />
+                  </span>
+                </div>
               </Link>
             ))}
           </div>
+          <p style={{ fontSize: 10, color: 'var(--text-light)', marginTop: 16, lineHeight: 1.6 }}>
+            Photos : {PORTES.map((p, i) => (
+              <span key={p.to}>{i > 0 && ' · '}<a href={p.credit.source} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>{p.credit.auteur}</a> ({p.credit.licence})</span>
+            ))}, via Wikimedia Commons.
+          </p>
+          <style>{`.porte-carte:hover .porte-image { transform: scale(1.06); }`}</style>
         </div>
       </section>
 
