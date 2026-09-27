@@ -13,10 +13,22 @@ import { getArchidiocese, type Archidiocese } from '../services/archidiocese'
 import { SITE } from '../config/site'
 
 const QUICK_ACCESS = [
-  { icon: Clock, titre: 'Horaires & Messes', desc: "Consultez les horaires des offices et l'agenda liturgique de la semaine.", to: '/horaires', bg: 'var(--primary)', fg: '#fff' },
-  { icon: HeartHandshake, titre: 'Intentions de prière', desc: 'Confiez vos intentions aux prêtres et à la communauté de la cathédrale.', to: '/vie-spirituelle', bg: 'var(--primary-mid)', fg: '#fff' },
-  { icon: Radio, titre: 'Homélies & Enseignements', desc: "Réécoutez les homélies dominicales pour nourrir votre chemin spirituel.", to: '/homelies', bg: 'var(--accent)', fg: 'var(--text)' },
+  { icon: Clock, titre: 'Horaires & Messes', desc: "Consultez les horaires des offices et l'agenda liturgique de la semaine.", to: '/horaires', bg: 'var(--primary)', fg: '#fff',
+    image: '/images/rythme/messes.jpg', alt: 'Des fidèles reçoivent la communion pendant la messe',
+    credit: { auteur: 'Bright Kwame Ayisi', licence: 'CC BY-SA 4.0', source: 'https://commons.wikimedia.org/wiki/File:Catholic_communion_Mass.jpg' } },
+  { icon: HeartHandshake, titre: 'Intentions de prière', desc: 'Confiez vos intentions aux prêtres et à la communauté.', to: '/prier/mur', bg: 'var(--primary-mid)', fg: '#fff',
+    image: '/images/rythme/intentions.jpg', position: 'center top', alt: 'Des enfants à genoux prient le chapelet dans une église',
+    credit: { auteur: 'Johnnybam', licence: 'CC BY-SA 4.0', source: 'https://commons.wikimedia.org/wiki/File:Children_Kneeling_in_Prayer_with_Rosary.jpg' } },
+  { icon: Radio, titre: 'Homélies & Enseignements', desc: "Réécoutez les homélies dominicales pour nourrir votre chemin spirituel.", to: '/homelies', bg: 'var(--accent)', fg: 'var(--text)',
+    image: '/images/rythme/homelies.jpg', alt: "Un prêtre lit la Parole de Dieu à l'ambon",
+    credit: { auteur: 'Nibeza', licence: 'CC0', source: 'https://commons.wikimedia.org/wiki/File:Bible_Reading.jpg' } },
 ]
+
+const ARCHEVEQUE = {
+  nom: 'Mgr Bienvenu Manamika Bafouakouahou',
+  image: '/images/archeveque-manamika.jpg',
+  credit: { auteur: 'François-Etienne', licence: 'CC BY-SA 4.0', source: 'https://commons.wikimedia.org/wiki/File:Bienvenu_Manamika_Bafouakouahou.jpg' },
+}
 
 /** Les quatre portes d'entrée de la plateforme (évangélisation). */
 const PORTES = [
@@ -165,6 +177,44 @@ export function HomePage() {
         </div>
       </div>
 
+      {/* ══ L'ARCHEVÊQUE ══ */}
+      <section style={{ padding: 'var(--space-xl) 0', background: 'var(--bg-alt)' }}>
+        <div className="inner archeveque-grille">
+          <figure className="reveal" style={{ margin: 0 }}>
+            <div style={{ borderRadius: 'var(--r-md)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', aspectRatio: '4 / 5', background: 'var(--primary)' }}>
+              <img src={ARCHEVEQUE.image} alt={`${ARCHEVEQUE.nom}, archevêque de Brazzaville`} loading="lazy"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', display: 'block' }} />
+            </div>
+            <figcaption style={{ fontSize: 10, color: 'var(--text-light)', marginTop: 8 }}>
+              Photo : <a href={ARCHEVEQUE.credit.source} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>{ARCHEVEQUE.credit.auteur}</a> ({ARCHEVEQUE.credit.licence}), via Wikimedia Commons
+            </figcaption>
+          </figure>
+          <div className="reveal">
+            <span className="section-label">Le pasteur de l'archidiocèse</span>
+            <h2 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 'clamp(26px,3.2vw,40px)', fontWeight: 700, color: 'var(--text)', lineHeight: 1.15 }}>
+              {ARCHEVEQUE.nom}
+            </h2>
+            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--accent-dark)', marginTop: 10 }}>
+              Archevêque de Brazzaville
+            </p>
+            <p style={{ fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.85, marginTop: 20 }}>
+              Né à Brazzaville, évêque de Dolisie de 2013 à 2020 puis évêque coadjuteur de Brazzaville,
+              Mgr Bienvenu Manamika Bafouakouahou est archevêque de Brazzaville depuis novembre 2021.
+              Il conduit l'archidiocèse, ses paroisses, ses prêtres et ses fidèles, autour de la Cathédrale
+              Sacré-Cœur, église mère du diocèse.
+            </p>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 28 }}>
+              <Link href="/histoire-archidiocese" className="btn-gold">Histoire de l'archidiocèse</Link>
+              <Link href="/paroisses" className="btn-outline">Les paroisses</Link>
+            </div>
+          </div>
+        </div>
+        <style>{`
+          .archeveque-grille { display: grid; grid-template-columns: minmax(220px, 360px) 1fr; gap: clamp(28px, 5vw, 72px); align-items: center; }
+          @media (max-width: 760px) { .archeveque-grille { grid-template-columns: 1fr; } .archeveque-grille figure { max-width: 320px; } }
+        `}</style>
+      </section>
+
       {/* ══ PAR OÙ COMMENCER ? ══ */}
       <section style={{ padding: 'var(--space-xl) 0', background: 'var(--surface)' }}>
         <div className="inner">
@@ -214,15 +264,27 @@ export function HomePage() {
           </div>
           <div className="grid-3">
             {QUICK_ACCESS.map((q, i) => (
-              <Link key={i} href={q.to} className="dark-card reveal" style={{ padding: 26, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div className="icon-tile" style={{ background: q.bg, color: q.fg }}>
-                  <q.icon size={22} />
+              <Link key={i} href={q.to} className="dark-card reveal porte-carte" style={{ padding: 0, overflow: 'hidden', textDecoration: 'none', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ position: 'relative', aspectRatio: '16 / 10', overflow: 'hidden', background: 'var(--primary)' }}>
+                  <img src={q.image} alt={q.alt} loading="lazy" className="porte-image"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'position' in q ? q.position : 'center', display: 'block', transition: 'transform .6s ease' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(18,59,93,.7) 0%, rgba(18,59,93,.08) 55%, transparent 100%)' }} />
+                  <div className="icon-tile" style={{ position: 'absolute', left: 18, bottom: 16, background: q.bg, color: q.fg, boxShadow: '0 6px 18px rgba(0,0,0,.25)' }}>
+                    <q.icon size={22} />
+                  </div>
+          <p style={{ fontSize: 10, color: 'var(--text-light)', marginTop: 16, lineHeight: 1.6 }}>
+            Photos : {QUICK_ACCESS.map((q, i) => (
+              <span key={q.to}>{i > 0 && ' · '}<a href={q.credit.source} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>{q.credit.auteur}</a> ({q.credit.licence})</span>
+            ))}, via Wikimedia Commons.
+          </p>
                 </div>
-                <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>{q.titre}</h3>
-                <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, flex: 1 }}>{q.desc}</p>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--blue)' }}>
-                  Découvrir <ArrowRight size={13} />
-                </span>
+                <div style={{ padding: '20px 22px 22px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+                  <h3 style={{ fontFamily: 'var(--v2-font-serif)', fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>{q.titre}</h3>
+                  <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, flex: 1 }}>{q.desc}</p>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--blue)' }}>
+                    Découvrir <ArrowRight size={13} />
+                  </span>
+                </div>
               </Link>
             ))}
           </div>
